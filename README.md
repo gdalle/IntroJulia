@@ -38,11 +38,15 @@ This should open your default internet browser and display a local page called J
 
 ## Useful tips
 
+### Development
+
+If you are looking to start a project that doesn't fit inside a Jupyter notebook, take a look at the Juno IDE (https://junolab.org/).
+
 ### Documentation
 
 If you are looking for a command or function you don't know, start with https://juliadocs.github.io/Julia-Cheat-Sheet/.
 
-If you want to know more about Julia syntax and functionalities, check out the official documentation at https://docs.julialang.org/en/v1/ or the course https://en.wikibooks.org/wiki/Introducing_Julia. A more in-depth coverage is given by https://benlauwens.github.io/ThinkJulia.jl/latest/book.html.
+If you want to know more about Julia syntax and functionalities, check out the tutorials at https://julialang.org/learning/, then the official documentation at https://docs.julialang.org/en/v1/ or the course https://en.wikibooks.org/wiki/Introducing_Julia. A more in-depth coverage is given by https://benlauwens.github.io/ThinkJulia.jl/latest/book.html.
 
 ### Useful libraries
 
