@@ -65,9 +65,3 @@ Here is a four-step debugging procedure that works 99\% of the time:
 2. If this doesn't work, copy-paste the bug message into Google and read the first three forum answers about it.
 3. If that doesn't work, sleep on it and try again tomorrow.
 4. If none of the previous methods work, email your teaching assistant.
-
----
-
-Sources:
-
-- https://discourse.julialang.org/t/some-notes-on-using-ijulia-and-nbextensions-as-a-python-noob/42902
