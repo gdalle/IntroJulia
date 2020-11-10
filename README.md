@@ -12,13 +12,13 @@ Go to https://julialang.org/downloads/ and download the version of Julia corresp
 
 Remark: adding Julia to your `PATH` is not necessary if you don't want to. As long as you have something named Julia in your list of programs, you're good to go for now.
 
-### 2. Clone the project repository
+### 2. Download the project repository
 
 Go to https://github.com/gdalle/IntroJulia, click on the green button `Code` and then `Download ZIP`. Extract the downloaded archive wherever you want.
 
 ### 3. Install and configure Jupyter
 
-Open a terminal and run Julia using the command `julia`. What you see is called a Read-Eval-Print Loop (REPL), it is very similar to a Python interactive session. Copy-paste the following commands into the REPL to install Jupyter (and a few extensions) using Julia's package manager `Pkg`:
+Run Julia, either from your list of programs or from the terminal. What you see is called a Read-Eval-Print Loop (REPL), it is very similar to a Python interactive session. Copy-paste the following commands into the REPL to install Jupyter (and a few extensions) using Julia's package manager `Pkg`:
 
 ```julia
 using Pkg
