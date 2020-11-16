@@ -48,13 +48,14 @@ If you are looking for a command or function you don't know, start with https://
 
 If you want to know more about Julia syntax and functionalities, check out the tutorials at https://julialang.org/learning/, then the official documentation at https://docs.julialang.org/en/v1/ or the course https://en.wikibooks.org/wiki/Introducing_Julia. A more in-depth coverage is given by https://benlauwens.github.io/ThinkJulia.jl/latest/book.html.
 
-### Useful libraries
+### Useful resources
 
 - Graphs: https://juliagraphs.org/
 - Optimization: https://www.juliaopt.org/
 - Statistics: https://juliastats.org/
 - Plotting: https://github.com/JuliaPy/PyPlot.jl or https://github.com/JuliaPlots
 - Utilities: https://github.com/timholy/ProgressMeter.jl
+- Style guide: https://github.com/invenia/BlueStyle
 - Anything else: https://juliaobserver.com/packages or https://juliahub.com/ui/Packages
 
 ### Debugging
