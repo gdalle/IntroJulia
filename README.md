@@ -1,8 +1,20 @@
-# IntroJulia
 
 *By [Guillaume Dalle](https://gdalle.github.io)*
 
 This website contains a series of notebooks illustrating the use of the Julia programming language. It was originally designed as teaching material for students of École des Ponts ParisTech, but it is accessible to a much wider audience.
+
+- [The basics](#the-basics)
+  - [What is Julia?](#what-is-julia)
+  - [Learning Julia](#learning-julia)
+  - [Development environment](#development-environment)
+  - [Getting help](#getting-help)
+- [Creating a package](#creating-a-package)
+  - [Discovering packages](#discovering-packages)
+  - [Workflow](#workflow)
+  - [Style](#style)
+  - [Documentation](#documentation)
+  - [Unit testing](#unit-testing)
+- [Contents of this website](#contents-of-this-website)
 
 ## The basics
 
