@@ -4,24 +4,27 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 202b23a5-0e7c-4bfc-99c4-e5efd8e6343a
+# ╔═╡ d497b9fd-743b-423b-9541-0d41d22912e3
 using PlutoUI
 
-# ╔═╡ f4936cc0-aef0-48e7-94ca-2fa9421a4fcb
+# ╔═╡ 913f4b55-ff50-48b5-8238-f15a5bb0ff34
 using Markdown: MD, Admonition, Code
 
-# ╔═╡ 5a855d3b-06cc-4df5-bedf-e4129c79d307
-using Plots
+# ╔═╡ 8872efb4-ca33-4138-8ac5-7210c64d79a2
+using JuMP, GLPK
 
-# ╔═╡ fa8022a0-b4b1-4157-b761-b90c8aa31274
+# ╔═╡ 7939aed0-5d04-4c32-84be-4c891964334c
+using Polyhedra, Plots
+
+# ╔═╡ bf9ecbf4-f5e9-11eb-31bc-c9607ce892c7
 md"""
 > 🏠[Course home](https://gdalle.github.io/IntroJulia/)
 """
 
-# ╔═╡ 857b194c-2397-4ad7-95a9-38ec35815995
+# ╔═╡ a8ac9c3a-9b41-4ded-b0be-ad07e3f8142f
 TableOfContents()
 
-# ╔═╡ d1824521-94e0-4d76-b561-77ffe8aabdf8
+# ╔═╡ 77fbe616-c350-4f3d-9efe-5d584e9ee4f1
 begin
 	hint(text) = MD(Admonition("hint", "Hint", [text]))
 	not_defined(var) = MD(Admonition("info", "Not defined", [md"Make sure you defined **$(Code(string(var)))**"]))
@@ -29,402 +32,104 @@ begin
 	correct(text=md"Good job.") = MD(Admonition("tip", "Correct!", [text]))
 end;
 
-# ╔═╡ 9f45b9f5-21a8-421b-873d-ffcaeaf293d9
+# ╔═╡ 9fa09239-0400-4c36-8acb-e64d144f7c90
 md"""
-# Using Pluto notebooks
+# First steps with JuMP
 
-This document you see is a notebook created with [Pluto.jl](https://github.com/fonsp/Pluto.jl). Is is a mixture of Julia code and web components designed to make the programming experience more fun and interactive.
+[JuMP.jl](https://jump.dev/) is a modeling language that provides a common interface to many different mathematical optimization solvers. It helps you write models easily by providing a syntax that is close to the mathematical formulation but standard enough for solvers to use it.
 """
 
-# ╔═╡ 8dbbb4f8-4948-4349-a87d-c579bd014507
+# ╔═╡ b8123f92-192f-4a25-a5ec-037a497253fa
 md"""
-## Cells and evaluation
-
-In this notebook, you have access to a structured equivalent of Julia's REPL (Read-Eval-Print Loop), i.e. the interactive console. Here, you can divide your code in cells to modify and run each one separately.
+## A simple LP
 """
 
-# ╔═╡ 7e401ec1-1e5c-41c5-89a2-1198879899ff
-1+1
-
-# ╔═╡ 3635885d-51cf-49cf-8767-70984ee3248c
+# ╔═╡ 58064ddb-b396-4141-afc8-0984c561e15c
 md"""
-Press `Ctrl + Shift + ?` (or `Cmd + Shift + ?` on a Mac) to open the list of keyboard shortcuts.
+To see how this works, let us solve a simple linear program:
+```math
+\begin{align*}
+\max_{x, y} ~ & ~~ x + y \\
+\text{s.t.} ~ &
+\left| ~\begin{array}{l}
+x,y \geq 0 \\
+y - x \leq 1 \\
+x + 6y \leq 15 \\
+4x - y \leq 10 \\
+\end{array} \right.
+\end{align*}
+```
 """
 
-# ╔═╡ ee2855cf-6d24-4634-aa49-3da3829fa1b4
+# ╔═╡ decbc219-4511-493e-94c9-5a3d72c758f0
 md"""
-## Some quirks of Pluto
+To solve this using JuMP, we first have to initialize the model and define which solver will be used. We then add variables, constraints and an objective.
 
-The behaviors described below are specific to Pluto notebooks and do not apply to Julia as a whole:
--  To put several lines in a Pluto cell, you must wrap them in a `begin ... end` block.
-- You cannot redefine a variable with the same name twice in the same notebook.
-- By default, the output of a cell is the value of its last expression, you can hide it by ending the cell with `;`.
-- The standard `print` and `println` functions will not work in Pluto notebooks since they will display text in the terminal from which you launched the notebook. Two possible workarounds: wrap your cell in a `with_terminal() do ... end` block or use the `PlutoUI: Print` function.
-- Usually, packages have to be installed (with `Pkg.add("MyPackage")`) before they can be used. However, Pluto takes care of that for us, so when you need a package, just write `using MyPackage` in a cell and it will be downloaded and installed in a local environment specific to the current notebook.
+Due to a specificity of Pluto, it is necessary to build the model in a single cell.
 """
 
-# ╔═╡ 2f3f1509-409a-4416-a86a-24686b164bb6
-md"""
-## Help and documentation
-
-Pluto offers you a `Live Docs` tab on the bottom right corner of the screen. If you expand it and click a function or variable, you will be able to explore the documentation associated with it. The same goes if you type `?` before a command in the REPL.
-"""
-
-# ╔═╡ 89e4cb15-e8e8-49be-9fd4-860e2753e262
-md"""
-## Interactivity
-
-The ability to interact is one of the key features of Pluto. Here is a quick example.
-"""
-
-# ╔═╡ cd1354d6-5e30-4acc-aba2-1e0bc611f44f
-var1, var2 = 6, 7
-
-# ╔═╡ 296e5f0d-f7d6-4a63-b836-43f7f8a5cb95
-md"""
-In the cell below, define a variable `var3` equal to the product of `var1` and `var2`.
-"""
-
-# ╔═╡ 21de7124-d8a8-46d7-8180-8167962d3cf5
-
-
-# ╔═╡ 13dce566-aaf0-48bf-8ab8-509b577209e4
-if !@isdefined var3
-	not_defined(:var3)
-elseif var3 != var1 * var2
-	keep_working(md"`var3` is not equal to the product of `var1` and `var2`.")
-else
-	correct(md"You've made it: $var3 = $var1 x $var2.")
-end
-
-# ╔═╡ be4b0a90-7175-4b8c-a0f6-540edc97f332
-md"""
-As you can see, the feedback has changed! Now check what happens when you play with the value of `var1`: which parts of the notebook are modified?
-
-This happens because Pluto tracks the consequences of every cell: as soon as you change one cell, all the other cells that depend on it are re-run. If you have computation-intensive cells that you don't want to re-run every time, just `Disable` them using the button with the three dots on the right.
-"""
-
-# ╔═╡ 437bd878-066a-4159-9936-746f9111e62d
-md"""
-# Julia essentials
-
-Here we give you some useful tools for the rest of the course, but we cannot describe every part of Julia. To look up a command without diving deep into the documentation, a very good resource is the [Fast Track to Julia](https://juliadocs.github.io/Julia-Cheat-Sheet/).
-
-A word of warning before we start!
-
-> In Julia, when you run a chunk of code for the first time, it takes longer due to *just-in-time compilation*. Don't be surprised, it is essential for performance, and the following runs are much faster.
-"""
-
-# ╔═╡ 511d7889-b6a5-433a-bf67-efc705a36f2d
-md"""
-## Variables
-
-Variable assignment works as one would expect. Note that you can use LaTeX symbols by typing (for instance) `\beta` + `Tab` in the REPL. This also works for indices or exponents when typing `u\_1` + `Tab`.
-"""
-
-# ╔═╡ 53e41b8d-3495-4017-8f15-c6aa2d36a4db
-md"""
-In the cell below, define a variable named $\epsilon$ and equal to $0.001$.
-"""
-
-# ╔═╡ 097c8536-0cd6-402f-801d-9a4adb3ad278
-
-
-# ╔═╡ d4ab7a0a-3069-4d9a-841c-00a4e995b9a7
-if !@isdefined ϵ
-	not_defined(:ϵ)
-elseif !(ϵ ≈ 0.001)
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ 9650902e-5e33-4f8e-a1d6-f32de582f743
-md"""
-In Julia, each variable has a type. Julia's typing system is dynamic, which means variables can change types, but performance can be increased by avoiding such changes and helping the compiler infer the types before runtime. More on this in the next notebook.
-"""
-
-# ╔═╡ ddae35e4-4289-42a3-9e44-b5e09e72d768
+# ╔═╡ 0145a451-264a-4c3b-be42-d1e20d69e3ea
 begin
-	a1, a2, a3, a4 = 1, 1.0, '1', "1"
-	typeof(a1), typeof(a2), typeof(a3), typeof(a4)
+	model = Model(GLPK.Optimizer)
+	
+	x = @variable(model, x >= 0)
+	y = @variable(model, y >= 0)
+	
+	@constraint(model, y - x <= 1)
+	@constraint(model, x + 6y <= 15)
+	@constraint(model, 4x - y <= 10)
+	
+	@objective(model, Max, x + y)
+	
+	Print(model)
 end
 
-# ╔═╡ dd5a7c0e-9a0b-413f-bc43-3072c716b52e
+# ╔═╡ 9cb0e255-102f-417d-93ff-c80dbd18254e
 md"""
-## Functions
-
-A function is defined with the `function` keyword.
+We can now call the optimizer and retrieve the solutions.
 """
 
-# ╔═╡ 18b0b89d-643c-419c-81b4-27884aea39ce
-function mystring(a)
-    return "This is $a."
+# ╔═╡ 31d10bb4-95c2-4b86-86eb-4c10e199e4c2
+begin
+	optimize!(model)
+	status, obj = termination_status(model), objective_value(model)
+	xopt, yopt = value(model[:x]), value(model[:y])
+	status, obj, xopt, yopt
 end
 
-# ╔═╡ 7b190dd0-c6f6-4062-8f7b-444b19a3fa5f
+# ╔═╡ ae0f4150-b685-4a94-a56c-1886be87e1f8
 md"""
-Right now, this function only has one "method", i.e. one implementation. If we want, we can define other methods by changing the arguments or specifying their types to obtain a custom behavior on an interesting subset of inputs.
+## Graphical resolution
+
+To better understand our solution, we adopt a geometric perspective using the package [Polyhedra.jl](https://github.com/JuliaPolyhedra/Polyhedra.jl).
 """
 
-# ╔═╡ 9b71d9d4-5299-4567-a95f-e673ba436f56
-mystring(a::Integer) = "This is the integer $a."
+# ╔═╡ 0253a998-cf71-47ed-b20a-46aeaf04efee
+p = polyhedron(model)
 
-# ╔═╡ 63608c6a-121e-46e2-837e-6806e064986f
-md"""
-This is linked to a key feature of Julia called multiple dispatch: the program will decide which method to apply depending on the type of all the arguments.
-"""
-
-# ╔═╡ 5a42d51d-7d0d-44fe-9fbf-9623edb3be07
-mystring(3.)
-
-# ╔═╡ 45693c3c-0d65-44c4-b87f-c8d6cc0684e3
-mystring(3)
-
-# ╔═╡ 3bb9e2d2-8bd4-4dc5-b354-01c5e215bb90
-md"""
-In the cell below, define a third method of `mystring` for real numbers.
-"""
-
-# ╔═╡ 2f175b45-db50-4b8f-8e92-519971921551
-
-
-# ╔═╡ 05fc5ad7-90ef-43b7-bb8e-d8e34f4101c0
-if mystring(3.) != "This is the real number 3."
-	keep_working(md"""`mystring(3.)` must return "This is the real number 3." """)
-else
-	correct()
+# ╔═╡ a7821789-cbbf-471d-9221-901a4c6d0e8e
+begin
+	plot(p, ratio=:equal)
+	plot!([0, 1], [0, 1], arrow=true, color=:white, lw=2)
+	scatter!([xopt], [yopt], color=:white, markersize=10)
 end
-
-# ╔═╡ 0f4564c4-6273-4613-b858-80360e85aeab
-md"""
-Basic functions have lots of different implementations for each input type! As an example, try to compute the number of methods for addition in Julia and store the result in a variable named `nb_methods_addition`.
-"""
-
-# ╔═╡ 63b373bd-2ddf-4c2b-9294-5165abee2e67
-
-
-# ╔═╡ 385169fa-c03e-4dce-b4b7-7452be6a5f49
-hint(md"Search the docs for `+`, `methods` and `length`.")
-
-# ╔═╡ be6daa5b-27c1-4ffc-9683-f71560255da4
-if !@isdefined nb_methods_addition
-	not_defined(:nb_methods_addition)
-elseif nb_methods_addition != length(methods(+))
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ b242483f-9331-4f76-a030-b100b2bddea3
-md"""
-As in Python, you can add keyword arguments (separated by a semicolon `;`), and arguments can have default values.
-"""
-
-# ╔═╡ 4af026ba-238c-4627-aaed-8e4c45a0a0d0
-function introduction(name, age=25; country, passion="maths")
-	return "Hi, I'm $name, I'm $age, I come from $country and I like $passion."
-end
-
-# ╔═╡ b969b6d5-a877-43ef-a750-e58ac3707331
-introduction("Guillaume", country="France")
-
-# ╔═╡ 62615d93-143d-4ec6-9a1e-991e3e0d9401
-md"""
-## Arrays
-
-The type of an array has the form `Array{T, d}`, where `T` is the type of the elements and `d` the number of dimensions (or axes). For $d=1$ and $d=2$ we have shortcuts:
-"""
-
-# ╔═╡ 7eac7c25-ccd1-412e-971a-d55fdff3abf5
-typeof([1, 2, 3])
-
-# ╔═╡ b66dfcc9-147e-48ff-9a31-45e59b9eaa23
-typeof([1. 2.; 3. 4.])
-
-# ╔═╡ 4cc75d1e-132f-4530-8809-b56883bbc157
-md"""
-Note that arrays can store arbitrary content, including variables with different types, but this will make your code very inefficient. In the cell below, try to guess the type of the array `[1, "1"]` without creating it, and store your guess into `type_of_array`.
-"""
-
-# ╔═╡ 2d4cf48a-ab3d-4049-a2d8-6006602d0c6d
-
-
-# ╔═╡ 8941fec5-dc88-4715-8392-8813e6d63c6b
-hint(md"""Use the function `supertypes` on the types of `1` and `"1"` to look for the lowest common supertype.""")
-
-# ╔═╡ bae28a24-06e6-4181-8e90-abe86fc1f26e
-if !@isdefined type_of_array
-	not_defined(:type_of_array)
-elseif type_of_array != Vector{Any}
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ ae5f5814-a36f-438a-bd01-5fc12470e650
-md"""
-You can create an array in advance using its type and the keyword `undef`. Until you fill them, its elements will contain whatever was there in memory before, so don't trust their values!
-"""
-
-# ╔═╡ c9599e1d-4e28-463a-be9a-bf1537569c26
-vector_no_init = Vector{Int}(undef, 5)
-
-# ╔═╡ 46781dca-5fde-49b5-86b3-5e33a070d7ae
-md"""
-You can also create arrays filled with the value of your choice using `zeros`, `ones` or `fill`.
-"""
-
-# ╔═╡ 52328943-c1fa-42c5-8eef-5f429495fde8
-matrix_of_zeros = zeros(Float64, 3, 2)
-
-# ╔═╡ 647e5323-a820-4a9d-abda-e61c6b15dca9
-md"""
-To apply a function to all elements of an array, simply add a dot after its name. For instance, in the cell below, compute the exponential of `[0, 1]` without using a loop and store it into `exp_01`.
-"""
-
-# ╔═╡ f0de14d5-f97d-49ad-b97f-c9116408144d
-
-
-# ╔═╡ b077861d-4daf-45a6-ae46-bc0c4cf82b3b
-if !@isdefined exp_01
-	not_defined(:exp_01)
-elseif exp_01 != exp.([0, 1])
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ 4ac48d76-0d64-4990-ae38-22343b83653f
-md"""
-The same goes for elementary operators, except the dot must come before.
-"""
-
-# ╔═╡ 4796c251-a104-49bb-819f-d018ecbaf5d5
-[1, 2, 3] .* 2 .== [1, 2, 3] .^ 2
-
-# ╔═╡ 8944faa2-4e27-4840-a738-5410865d82c3
-md"""
-## Conditions and loops
-"""
-
-# ╔═╡ e567975a-c0be-49ba-9c12-e23aba99de09
-md"""
-Here is an example of `if - else` block.
-"""
-
-# ╔═╡ b0172361-e107-4419-94d1-dba9bd58ecc5
-function collatz(n::Integer)
-    if n % 2 == 0
-        return n ÷ 2
-    else
-        return 3n+1
-    end
-end
-
-# ╔═╡ 35f19df1-ca46-4f0c-9011-aed919798de7
-md"""
-Here is an example of `for` loop.
-"""
-
-# ╔═╡ 5fc8dcc5-0df3-4253-a79c-4325f0e78bf8
-function collatzseq(x::Integer, n::Integer)
-	for i in 1:n
-		x = collatz(x)
-	end
-	return x
-end
-
-# ╔═╡ 17a63246-4ec3-425d-a81b-720b1e92e764
-md"""
-Loops also allow us to define arrays by comprehension.
-"""
-
-# ╔═╡ c504521c-5938-4549-a718-d06575abdad9
-[collatzseq(5, i+j) for i in 1:3, j = 1:5]
-
-# ╔═╡ add7330e-4bb7-471e-8422-14d4eea94c16
-md"""
-Finally, here's an example of `while` loop. Does it always terminate?
-"""
-
-# ╔═╡ 7c1c3005-e195-4018-b689-fbe0c535afd7
-function collatzlength(x::Integer)
-	n = 0
-	while x > 1
-		x = collatz(x)
-		n += 1
-	end
-	return n
-end
-
-# ╔═╡ d05fbbc4-d55f-4a7c-9975-8f2e5918dd30
-md"""
-## Structures
-
-Julia's notion of object is nothing more than a tuple with named components. We can define one like this:
-"""
-
-# ╔═╡ 066134fb-67e9-49ce-91a5-5faec0366e4f
-struct Point
-    x::Float64
-    y::Float64
-end
-
-# ╔═╡ d8dfb915-48a5-43bc-ba24-155f856111df
-md"""
-These structures do not "contain" any methods. However, we can write some outside of the `struct` by specifying the type of the argument. In the cell below, write a method called `norm` that computes the Euclidean norm of a `Point`.
-"""
-
-# ╔═╡ 1c17177a-330d-4277-ac17-b2c1bcdf6a2f
-
-
-# ╔═╡ 876a902d-29ef-4b82-8101-851ae87aac22
-if !@isdefined norm
-	not_defined(:norm)
-elseif norm(Point(3., 4.)) != 5.
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ f3e299eb-704b-456d-b00a-bbc0dca6589a
-md"""
-If you are unsure what to do with a struct, you can list the applicable methods using `methodswith(type)`.
-"""
-
-# ╔═╡ 536f5bcb-3f1e-4427-b8e3-715710dd410b
-md"""
-## Plots
-
-Julia has various utilities for plotting, but the most versatile is [Plots.jl](https://docs.juliaplots.org/latest/). If you are used to Python syntax, you may prefer [PyPlot.jl](https://github.com/JuliaPy/PyPlot.jl), although the installation is slightly more involved.
-"""
-
-# ╔═╡ ca0f6333-a0fa-4fe4-8769-2825991b679d
-plot(1:10, exp.(1:10), xlabel="x", ylabel="exp(x)", label="this grows fast")
-
-# ╔═╡ 243c6579-6039-413f-b8bb-ec2c21567187
-md"""
-## Miscellaneous
-
-Here are some things you may need to know that didn't fit elsewhere:
-- comments start with a `#`
-- functions that modify one of their arguments typically end with `!`
-- the null object in Julia is `nothing`, of type `Nothing`
-- exceptions can be thrown using the simple command `error("this doesn't work")`
-- macros start with `@` (you don't need to know what they are, just recognize them)
-"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+GLPK = "60bf3e95-4087-53dc-ae20-288a0d20c6a6"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Polyhedra = "67491407-f73d-577b-9b50-8179a7c68029"
 
 [compat]
-Plots = "~1.19.4"
+GLPK = "~0.14.12"
+JuMP = "~0.21.9"
+Plots = "~1.20.0"
 PlutoUI = "~0.7.9"
+Polyhedra = "~0.6.16"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -446,17 +151,58 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
+[[BenchmarkTools]]
+deps = ["JSON", "Logging", "Printf", "Statistics", "UUIDs"]
+git-tree-sha1 = "c31ebabde28d102b602bada60ce8922c266d205b"
+uuid = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+version = "1.1.1"
+
+[[BinaryProvider]]
+deps = ["Libdl", "Logging", "SHA"]
+git-tree-sha1 = "ecdec412a9abc8db54c0efc5548c64dfce072058"
+uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
+version = "0.5.10"
+
 [[Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "c3598e525718abcc440f69cc6d5f60dda0a1b61e"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.6+5"
 
+[[CEnum]]
+git-tree-sha1 = "215a9aa4a1f23fbd05b92769fdd62559488d70e9"
+uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
+version = "0.4.1"
+
 [[Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
 git-tree-sha1 = "e2f47f6d8337369411569fd45ae5753ca10394c6"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.16.0+6"
+
+[[Calculus]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
+uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
+version = "0.5.1"
+
+[[ChainRulesCore]]
+deps = ["Compat", "LinearAlgebra", "SparseArrays"]
+git-tree-sha1 = "bdc0937269321858ab2a4f288486cb258b9a0af7"
+uuid = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+version = "1.3.0"
+
+[[CodecBzip2]]
+deps = ["Bzip2_jll", "Libdl", "TranscodingStreams"]
+git-tree-sha1 = "2e62a725210ce3c3c2e1a3080190e7ca491f18d7"
+uuid = "523fee87-0ab8-5b00-afb7-3ecf72e48cfd"
+version = "0.7.2"
+
+[[CodecZlib]]
+deps = ["TranscodingStreams", "Zlib_jll"]
+git-tree-sha1 = "ded953804d019afa9a3f98981d99b33e3db7b6da"
+uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
+version = "0.7.0"
 
 [[ColorSchemes]]
 deps = ["ColorTypes", "Colors", "FixedPointNumbers", "Random", "StaticArrays"]
@@ -475,6 +221,12 @@ deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
 git-tree-sha1 = "417b0ed7b8b838aa6ca0a87aadf1bb9eb111ce40"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.12.8"
+
+[[CommonSubexpressions]]
+deps = ["MacroTools", "Test"]
+git-tree-sha1 = "7b8a93dba8af7e3b42fecabf646260105ac373f7"
+uuid = "bbf7d656-a473-5ed7-a52c-81e309532950"
+version = "0.3.0"
 
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
@@ -516,9 +268,27 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 deps = ["Mmap"]
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
+[[DiffResults]]
+deps = ["StaticArrays"]
+git-tree-sha1 = "c18e98cba888c6c25d1c3b048e4b3380ca956805"
+uuid = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
+version = "1.0.3"
+
+[[DiffRules]]
+deps = ["NaNMath", "Random", "SpecialFunctions"]
+git-tree-sha1 = "85d2d9e2524da988bffaf2a381864e20d2dae08d"
+uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
+version = "1.2.1"
+
 [[Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+
+[[DocStringExtensions]]
+deps = ["LibGit2"]
+git-tree-sha1 = "a32185f5428d3986f47c2ab78b1f216d5e6cc96f"
+uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+version = "0.8.5"
 
 [[Downloads]]
 deps = ["ArgTools", "LibCURL", "NetworkOptions"]
@@ -566,6 +336,12 @@ git-tree-sha1 = "8339d61043228fdd3eb658d86c926cb282ae72a8"
 uuid = "59287772-0a20-5a39-b81b-1366585eb4c0"
 version = "0.4.2"
 
+[[ForwardDiff]]
+deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "LinearAlgebra", "NaNMath", "Printf", "Random", "SpecialFunctions", "StaticArrays"]
+git-tree-sha1 = "b5e930ac60b613ef3406da6d4f42c35d8dc51419"
+uuid = "f6369f11-7733-5829-9624-2563aa707210"
+version = "0.10.19"
+
 [[FreeType2_jll]]
 deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "Pkg", "Zlib_jll"]
 git-tree-sha1 = "cbd58c9deb1d304f5a245a0b7eb841a2560cfec6"
@@ -584,23 +360,45 @@ git-tree-sha1 = "dba1e8614e98949abfa60480b13653813d8f0157"
 uuid = "0656b61e-2033-5cc2-a64a-77c0f6c09b89"
 version = "3.3.5+0"
 
+[[GLPK]]
+deps = ["BinaryProvider", "CEnum", "GLPK_jll", "Libdl", "MathOptInterface"]
+git-tree-sha1 = "dbf0202fa85903c5824452ab5497dbc22404c76a"
+uuid = "60bf3e95-4087-53dc-ae20-288a0d20c6a6"
+version = "0.14.12"
+
+[[GLPK_jll]]
+deps = ["Artifacts", "GMP_jll", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "01de09b070d4b8e3e1250c6542e16ed5cad45321"
+uuid = "e8aa6df9-e6ca-548a-97ff-1f85fc5b8b98"
+version = "5.0.0+0"
+
+[[GMP_jll]]
+deps = ["Artifacts", "Libdl"]
+uuid = "781609d7-10c4-51f6-84f2-b8444358ff6d"
+
 [[GR]]
 deps = ["Base64", "DelimitedFiles", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Printf", "Random", "Serialization", "Sockets", "Test", "UUIDs"]
-git-tree-sha1 = "9f473cdf6e2eb360c576f9822e7c765dd9d26dbc"
+git-tree-sha1 = "182da592436e287758ded5be6e32c406de3a2e47"
 uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.58.0"
+version = "0.58.1"
 
 [[GR_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Pkg", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "eaf96e05a880f3db5ded5a5a8a7817ecba3c7392"
+git-tree-sha1 = "d59e8320c2747553788e4fc42231489cc602fa50"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.58.0+0"
+version = "0.58.1+0"
+
+[[GenericLinearAlgebra]]
+deps = ["LinearAlgebra", "Printf", "Random"]
+git-tree-sha1 = "ff291c1827030ffaacaf53e3c83ed92d4d5e6fb6"
+uuid = "14197337-ba66-59df-a3e3-ca00e7dcff7a"
+version = "0.2.5"
 
 [[GeometryBasics]]
 deps = ["EarCut_jll", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
-git-tree-sha1 = "58bcdf5ebc057b085e58d95c138725628dd7453c"
+git-tree-sha1 = "15ff9a14b9e1218958d3530cc288cf31465d9ae2"
 uuid = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
-version = "0.4.1"
+version = "0.3.13"
 
 [[Gettext_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "XML2_jll"]
@@ -653,15 +451,27 @@ version = "1.3.0"
 
 [[JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
-git-tree-sha1 = "81690084b6198a2e1da36fcfda16eeca9f9f24e4"
+git-tree-sha1 = "8076680b162ada2a031f707ac7b4953e30667a37"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.21.1"
+version = "0.21.2"
+
+[[JSONSchema]]
+deps = ["HTTP", "JSON", "ZipFile"]
+git-tree-sha1 = "b84ab8139afde82c7c65ba2b792fe12e01dd7307"
+uuid = "7d188eb4-7ad8-530c-ae41-71a32a6d4692"
+version = "0.3.3"
 
 [[JpegTurbo_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "d735490ac75c5cb9f1b00d8b5509c11984dc6943"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "2.1.0+0"
+
+[[JuMP]]
+deps = ["Calculus", "DataStructures", "ForwardDiff", "JSON", "LinearAlgebra", "MathOptInterface", "MutableArithmetics", "NaNMath", "Printf", "Random", "SparseArrays", "SpecialFunctions", "Statistics"]
+git-tree-sha1 = "4f0a771949bbe24bf70c89e8032c107ebe03f6ba"
+uuid = "4076af6c-e467-56ae-b986-b466b2749572"
+version = "0.21.9"
 
 [[LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -763,18 +573,30 @@ version = "2.36.0+0"
 deps = ["Libdl"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
+[[LogExpFunctions]]
+deps = ["DocStringExtensions", "LinearAlgebra"]
+git-tree-sha1 = "7bd5f6565d80b6bf753738d2bc40a5dfea072070"
+uuid = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
+version = "0.2.5"
+
 [[Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[MacroTools]]
 deps = ["Markdown", "Random"]
-git-tree-sha1 = "6a8a2a625ab0dea913aba95c11370589e0239ff0"
+git-tree-sha1 = "0fb723cd8c45858c22169b2e42269e53271a6df7"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
-version = "0.5.6"
+version = "0.5.7"
 
 [[Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
+
+[[MathOptInterface]]
+deps = ["BenchmarkTools", "CodecBzip2", "CodecZlib", "JSON", "JSONSchema", "LinearAlgebra", "MutableArithmetics", "OrderedCollections", "SparseArrays", "Test", "Unicode"]
+git-tree-sha1 = "575644e3c05b258250bb599e57cf73bbf1062901"
+uuid = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
+version = "0.9.22"
 
 [[MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "Random", "Sockets"]
@@ -803,6 +625,12 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 [[MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 
+[[MutableArithmetics]]
+deps = ["LinearAlgebra", "SparseArrays", "Test"]
+git-tree-sha1 = "3927848ccebcc165952dc0d9ac9aa274a87bfe01"
+uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
+version = "0.2.20"
+
 [[NaNMath]]
 git-tree-sha1 = "bfe47e760d60b82b66b61d2d44128b62e3a369fb"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
@@ -823,6 +651,12 @@ git-tree-sha1 = "15003dcb7d8db3c6c857fda14891a539a8f2705a"
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
 version = "1.1.10+0"
 
+[[OpenSpecFun_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "13652491f6856acfd2db29360e1bbcd4565d04f1"
+uuid = "efe28fd5-8261-553b-a9e1-b2916fc3738e"
+version = "0.5.5+0"
+
 [[Opus_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "51a08fb14ec28da2ec7a927c4337e4332c2a4720"
@@ -842,9 +676,9 @@ version = "8.44.0+0"
 
 [[Parsers]]
 deps = ["Dates"]
-git-tree-sha1 = "94bf17e83a0e4b20c8d77f6af8ffe8cc3b386c0a"
+git-tree-sha1 = "477bf42b4d1496b454c10cce46645bb5b8a0cf2c"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "1.1.1"
+version = "2.0.2"
 
 [[Pixman_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -870,15 +704,21 @@ version = "1.0.11"
 
 [[Plots]]
 deps = ["Base64", "Contour", "Dates", "FFMPEG", "FixedPointNumbers", "GR", "GeometryBasics", "JSON", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs"]
-git-tree-sha1 = "1e72752052a3893d0f7103fbac728b60b934f5a5"
+git-tree-sha1 = "e39bea10478c6aff5495ab522517fae5134b40e3"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.19.4"
+version = "1.20.0"
 
 [[PlutoUI]]
 deps = ["Base64", "Dates", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "Suppressor"]
 git-tree-sha1 = "44e225d5837e2a2345e69a1d1e01ac2443ff9fcb"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 version = "0.7.9"
+
+[[Polyhedra]]
+deps = ["GenericLinearAlgebra", "GeometryBasics", "JuMP", "LinearAlgebra", "MutableArithmetics", "RecipesBase", "SparseArrays", "StaticArrays"]
+git-tree-sha1 = "44a43bb5290049cf15f840b6ec52c8c11a2568cf"
+uuid = "67491407-f73d-577b-9b50-8179a7c68029"
+version = "0.6.16"
 
 [[Preferences]]
 deps = ["TOML"]
@@ -961,11 +801,17 @@ version = "1.0.1"
 deps = ["LinearAlgebra", "Random"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
+[[SpecialFunctions]]
+deps = ["ChainRulesCore", "LogExpFunctions", "OpenSpecFun_jll"]
+git-tree-sha1 = "508822dca004bf62e210609148511ad03ce8f1d8"
+uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
+version = "1.6.0"
+
 [[StaticArrays]]
 deps = ["LinearAlgebra", "Random", "Statistics"]
-git-tree-sha1 = "885838778bb6f0136f8317757d7803e0d81201e4"
+git-tree-sha1 = "3fedeffc02e47d6e3eb479150c8e5cd8f15a77a0"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.2.9"
+version = "1.2.10"
 
 [[Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -1016,6 +862,12 @@ uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
 [[Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[TranscodingStreams]]
+deps = ["Random", "Test"]
+git-tree-sha1 = "7c53c35547de1c5b9d46a4797cf6d8253807108c"
+uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
+version = "0.9.5"
 
 [[URIs]]
 git-tree-sha1 = "97bbe755a53fe859669cd907f2d96aee8d2c1355"
@@ -1179,6 +1031,12 @@ git-tree-sha1 = "79c31e7844f6ecf779705fbc12146eb190b7d845"
 uuid = "c5fb5394-a638-5e4d-96e5-b29de1b5cf10"
 version = "1.4.0+3"
 
+[[ZipFile]]
+deps = ["Libdl", "Printf", "Zlib_jll"]
+git-tree-sha1 = "c3a5637e27e914a7a445b8d0ad063d701931e9f7"
+uuid = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
+version = "0.9.3"
+
 [[Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
@@ -1241,81 +1099,22 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
-# ╟─fa8022a0-b4b1-4157-b761-b90c8aa31274
-# ╠═202b23a5-0e7c-4bfc-99c4-e5efd8e6343a
-# ╠═857b194c-2397-4ad7-95a9-38ec35815995
-# ╟─f4936cc0-aef0-48e7-94ca-2fa9421a4fcb
-# ╟─d1824521-94e0-4d76-b561-77ffe8aabdf8
-# ╟─9f45b9f5-21a8-421b-873d-ffcaeaf293d9
-# ╟─8dbbb4f8-4948-4349-a87d-c579bd014507
-# ╠═7e401ec1-1e5c-41c5-89a2-1198879899ff
-# ╟─3635885d-51cf-49cf-8767-70984ee3248c
-# ╟─ee2855cf-6d24-4634-aa49-3da3829fa1b4
-# ╟─2f3f1509-409a-4416-a86a-24686b164bb6
-# ╟─89e4cb15-e8e8-49be-9fd4-860e2753e262
-# ╠═cd1354d6-5e30-4acc-aba2-1e0bc611f44f
-# ╟─296e5f0d-f7d6-4a63-b836-43f7f8a5cb95
-# ╠═21de7124-d8a8-46d7-8180-8167962d3cf5
-# ╟─13dce566-aaf0-48bf-8ab8-509b577209e4
-# ╟─be4b0a90-7175-4b8c-a0f6-540edc97f332
-# ╟─437bd878-066a-4159-9936-746f9111e62d
-# ╟─511d7889-b6a5-433a-bf67-efc705a36f2d
-# ╟─53e41b8d-3495-4017-8f15-c6aa2d36a4db
-# ╠═097c8536-0cd6-402f-801d-9a4adb3ad278
-# ╟─d4ab7a0a-3069-4d9a-841c-00a4e995b9a7
-# ╟─9650902e-5e33-4f8e-a1d6-f32de582f743
-# ╠═ddae35e4-4289-42a3-9e44-b5e09e72d768
-# ╟─dd5a7c0e-9a0b-413f-bc43-3072c716b52e
-# ╠═18b0b89d-643c-419c-81b4-27884aea39ce
-# ╟─7b190dd0-c6f6-4062-8f7b-444b19a3fa5f
-# ╠═9b71d9d4-5299-4567-a95f-e673ba436f56
-# ╟─63608c6a-121e-46e2-837e-6806e064986f
-# ╠═5a42d51d-7d0d-44fe-9fbf-9623edb3be07
-# ╠═45693c3c-0d65-44c4-b87f-c8d6cc0684e3
-# ╟─3bb9e2d2-8bd4-4dc5-b354-01c5e215bb90
-# ╠═2f175b45-db50-4b8f-8e92-519971921551
-# ╟─05fc5ad7-90ef-43b7-bb8e-d8e34f4101c0
-# ╟─0f4564c4-6273-4613-b858-80360e85aeab
-# ╠═63b373bd-2ddf-4c2b-9294-5165abee2e67
-# ╟─385169fa-c03e-4dce-b4b7-7452be6a5f49
-# ╟─be6daa5b-27c1-4ffc-9683-f71560255da4
-# ╟─b242483f-9331-4f76-a030-b100b2bddea3
-# ╠═4af026ba-238c-4627-aaed-8e4c45a0a0d0
-# ╠═b969b6d5-a877-43ef-a750-e58ac3707331
-# ╟─62615d93-143d-4ec6-9a1e-991e3e0d9401
-# ╠═7eac7c25-ccd1-412e-971a-d55fdff3abf5
-# ╠═b66dfcc9-147e-48ff-9a31-45e59b9eaa23
-# ╟─4cc75d1e-132f-4530-8809-b56883bbc157
-# ╠═2d4cf48a-ab3d-4049-a2d8-6006602d0c6d
-# ╟─8941fec5-dc88-4715-8392-8813e6d63c6b
-# ╟─bae28a24-06e6-4181-8e90-abe86fc1f26e
-# ╟─ae5f5814-a36f-438a-bd01-5fc12470e650
-# ╠═c9599e1d-4e28-463a-be9a-bf1537569c26
-# ╟─46781dca-5fde-49b5-86b3-5e33a070d7ae
-# ╠═52328943-c1fa-42c5-8eef-5f429495fde8
-# ╟─647e5323-a820-4a9d-abda-e61c6b15dca9
-# ╠═f0de14d5-f97d-49ad-b97f-c9116408144d
-# ╟─b077861d-4daf-45a6-ae46-bc0c4cf82b3b
-# ╟─4ac48d76-0d64-4990-ae38-22343b83653f
-# ╠═4796c251-a104-49bb-819f-d018ecbaf5d5
-# ╟─8944faa2-4e27-4840-a738-5410865d82c3
-# ╟─e567975a-c0be-49ba-9c12-e23aba99de09
-# ╠═b0172361-e107-4419-94d1-dba9bd58ecc5
-# ╟─35f19df1-ca46-4f0c-9011-aed919798de7
-# ╠═5fc8dcc5-0df3-4253-a79c-4325f0e78bf8
-# ╟─17a63246-4ec3-425d-a81b-720b1e92e764
-# ╠═c504521c-5938-4549-a718-d06575abdad9
-# ╟─add7330e-4bb7-471e-8422-14d4eea94c16
-# ╠═7c1c3005-e195-4018-b689-fbe0c535afd7
-# ╟─d05fbbc4-d55f-4a7c-9975-8f2e5918dd30
-# ╠═066134fb-67e9-49ce-91a5-5faec0366e4f
-# ╟─d8dfb915-48a5-43bc-ba24-155f856111df
-# ╠═1c17177a-330d-4277-ac17-b2c1bcdf6a2f
-# ╟─876a902d-29ef-4b82-8101-851ae87aac22
-# ╟─f3e299eb-704b-456d-b00a-bbc0dca6589a
-# ╟─536f5bcb-3f1e-4427-b8e3-715710dd410b
-# ╠═5a855d3b-06cc-4df5-bedf-e4129c79d307
-# ╠═ca0f6333-a0fa-4fe4-8769-2825991b679d
-# ╟─243c6579-6039-413f-b8bb-ec2c21567187
+# ╟─bf9ecbf4-f5e9-11eb-31bc-c9607ce892c7
+# ╠═d497b9fd-743b-423b-9541-0d41d22912e3
+# ╠═a8ac9c3a-9b41-4ded-b0be-ad07e3f8142f
+# ╟─913f4b55-ff50-48b5-8238-f15a5bb0ff34
+# ╟─77fbe616-c350-4f3d-9efe-5d584e9ee4f1
+# ╟─9fa09239-0400-4c36-8acb-e64d144f7c90
+# ╠═8872efb4-ca33-4138-8ac5-7210c64d79a2
+# ╟─b8123f92-192f-4a25-a5ec-037a497253fa
+# ╟─58064ddb-b396-4141-afc8-0984c561e15c
+# ╟─decbc219-4511-493e-94c9-5a3d72c758f0
+# ╠═0145a451-264a-4c3b-be42-d1e20d69e3ea
+# ╟─9cb0e255-102f-417d-93ff-c80dbd18254e
+# ╠═31d10bb4-95c2-4b86-86eb-4c10e199e4c2
+# ╟─ae0f4150-b685-4a94-a56c-1886be87e1f8
+# ╠═7939aed0-5d04-4c32-84be-4c891964334c
+# ╠═0253a998-cf71-47ed-b20a-46aeaf04efee
+# ╠═a7821789-cbbf-471d-9221-901a4c6d0e8e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

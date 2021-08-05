@@ -122,7 +122,7 @@ All of the links below point to notebooks can be visualized in your browser with
 
 - Linear optimization:
   - Polyhedra (with [Polyhedra.jl](https://github.com/JuliaPolyhedra/Polyhedra.jl))
-  - Linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
+  - [Linear optimization with JuMP](notebooks/jump.jl.html)
 
 - Combinatorial optimization:
   - Integer linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
