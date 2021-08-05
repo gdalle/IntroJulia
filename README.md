@@ -108,7 +108,7 @@ The nice thing about `Documenter.jl` is that is also enables testing from within
 All of these notebooks can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there. You will need to [install Julia](https://julialang.org/downloads/) and add the [Pluto package](https://github.com/fonsp/Pluto.jl).
 
 - Getting to know Julia:
-  - [Basics of Julia](notebooks/basics.jl.html)
+  - [Basics of Julia and Pluto](notebooks/basics.jl.html)
   - [Writing efficient code](notebooks/efficiency.jl.html)
   - Parallel computing
 
@@ -124,7 +124,7 @@ All of these notebooks can be visualized in your browser without any prerequisit
   - Polyhedra (with [Polyhedra.jl](https://github.com/JuliaPolyhedra/Polyhedra.jl))
   - Linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
 
-Combinatorial optimization:
+- Combinatorial optimization:
   - Integer linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
   - Constraint programming (with [ConstraintSolver.jl](https://github.com/Wikunia/ConstraintSolver.jl))
 
