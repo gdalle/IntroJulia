@@ -15,7 +15,7 @@ using Plots
 
 # ╔═╡ fa8022a0-b4b1-4157-b761-b90c8aa31274
 md"""
-> [Course home 🏠](https://gdalle.github.io/IntroJulia/)
+> 🏠[Course home](https://gdalle.github.io/IntroJulia/)
 """
 
 # ╔═╡ 857b194c-2397-4ad7-95a9-38ec35815995
@@ -25,7 +25,6 @@ TableOfContents()
 begin
 	hint(text) = MD(Admonition("hint", "Hint", [text]))
 	not_defined(var) = MD(Admonition("info", "Not defined", [md"Make sure you defined **$(Code(string(var)))**"]))
-	still_missing(var) = MD(Admonition("info", "Still missing", [md"Make sure the value of **$(Code(string(var)))** is not `missing`."]))
 	keep_working(text=md"You're not there yet.") = MD(Admonition("danger", "Keep working!", [text]))
 	correct(text=md"Good job.") = MD(Admonition("tip", "Correct!", [text]))
 end;
@@ -1244,8 +1243,8 @@ version = "0.9.1+5"
 # ╔═╡ Cell order:
 # ╟─fa8022a0-b4b1-4157-b761-b90c8aa31274
 # ╠═202b23a5-0e7c-4bfc-99c4-e5efd8e6343a
-# ╠═f4936cc0-aef0-48e7-94ca-2fa9421a4fcb
 # ╠═857b194c-2397-4ad7-95a9-38ec35815995
+# ╠═f4936cc0-aef0-48e7-94ca-2fa9421a4fcb
 # ╟─d1824521-94e0-4d76-b561-77ffe8aabdf8
 # ╟─9f45b9f5-21a8-421b-873d-ffcaeaf293d9
 # ╟─8dbbb4f8-4948-4349-a87d-c579bd014507

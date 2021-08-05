@@ -105,7 +105,7 @@ The nice thing about `Documenter.jl` is that is also enables testing from within
 
 ## Contents of this website
 
-All of these notebooks can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there. You will need to [install Julia](https://julialang.org/downloads/) and add the [Pluto package](https://github.com/fonsp/Pluto.jl).
+All of the links below point to notebooks can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there. You will need to [install Julia](https://julialang.org/downloads/) and add the [Pluto package](https://github.com/fonsp/Pluto.jl). I sometimes had issues with Pluto in Firefox, so you may want to try Google Chrome.
 
 - Getting to know Julia:
   - [Basics of Julia and Pluto](notebooks/basics.jl.html)
