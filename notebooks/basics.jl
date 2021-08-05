@@ -13,6 +13,11 @@ using Markdown: MD, Admonition, Code
 # ╔═╡ 5a855d3b-06cc-4df5-bedf-e4129c79d307
 using Plots
 
+# ╔═╡ fa8022a0-b4b1-4157-b761-b90c8aa31274
+md"""
+> [Course home 🏠](https://gdalle.github.io/IntroJulia/)
+"""
+
 # ╔═╡ 857b194c-2397-4ad7-95a9-38ec35815995
 TableOfContents()
 
@@ -1237,6 +1242,7 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
+# ╟─fa8022a0-b4b1-4157-b761-b90c8aa31274
 # ╠═202b23a5-0e7c-4bfc-99c4-e5efd8e6343a
 # ╠═f4936cc0-aef0-48e7-94ca-2fa9421a4fcb
 # ╠═857b194c-2397-4ad7-95a9-38ec35815995
