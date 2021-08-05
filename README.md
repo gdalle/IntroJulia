@@ -1,68 +1,39 @@
-# Introduction to Julia
+# IntroJulia
 
-The present repository contains an introduction to the programming language Julia, designed for an optimization class.
+*By [Guillaume Dalle](https://gdalle.github.io)*
 
-## Prerequisites
+This website contains a series of notebooks illustrating the use of the Julia programming language. It was originally designed as teaching material for students of École des Ponts ParisTech, but it is accessible to a much wider audience.
 
-This introduction comes in the form of a Jupyter notebook, which you cannot use until you go through the following steps.
+All of these notebooks can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there. You will need to [install Julia](https://julialang.org/downloads/) and add the [Pluto package](https://github.com/fonsp/Pluto.jl).
 
-### 1. Install Julia
+## Contents
 
-Go to https://julialang.org/downloads/ and download the version of Julia corresponding to your OS. Then, visit the page https://julialang.org/downloads/platform/ and follow the instructions given there to install it.
+- Getting started:
+  - [Introduction](notebooks/introduction.jl.html)
+  - [Basics of Julia](notebooks/basics.jl.html)
 
-Remark: adding Julia to your `PATH` is not necessary if you don't want to. As long as you have something named Julia in your list of programs, you're good to go for now.
+- [Graph theory](notebooks/graphs.jl.html)
 
-### 2. Download the project repository
+- Continuous optimization:
+  - Convex optimization (with [Convex.jl](https://github.com/jump-dev/Convex.jl))
+  - General nonlinear optimization and gradient algorithms (with [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl))
 
-Go to https://github.com/gdalle/IntroJulia, click on the green button `Code` and then `Download ZIP`. Extract the downloaded archive wherever you want.
+- Linear optimization:
+  - Polyhedra (with [Polyhedra.jl](https://github.com/JuliaPolyhedra/Polyhedra.jl))
+  - Linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
+  - Integer linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
 
-### 3. Install and configure Jupyter
+- Constraint programming (with [ConstraintSolver.jl](https://github.com/Wikunia/ConstraintSolver.jl))
 
-Run Julia, either from your list of programs or from the terminal. What you see is called a Read-Eval-Print Loop (REPL), it is very similar to a Python interactive session. Copy-paste the following commands into the REPL to install Jupyter (and a few extensions) using Julia's package manager `Pkg`:
+- Heuristics:
+  - Simple heuristics
+  - Metaheuristics
 
-```julia
-using Pkg
-Pkg.add("IJulia")
-```
+- Specific problems:
+  - Bin packing
+  - Routing
+  - Scheduling
 
-### 4. Launch Jupyter and open the notebook
-
-In the Julia REPL, copy-paste the following commands:
-
-```julia
-using IJulia
-notebook()
-```
-
-This should open your default internet browser and display a local page called Jupyter. Within Jupyter, navigate to the folder where you extracted `IntroJulia` and open the file named `Introduction to Julia.ipynb`.
-
-## Useful tips
-
-### Development
-
-If you are looking to start a project that doesn't fit inside a Jupyter notebook, take a look at the Juno IDE (https://junolab.org/).
-
-### Documentation
-
-If you are looking for a command or function you don't know, start with https://juliadocs.github.io/Julia-Cheat-Sheet/.
-
-If you want to know more about Julia syntax and functionalities, check out the tutorials at https://julialang.org/learning/, then the official documentation at https://docs.julialang.org/en/v1/ or the course https://en.wikibooks.org/wiki/Introducing_Julia. A more in-depth coverage is given by https://benlauwens.github.io/ThinkJulia.jl/latest/book.html.
-
-### Useful resources
-
-- Graphs: https://juliagraphs.org/
-- Optimization: https://www.juliaopt.org/
-- Statistics: https://juliastats.org/
-- Plotting: https://github.com/JuliaPy/PyPlot.jl or https://github.com/JuliaPlots
-- Utilities: https://github.com/timholy/ProgressMeter.jl
-- Style guide: https://github.com/invenia/BlueStyle
-- Anything else: https://juliaobserver.com/packages or https://juliahub.com/ui/Packages
-
-### Debugging
-
-Here is a four-step debugging procedure that works 99\% of the time:
-
-1. Try to understand the bug by tracking its origin.
-2. If this doesn't work, copy-paste the bug message into Google and read the first three forum answers about it.
-3. If that doesn't work, sleep on it and try again tomorrow.
-4. If none of the previous methods work, email your teaching assistant.
+- To go further:
+  - [Writing efficient code](notebooks/efficiency.jl.html)
+  - Parallel computing
