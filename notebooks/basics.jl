@@ -7,67 +7,56 @@ using InteractiveUtils
 # ╔═╡ 202b23a5-0e7c-4bfc-99c4-e5efd8e6343a
 using PlutoUI
 
-# ╔═╡ ca0f6333-a0fa-4fe4-8769-2825991b679d
-begin
-	using Plots
-	plot(1:10, exp.(1:10), xlabel="x", ylabel="exp(x)", label="curve")
-end
+# ╔═╡ f4936cc0-aef0-48e7-94ca-2fa9421a4fcb
+using Markdown: MD, Admonition, Code
+
+# ╔═╡ 5a855d3b-06cc-4df5-bedf-e4129c79d307
+using Plots
 
 # ╔═╡ 857b194c-2397-4ad7-95a9-38ec35815995
 TableOfContents()
 
+# ╔═╡ d1824521-94e0-4d76-b561-77ffe8aabdf8
+begin
+	hint(text) = MD(Admonition("hint", "Hint", [text]))
+	not_defined(var) = MD(Admonition("info", "Not defined", [md"Make sure you defined **$(Code(string(var)))**"]))
+	still_missing(var) = MD(Admonition("info", "Still missing", [md"Make sure the value of **$(Code(string(var)))** is not `missing`."]))
+	keep_working(text=md"You're not there yet.") = MD(Admonition("danger", "Keep working!", [text]))
+	correct(text=md"Good job.") = MD(Admonition("tip", "Correct!", [text]))
+end;
+
 # ╔═╡ 9f45b9f5-21a8-421b-873d-ffcaeaf293d9
 md"""
 # Using Pluto notebooks
+
+This document you see is a notebook created with [Pluto.jl](https://github.com/fonsp/Pluto.jl). Is is a mixture of Julia code and web components designed to make the programming experience more fun and interactive.
 """
 
 # ╔═╡ 8dbbb4f8-4948-4349-a87d-c579bd014507
 md"""
 ## Cells and evaluation
 
-In this notebook, you have access to a structured equivalent of Julia's REPL (Read-Eval-Print Loop), i.e. the interactive console. Here, you can divide your code in cells to modify and run each one separately. To put several lines in a Pluto cell, you must wrap them in a `begin ... end` statement.
-
-By default, the output of a cell is the value of its last expression, you can hide it by ending the cell with `;`. Only cell outputs are displayed: print statements will not work here since the printing will happen in the terminal from which you launched the notebook.
+In this notebook, you have access to a structured equivalent of Julia's REPL (Read-Eval-Print Loop), i.e. the interactive console. Here, you can divide your code in cells to modify and run each one separately.
 """
 
-# ╔═╡ 34932fde-51b2-49c1-9b26-6bf966b72743
+# ╔═╡ 7e401ec1-1e5c-41c5-89a2-1198879899ff
 1+1
 
-# ╔═╡ 4a48758d-76c4-4229-84ac-491e55529dbb
+# ╔═╡ 3635885d-51cf-49cf-8767-70984ee3248c
 md"""
-## Keyboard shortcuts
-
 Press `Ctrl + Shift + ?` (or `Cmd + Shift + ?` on a Mac) to open the list of keyboard shortcuts.
 """
 
-# ╔═╡ aa6b8388-2403-4f54-abff-472cff61a480
+# ╔═╡ ee2855cf-6d24-4634-aa49-3da3829fa1b4
 md"""
-## Differences with Python
+## Some quirks of Pluto
 
-For those who already master Python, here are the key novelties of Julia:
-
-- **When you run a chunk of code for the first time, it takes longer due to compilation. Don't be surprised, it is fundamental to Julia's performance, and the following runs are much faster.**
-- Blocks are not based on indentation but delimited by the end keyword.
-- Array indexing starts at `a[1]` instead of `a[0]`, and ranges `i:j` include the last index.
-- Vectorizing the code doesn't improve its speed.
-- Even though they are not necessary, types are heavily used to make the code both clearer and faster.
-- There are no classes, only "structures" which contain data but no methods.
-"""
-
-# ╔═╡ ae923d59-6268-4671-a9b2-f89dfb7c546f
-md"""
-## Imports
-
-A package can be imported with the keyword `using MyPackage`, which makes all of its functions available without prefix (similar to the Python code `from MyPackage import *`). If you want to keep prefixes, use `import MyPackage` instead.
-
-Before a package can be imported, it must be installed. Here we install all the packages we will need during this tutorial. The following cell may take a while to run, especially with a slow internet connection
-"""
-
-# ╔═╡ 437bd878-066a-4159-9936-746f9111e62d
-md"""
-# Essential commands
-
-Here we give you some useful tools for the rest of the course, but we cannot describe every part of Julia. To look up a command without diving deep into the documentation, a very good resource is the [Julia cheat sheet](https://juliadocs.github.io/Julia-Cheat-Sheet/).
+The behaviors described below are specific to Pluto notebooks and do not apply to Julia as a whole:
+-  To put several lines in a Pluto cell, you must wrap them in a `begin ... end` block.
+- You cannot redefine a variable with the same name twice in the same notebook.
+- By default, the output of a cell is the value of its last expression, you can hide it by ending the cell with `;`.
+- The standard `print` and `println` functions will not work in Pluto notebooks since they will display text in the terminal from which you launched the notebook. Two possible workarounds: wrap your cell in a `with_terminal() do ... end` block or use the `PlutoUI: Print` function.
+- Usually, packages have to be installed (with `Pkg.add("MyPackage")`) before they can be used. However, Pluto takes care of that for us, so when you need a package, just write `using MyPackage` in a cell and it will be downloaded and installed in a local environment specific to the current notebook.
 """
 
 # ╔═╡ 2f3f1509-409a-4416-a86a-24686b164bb6
@@ -77,26 +66,84 @@ md"""
 Pluto offers you a `Live Docs` tab on the bottom right corner of the screen. If you expand it and click a function or variable, you will be able to explore the documentation associated with it. The same goes if you type `?` before a command in the REPL.
 """
 
+# ╔═╡ 89e4cb15-e8e8-49be-9fd4-860e2753e262
+md"""
+## Interactivity
+
+The ability to interact is one of the key features of Pluto. Here is a quick example.
+"""
+
+# ╔═╡ cd1354d6-5e30-4acc-aba2-1e0bc611f44f
+var1, var2 = 6, 7
+
+# ╔═╡ 296e5f0d-f7d6-4a63-b836-43f7f8a5cb95
+md"""
+In the cell below, define a variable `var3` equal to the product of `var1` and `var2`.
+"""
+
+# ╔═╡ 21de7124-d8a8-46d7-8180-8167962d3cf5
+
+
+# ╔═╡ 13dce566-aaf0-48bf-8ab8-509b577209e4
+if !@isdefined var3
+	not_defined(:var3)
+elseif var3 != var1 * var2
+	keep_working(md"`var3` is not equal to the product of `var1` and `var2`.")
+else
+	correct(md"You've made it: $var3 = $var1 x $var2.")
+end
+
+# ╔═╡ be4b0a90-7175-4b8c-a0f6-540edc97f332
+md"""
+As you can see, the feedback has changed! Now check what happens when you play with the value of `var1`: which parts of the notebook are modified?
+
+This happens because Pluto tracks the consequences of every cell: as soon as you change one cell, all the other cells that depend on it are re-run. If you have computation-intensive cells that you don't want to re-run every time, just `Disable` them using the button with the three dots on the right.
+"""
+
+# ╔═╡ 437bd878-066a-4159-9936-746f9111e62d
+md"""
+# Julia essentials
+
+Here we give you some useful tools for the rest of the course, but we cannot describe every part of Julia. To look up a command without diving deep into the documentation, a very good resource is the [Fast Track to Julia](https://juliadocs.github.io/Julia-Cheat-Sheet/).
+
+A word of warning before we start!
+
+> In Julia, when you run a chunk of code for the first time, it takes longer due to *just-in-time compilation*. Don't be surprised, it is essential for performance, and the following runs are much faster.
+"""
+
 # ╔═╡ 511d7889-b6a5-433a-bf67-efc705a36f2d
 md"""
 ## Variables
 
-Variable assignment works as one would expect. Note that you can use LaTeX symbols by typing (for instance) `\beta` + `Tab` in the REPL or a Jupyter cell. This also works for indices or exponents when typing `u\_1` + `Tab`.
+Variable assignment works as one would expect. Note that you can use LaTeX symbols by typing (for instance) `\beta` + `Tab` in the REPL. This also works for indices or exponents when typing `u\_1` + `Tab`.
 """
 
-# ╔═╡ 274fe863-d0c6-454b-b7ce-714982e63e3a
-ε = 1e-3
+# ╔═╡ 53e41b8d-3495-4017-8f15-c6aa2d36a4db
+md"""
+In the cell below, define a variable named $\epsilon$ and equal to $0.001$.
+"""
+
+# ╔═╡ 097c8536-0cd6-402f-801d-9a4adb3ad278
+
+
+# ╔═╡ d4ab7a0a-3069-4d9a-841c-00a4e995b9a7
+if !@isdefined ϵ
+	not_defined(:ϵ)
+elseif !(ϵ ≈ 0.001)
+	keep_working()
+else
+	correct()
+end
 
 # ╔═╡ 9650902e-5e33-4f8e-a1d6-f32de582f743
 md"""
-Like in Python, each variable in Julia has a type. 
-Julia's typing system is dynamic, i.e. variables can change types, but performance can be increased by avoiding such changes and helping the compiler inferring the types before runtime. More on this in the next notebook.
+In Julia, each variable has a type. Julia's typing system is dynamic, which means variables can change types, but performance can be increased by avoiding such changes and helping the compiler infer the types before runtime. More on this in the next notebook.
 """
 
 # ╔═╡ ddae35e4-4289-42a3-9e44-b5e09e72d768
 begin
-	a, b, c, d = 1, 1., '1', "1"
-	typeof(a), typeof(b), typeof(c), typeof(d)
+	a1, a2, a3, a4 = 1, 1.0, '1', "1"
+	typeof(a1), typeof(a2), typeof(a3), typeof(a4)
 end
 
 # ╔═╡ dd5a7c0e-9a0b-413f-bc43-3072c716b52e
@@ -107,38 +154,63 @@ A function is defined with the `function` keyword.
 """
 
 # ╔═╡ 18b0b89d-643c-419c-81b4-27884aea39ce
-function mymult(a, b)
-    return a * 2b
+function mystring(a)
+    return "This is $a."
 end
+
+# ╔═╡ 7b190dd0-c6f6-4062-8f7b-444b19a3fa5f
+md"""
+Right now, this function only has one "method", i.e. one implementation. If we want, we can define other methods by changing the arguments or specifying their types to obtain a custom behavior on an interesting subset of inputs.
+"""
+
+# ╔═╡ 9b71d9d4-5299-4567-a95f-e673ba436f56
+mystring(a::Integer) = "This is the integer $a."
+
+# ╔═╡ 63608c6a-121e-46e2-837e-6806e064986f
+md"""
+This is linked to a key feature of Julia called multiple dispatch: the program will decide which method to apply depending on the type of all the arguments.
+"""
+
+# ╔═╡ 5a42d51d-7d0d-44fe-9fbf-9623edb3be07
+mystring(3.)
+
+# ╔═╡ 45693c3c-0d65-44c4-b87f-c8d6cc0684e3
+mystring(3)
 
 # ╔═╡ 3bb9e2d2-8bd4-4dc5-b354-01c5e215bb90
 md"""
-If we want, we can specify the types of the inputs to obtain a specific behavior on integer arguments:
+In the cell below, define a third method of `mystring` for real numbers.
 """
 
-# ╔═╡ ffe5b4cd-be93-4993-92a3-6ae4b2036cf1
-function mymult(a::Integer, b::Integer)
-    return a * 3b
+# ╔═╡ 2f175b45-db50-4b8f-8e92-519971921551
+
+
+# ╔═╡ 05fc5ad7-90ef-43b7-bb8e-d8e34f4101c0
+if mystring(3.) != "This is the real number 3."
+	keep_working(md"""`mystring(3.)` must return "This is the real number 3." """)
+else
+	correct()
 end
 
-# ╔═╡ 5968bd2e-e844-4f09-8f57-f4a01862ea83
+# ╔═╡ 0f4564c4-6273-4613-b858-80360e85aeab
 md"""
-Note that there is still only one function named `mymult`, but it now has two "methods": one for integers, and one more generic.
+Basic functions have lots of different implementations for each input type! As an example, try to compute the number of methods for addition in Julia and store the result in a variable named `nb_methods_addition`.
 """
 
-# ╔═╡ 8bf1d98e-1f49-409d-9c48-63e977e7f452
-methods(mymult)
+# ╔═╡ 63b373bd-2ddf-4c2b-9294-5165abee2e67
 
-# ╔═╡ 02fd9428-82e1-4d39-ba83-de02dc89b4d5
-md"""
-This is linked to a key feature of Julia called multiple dispatch: the program will decide which function to apply depending on the type of all the arguments.
-"""
 
-# ╔═╡ 0ae3ad0c-a63d-4a64-a0da-325514f4bd0d
-mymult(2, 3)
+# ╔═╡ 385169fa-c03e-4dce-b4b7-7452be6a5f49
+hint(md"Search the docs for `+`, `methods` and `length`.")
 
-# ╔═╡ 52a2cd7b-a604-4e87-a8e1-d473d2d11889
-mymult(2., 3.)
+# ╔═╡ be6daa5b-27c1-4ffc-9683-f71560255da4
+if !@isdefined nb_methods_addition
+	not_defined(:nb_methods_addition)
+elseif nb_methods_addition != length(methods(+))
+	keep_working()
+else
+	correct()
+end
 
 # ╔═╡ b242483f-9331-4f76-a030-b100b2bddea3
 md"""
@@ -146,70 +218,78 @@ As in Python, you can add keyword arguments (separated by a semicolon `;`), and 
 """
 
 # ╔═╡ 4af026ba-238c-4627-aaed-8e4c45a0a0d0
-function introduction(name, age=20; country, passion="maths")
+function introduction(name, age=25; country, passion="maths")
 	return "Hi, I'm $name, I'm $age, I come from $country and I like $passion."
 end
 
 # ╔═╡ b969b6d5-a877-43ef-a750-e58ac3707331
 introduction("Guillaume", country="France")
 
-# ╔═╡ c938f0db-2a50-454a-b654-a82ab27d0b38
-introduction("Guillaume", 24, country="France", passion="music")
-
 # ╔═╡ 62615d93-143d-4ec6-9a1e-991e3e0d9401
 md"""
 ## Arrays
 
-Arrays can be created and extended just like in Python, using square brackets.
-"""
-
-# ╔═╡ abeca584-900a-440a-9f20-aabab1713f20
-begin
-	arr = [1, 2]
-	push!(arr, 3)
-	arr
-end
-
-# ╔═╡ d18abead-91a1-48b4-8e9b-3746120a0d52
-md"""
 The type of an array has the form `Array{T, d}`, where `T` is the type of the elements and `d` the number of dimensions (or axes). For $d=1$ and $d=2$ we have shortcuts:
 """
 
 # ╔═╡ 7eac7c25-ccd1-412e-971a-d55fdff3abf5
-begin
-	v = [1, 2, 3]
-	typeof(v)
-end
+typeof([1, 2, 3])
 
 # ╔═╡ b66dfcc9-147e-48ff-9a31-45e59b9eaa23
-begin
-	m = [1. 2.; 3. 4.]
-	typeof(m)
+typeof([1. 2.; 3. 4.])
+
+# ╔═╡ 4cc75d1e-132f-4530-8809-b56883bbc157
+md"""
+Note that arrays can store arbitrary content, including variables with different types, but this will make your code very inefficient. In the cell below, try to guess the type of the array `[1, "1"]` without creating it, and store your guess into `type_of_array`.
+"""
+
+# ╔═╡ 2d4cf48a-ab3d-4049-a2d8-6006602d0c6d
+
+
+# ╔═╡ 8941fec5-dc88-4715-8392-8813e6d63c6b
+hint(md"""Use the function `supertypes` on the types of `1` and `"1"` to look for the lowest common supertype.""")
+
+# ╔═╡ bae28a24-06e6-4181-8e90-abe86fc1f26e
+if !@isdefined type_of_array
+	not_defined(:type_of_array)
+elseif type_of_array != Vector{Any}
+	keep_working()
+else
+	correct()
 end
 
 # ╔═╡ ae5f5814-a36f-438a-bd01-5fc12470e650
 md"""
-You can create an array with fixed size in advance using the keyword `undef`. Until you fill them, its elements will contain whatever was there in memory before, so don't trust their values!
+You can create an array in advance using its type and the keyword `undef`. Until you fill them, its elements will contain whatever was there in memory before, so don't trust their values!
 """
 
 # ╔═╡ c9599e1d-4e28-463a-be9a-bf1537569c26
-v2 = Vector{Int}(undef, 10)
+vector_no_init = Vector{Int}(undef, 5)
 
-# ╔═╡ 9094ceb6-51f6-425e-b024-d5cf5f852141
+# ╔═╡ 46781dca-5fde-49b5-86b3-5e33a070d7ae
 md"""
-Otherwise, you can initialize arrays with zeros, ones or any value.
+You can also create arrays filled with the value of your choice using `zeros`, `ones` or `fill`.
 """
 
 # ╔═╡ 52328943-c1fa-42c5-8eef-5f429495fde8
-m2 = zeros(Float64, 3, 2)
+matrix_of_zeros = zeros(Float64, 3, 2)
 
 # ╔═╡ 647e5323-a820-4a9d-abda-e61c6b15dca9
 md"""
-To apply a function to all elements of an array, simply add a dot after its name.
+To apply a function to all elements of an array, simply add a dot after its name. For instance, in the cell below, compute the exponential of `[0, 1]` without using a loop and store it into `exp_01`.
 """
 
 # ╔═╡ f0de14d5-f97d-49ad-b97f-c9116408144d
-exp.([0, 1])
+
+
+# ╔═╡ b077861d-4daf-45a6-ae46-bc0c4cf82b3b
+if !@isdefined exp_01
+	not_defined(:exp_01)
+elseif exp_01 != exp.([0, 1])
+	keep_working()
+else
+	correct()
+end
 
 # ╔═╡ 4ac48d76-0d64-4990-ae38-22343b83653f
 md"""
@@ -217,10 +297,7 @@ The same goes for elementary operators, except the dot must come before.
 """
 
 # ╔═╡ 4796c251-a104-49bb-819f-d018ecbaf5d5
-begin
-	v3 = [1, 2, 3]
-	v3 .* 2 .== v3 .^ 2
-end
+[1, 2, 3] .* 2 .== [1, 2, 3] .^ 2
 
 # ╔═╡ 8944faa2-4e27-4840-a738-5410865d82c3
 md"""
@@ -292,16 +369,19 @@ end
 
 # ╔═╡ d8dfb915-48a5-43bc-ba24-155f856111df
 md"""
-These structures do not "contain" any methods. However, we can write some outside of the `struct` by specifying the type of the argument.
+These structures do not "contain" any methods. However, we can write some outside of the `struct` by specifying the type of the argument. In the cell below, write a method called `norm` that computes the Euclidean norm of a `Point`.
 """
 
-# ╔═╡ 192f65dc-60e9-4dae-94dc-ca07044c9a3a
-norm(p::Point) = sqrt(p.x^2 + p.y^2)
+# ╔═╡ 1c17177a-330d-4277-ac17-b2c1bcdf6a2f
+
 
 # ╔═╡ 876a902d-29ef-4b82-8101-851ae87aac22
-begin
-	p = Point(1., 3.)
-	norm(p)
+if !@isdefined norm
+	not_defined(:norm)
+elseif norm(Point(3., 4.)) != 5.
+	keep_working()
+else
+	correct()
 end
 
 # ╔═╡ f3e299eb-704b-456d-b00a-bbc0dca6589a
@@ -316,21 +396,25 @@ md"""
 Julia has various utilities for plotting, but the most versatile is [Plots.jl](https://docs.juliaplots.org/latest/). If you are used to Python syntax, you may prefer [PyPlot.jl](https://github.com/JuliaPy/PyPlot.jl), although the installation is slightly more involved.
 """
 
+# ╔═╡ ca0f6333-a0fa-4fe4-8769-2825991b679d
+plot(1:10, exp.(1:10), xlabel="x", ylabel="exp(x)", label="this grows fast")
+
 # ╔═╡ 243c6579-6039-413f-b8bb-ec2c21567187
 md"""
 ## Miscellaneous
 
 Here are some things you may need to know that didn't fit elsewhere:
 - comments start with a `#`
-- macros start with `@`
-- functions that modify one of their  typically end with `!`
+- functions that modify one of their arguments typically end with `!`
 - the null object in Julia is `nothing`, of type `Nothing`
 - exceptions can be thrown using the simple command `error("this doesn't work")`
+- macros start with `@` (you don't need to know what they are, just recognize them)
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
@@ -1154,43 +1238,59 @@ version = "0.9.1+5"
 
 # ╔═╡ Cell order:
 # ╠═202b23a5-0e7c-4bfc-99c4-e5efd8e6343a
+# ╠═f4936cc0-aef0-48e7-94ca-2fa9421a4fcb
 # ╠═857b194c-2397-4ad7-95a9-38ec35815995
+# ╟─d1824521-94e0-4d76-b561-77ffe8aabdf8
 # ╟─9f45b9f5-21a8-421b-873d-ffcaeaf293d9
 # ╟─8dbbb4f8-4948-4349-a87d-c579bd014507
-# ╠═34932fde-51b2-49c1-9b26-6bf966b72743
-# ╟─4a48758d-76c4-4229-84ac-491e55529dbb
-# ╟─aa6b8388-2403-4f54-abff-472cff61a480
-# ╟─ae923d59-6268-4671-a9b2-f89dfb7c546f
-# ╟─437bd878-066a-4159-9936-746f9111e62d
+# ╠═7e401ec1-1e5c-41c5-89a2-1198879899ff
+# ╟─3635885d-51cf-49cf-8767-70984ee3248c
+# ╟─ee2855cf-6d24-4634-aa49-3da3829fa1b4
 # ╟─2f3f1509-409a-4416-a86a-24686b164bb6
+# ╟─89e4cb15-e8e8-49be-9fd4-860e2753e262
+# ╠═cd1354d6-5e30-4acc-aba2-1e0bc611f44f
+# ╟─296e5f0d-f7d6-4a63-b836-43f7f8a5cb95
+# ╠═21de7124-d8a8-46d7-8180-8167962d3cf5
+# ╟─13dce566-aaf0-48bf-8ab8-509b577209e4
+# ╟─be4b0a90-7175-4b8c-a0f6-540edc97f332
+# ╟─437bd878-066a-4159-9936-746f9111e62d
 # ╟─511d7889-b6a5-433a-bf67-efc705a36f2d
-# ╠═274fe863-d0c6-454b-b7ce-714982e63e3a
+# ╟─53e41b8d-3495-4017-8f15-c6aa2d36a4db
+# ╠═097c8536-0cd6-402f-801d-9a4adb3ad278
+# ╟─d4ab7a0a-3069-4d9a-841c-00a4e995b9a7
 # ╟─9650902e-5e33-4f8e-a1d6-f32de582f743
 # ╠═ddae35e4-4289-42a3-9e44-b5e09e72d768
 # ╟─dd5a7c0e-9a0b-413f-bc43-3072c716b52e
 # ╠═18b0b89d-643c-419c-81b4-27884aea39ce
+# ╟─7b190dd0-c6f6-4062-8f7b-444b19a3fa5f
+# ╠═9b71d9d4-5299-4567-a95f-e673ba436f56
+# ╟─63608c6a-121e-46e2-837e-6806e064986f
+# ╠═5a42d51d-7d0d-44fe-9fbf-9623edb3be07
+# ╠═45693c3c-0d65-44c4-b87f-c8d6cc0684e3
 # ╟─3bb9e2d2-8bd4-4dc5-b354-01c5e215bb90
-# ╠═ffe5b4cd-be93-4993-92a3-6ae4b2036cf1
-# ╟─5968bd2e-e844-4f09-8f57-f4a01862ea83
-# ╠═8bf1d98e-1f49-409d-9c48-63e977e7f452
-# ╟─02fd9428-82e1-4d39-ba83-de02dc89b4d5
-# ╠═0ae3ad0c-a63d-4a64-a0da-325514f4bd0d
-# ╠═52a2cd7b-a604-4e87-a8e1-d473d2d11889
+# ╠═2f175b45-db50-4b8f-8e92-519971921551
+# ╟─05fc5ad7-90ef-43b7-bb8e-d8e34f4101c0
+# ╟─0f4564c4-6273-4613-b858-80360e85aeab
+# ╠═63b373bd-2ddf-4c2b-9294-5165abee2e67
+# ╟─385169fa-c03e-4dce-b4b7-7452be6a5f49
+# ╟─be6daa5b-27c1-4ffc-9683-f71560255da4
 # ╟─b242483f-9331-4f76-a030-b100b2bddea3
 # ╠═4af026ba-238c-4627-aaed-8e4c45a0a0d0
 # ╠═b969b6d5-a877-43ef-a750-e58ac3707331
-# ╠═c938f0db-2a50-454a-b654-a82ab27d0b38
 # ╟─62615d93-143d-4ec6-9a1e-991e3e0d9401
-# ╠═abeca584-900a-440a-9f20-aabab1713f20
-# ╟─d18abead-91a1-48b4-8e9b-3746120a0d52
 # ╠═7eac7c25-ccd1-412e-971a-d55fdff3abf5
 # ╠═b66dfcc9-147e-48ff-9a31-45e59b9eaa23
+# ╟─4cc75d1e-132f-4530-8809-b56883bbc157
+# ╠═2d4cf48a-ab3d-4049-a2d8-6006602d0c6d
+# ╟─8941fec5-dc88-4715-8392-8813e6d63c6b
+# ╟─bae28a24-06e6-4181-8e90-abe86fc1f26e
 # ╟─ae5f5814-a36f-438a-bd01-5fc12470e650
 # ╠═c9599e1d-4e28-463a-be9a-bf1537569c26
-# ╟─9094ceb6-51f6-425e-b024-d5cf5f852141
+# ╟─46781dca-5fde-49b5-86b3-5e33a070d7ae
 # ╠═52328943-c1fa-42c5-8eef-5f429495fde8
 # ╟─647e5323-a820-4a9d-abda-e61c6b15dca9
 # ╠═f0de14d5-f97d-49ad-b97f-c9116408144d
+# ╟─b077861d-4daf-45a6-ae46-bc0c4cf82b3b
 # ╟─4ac48d76-0d64-4990-ae38-22343b83653f
 # ╠═4796c251-a104-49bb-819f-d018ecbaf5d5
 # ╟─8944faa2-4e27-4840-a738-5410865d82c3
@@ -1205,10 +1305,11 @@ version = "0.9.1+5"
 # ╟─d05fbbc4-d55f-4a7c-9975-8f2e5918dd30
 # ╠═066134fb-67e9-49ce-91a5-5faec0366e4f
 # ╟─d8dfb915-48a5-43bc-ba24-155f856111df
-# ╠═192f65dc-60e9-4dae-94dc-ca07044c9a3a
-# ╠═876a902d-29ef-4b82-8101-851ae87aac22
+# ╠═1c17177a-330d-4277-ac17-b2c1bcdf6a2f
+# ╟─876a902d-29ef-4b82-8101-851ae87aac22
 # ╟─f3e299eb-704b-456d-b00a-bbc0dca6589a
 # ╟─536f5bcb-3f1e-4427-b8e3-715710dd410b
+# ╠═5a855d3b-06cc-4df5-bedf-e4129c79d307
 # ╠═ca0f6333-a0fa-4fe4-8769-2825991b679d
 # ╟─243c6579-6039-413f-b8bb-ec2c21567187
 # ╟─00000000-0000-0000-0000-000000000001
