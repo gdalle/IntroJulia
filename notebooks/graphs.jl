@@ -143,7 +143,7 @@ md"""
 
 # ╔═╡ 30fa8b36-976a-4d5b-be5f-d2f992b60c4a
 md"""
-Implement a methods `LightGraphs.vertices(g)` that returns an iterator of the vertices.
+Implement a methods `vertices(g)` that returns an iterator of the vertices.
 """
 
 # ╔═╡ 59ccdb8c-a6dc-47de-b81c-8f2cb9e78e39
@@ -156,7 +156,7 @@ end
 
 # ╔═╡ d8193931-4486-4fd4-b62d-e8054af72466
 md"""
-Implement a method `LightGraphs.edges(g)` that returns an iterator of the edges.
+Implement a method `edges(g)` that returns an iterator of the edges.
 """
 
 # ╔═╡ a8a2c5ac-9854-4de0-bef3-394c9092f51f
