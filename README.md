@@ -95,32 +95,33 @@ The nice thing about `Documenter.jl` is that is also enables testing from within
 
 All of these notebooks can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there. You will need to [install Julia](https://julialang.org/downloads/) and add the [Pluto package](https://github.com/fonsp/Pluto.jl).
 
-- Getting started:
-  - [Introduction](notebooks/introduction.jl.html)
+- Getting to know Julia:
   - [Basics of Julia](notebooks/basics.jl.html)
+  - [Writing efficient code](notebooks/efficiency.jl.html)
+  - Parallel computing
 
-- [Graph theory](notebooks/graphs.jl.html)
+- Graph theory:
+  - [Building graphs](notebooks/graphs.jl.html)
+  - Graph algorithms
 
 - Continuous optimization:
   - Convex optimization (with [Convex.jl](https://github.com/jump-dev/Convex.jl))
-  - General nonlinear optimization and gradient algorithms (with [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl))
+  - Nonlinear optimization and gradient algorithms (with [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl))
 
 - Linear optimization:
   - Polyhedra (with [Polyhedra.jl](https://github.com/JuliaPolyhedra/Polyhedra.jl))
   - Linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
-  - Integer linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
 
-- Constraint programming (with [ConstraintSolver.jl](https://github.com/Wikunia/ConstraintSolver.jl))
+Combinatorial optimization:
+  - Integer linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
+  - Constraint programming (with [ConstraintSolver.jl](https://github.com/Wikunia/ConstraintSolver.jl))
 
 - Heuristics:
   - Simple heuristics
   - Metaheuristics
 
 - Specific problems:
-  - Bin packing
+  - TSP
   - Routing
+  - Bin packing
   - Scheduling
-
-- To go further:
-  - [Writing efficient code](notebooks/efficiency.jl.html)
-  - Parallel computing
