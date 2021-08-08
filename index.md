@@ -1,20 +1,15 @@
-
+---
+title: Introduction to Julia
+layout: single
+toc: true
+sidebar:
+  nav: notebooks
+---
 *By [Guillaume Dalle](https://gdalle.github.io)*
 
 This website contains a series of notebooks illustrating the use of the Julia programming language. It was originally designed as teaching material for students of École des Ponts ParisTech, but it is accessible to a much wider audience.
 
-- [The basics](#the-basics)
-  - [What is Julia?](#what-is-julia)
-  - [Learning Julia](#learning-julia)
-  - [Development environment](#development-environment)
-  - [Getting help](#getting-help)
-- [Creating a package](#creating-a-package)
-  - [Discovering packages](#discovering-packages)
-  - [Workflow](#workflow)
-  - [Style](#style)
-  - [Documentation](#documentation)
-  - [Unit testing](#unit-testing)
-- [Contents of this website](#contents-of-this-website)
+All of the links in the menu point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there. You will need to [install Julia](https://julialang.org/downloads/) and add the [Pluto package](https://github.com/fonsp/Pluto.jl). I sometimes had issues with Pluto in Firefox, so you may want to try Google Chrome.
 
 ## The basics
 
@@ -102,38 +97,3 @@ If you want to automatically generate a nice HTML documentation website, harness
 Julia has built-in support for [unit testing](https://docs.julialang.org/en/v1/stdlib/Test/).
 
 The nice thing about `Documenter.jl` is that is also enables testing from within the documentation itself. Inside a docstring, you can put examples of REPL input and expected output, which will be run again and checked for correctness every time the documentation is updated. These code examples are called doctests.
-
-## Contents of this website
-
-All of the links below point to notebooks can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there. You will need to [install Julia](https://julialang.org/downloads/) and add the [Pluto package](https://github.com/fonsp/Pluto.jl). I sometimes had issues with Pluto in Firefox, so you may want to try Google Chrome.
-
-- Getting to know Julia:
-  - [Basics of Julia and Pluto](notebooks/basics.jl.html)
-  - [Writing efficient code](notebooks/efficiency.jl.html)
-  - Parallel computing
-
-- Graph theory:
-  - [Building graphs](notebooks/graphs.jl.html)
-  - Graph algorithms
-
-- Continuous optimization:
-  - Convex optimization (with [Convex.jl](https://github.com/jump-dev/Convex.jl))
-  - Nonlinear optimization and gradient algorithms (with [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl))
-
-- Linear optimization:
-  - Polyhedra (with [Polyhedra.jl](https://github.com/JuliaPolyhedra/Polyhedra.jl))
-  - [Linear optimization with JuMP](notebooks/jump.jl.html)
-
-- Combinatorial optimization:
-  - Integer linear optimization (with [JuMP.jl](https://github.com/jump-dev/JuMP.jl))
-  - Constraint programming (with [ConstraintSolver.jl](https://github.com/Wikunia/ConstraintSolver.jl))
-
-- Heuristics:
-  - Simple heuristics
-  - Metaheuristics
-
-- Specific problems:
-  - TSP
-  - Routing
-  - Bin packing
-  - Scheduling
