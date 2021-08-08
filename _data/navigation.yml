@@ -28,7 +28,7 @@ notebooks:
       #   url:
       # - title: "The simplex algorithm [!]"
       #   url:
-      - title: "Linear Programming with JuMP [!]"
+      - title: "Linear Programming"
         url: /notebooks/jump.jl.html
 
   # - title: Combinatorial optimization
