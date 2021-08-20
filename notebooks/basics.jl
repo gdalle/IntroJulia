@@ -33,7 +33,7 @@ end;
 md"""
 # Using Pluto notebooks
 
-This document you see is a notebook created with [Pluto.jl](https://github.com/fonsp/Pluto.jl). Is is a mixture of Julia code and web components designed to make the programming experience more fun and interactive.
+This document you see is a notebook created with [Pluto.jl](https://github.com/fonsp/Pluto.jl). It is a mixture of Julia code and web components designed to make the programming experience more fun and interactive.
 """
 
 # ╔═╡ 8dbbb4f8-4948-4349-a87d-c579bd014507
