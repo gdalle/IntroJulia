@@ -5,10 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ 8bdec579-fe07-4bb2-8695-282a03ced00a
-using PlutoUI
-
-# ╔═╡ e4d30b2f-2e46-4105-9801-f18487ad956e
-using Markdown: MD, Admonition, Code
+using PlutoUI, Markdown
 
 # ╔═╡ 6c67cbf3-8223-404e-a44f-08132d3eb0bc
 md"""
@@ -17,14 +14,6 @@ md"""
 
 # ╔═╡ 0e53b094-5bcb-4347-8ff0-f974f795b08f
 TableOfContents()
-
-# ╔═╡ 98492ade-615b-4644-abd6-3e53aa8c9f36
-begin
-	hint(text) = MD(Admonition("hint", "Hint", [text]))
-	not_defined(var) = MD(Admonition("info", "Not defined", [md"Make sure you defined **$(Code(string(var)))**"]))
-	keep_working(text=md"You're not there yet.") = MD(Admonition("danger", "Keep working!", [text]))
-	correct(text=md"Good job.") = MD(Admonition("tip", "Correct!", [text]))
-end;
 
 # ╔═╡ f99e8f0e-f3a7-11eb-0e54-1bba7efa83a5
 md"""
@@ -298,11 +287,9 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 """
 
 # ╔═╡ Cell order:
-# ╠═6c67cbf3-8223-404e-a44f-08132d3eb0bc
+# ╟─6c67cbf3-8223-404e-a44f-08132d3eb0bc
 # ╠═8bdec579-fe07-4bb2-8695-282a03ced00a
 # ╠═0e53b094-5bcb-4347-8ff0-f974f795b08f
-# ╟─e4d30b2f-2e46-4105-9801-f18487ad956e
-# ╟─98492ade-615b-4644-abd6-3e53aa8c9f36
 # ╟─f99e8f0e-f3a7-11eb-0e54-1bba7efa83a5
 # ╟─b68db3fe-f47f-484d-a25d-84ebdcb4ad21
 # ╠═7cf0fe1f-3dce-46c6-bc56-7cbfcf06511f

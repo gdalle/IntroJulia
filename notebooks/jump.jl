@@ -5,16 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ d497b9fd-743b-423b-9541-0d41d22912e3
-using PlutoUI
-
-# ╔═╡ 913f4b55-ff50-48b5-8238-f15a5bb0ff34
-using Markdown: MD, Admonition, Code
-
-# ╔═╡ 8872efb4-ca33-4138-8ac5-7210c64d79a2
-using JuMP, GLPK
-
-# ╔═╡ 7939aed0-5d04-4c32-84be-4c891964334c
-using Polyhedra, Plots
+using PlutoUI, JuMP, GLPK, Polyhedra, Plots
 
 # ╔═╡ bf9ecbf4-f5e9-11eb-31bc-c9607ce892c7
 md"""
@@ -23,14 +14,6 @@ md"""
 
 # ╔═╡ a8ac9c3a-9b41-4ded-b0be-ad07e3f8142f
 TableOfContents()
-
-# ╔═╡ 77fbe616-c350-4f3d-9efe-5d584e9ee4f1
-begin
-	hint(text) = MD(Admonition("hint", "Hint", [text]))
-	not_defined(var) = MD(Admonition("info", "Not defined", [md"Make sure you defined **$(Code(string(var)))**"]))
-	keep_working(text=md"You're not there yet.") = MD(Admonition("danger", "Keep working!", [text]))
-	correct(text=md"Good job.") = MD(Admonition("tip", "Correct!", [text]))
-end;
 
 # ╔═╡ 9fa09239-0400-4c36-8acb-e64d144f7c90
 md"""
@@ -94,7 +77,7 @@ begin
 	optimize!(model)
 	status, obj = termination_status(model), objective_value(model)
 	xopt, yopt = value(model[:x]), value(model[:y])
-	status, obj, xopt, yopt
+	Print("The minimizer is $([xopt, yopt])")
 end
 
 # ╔═╡ ae0f4150-b685-4a94-a56c-1886be87e1f8
@@ -105,13 +88,14 @@ To better understand our solution, we adopt a geometric perspective using the pa
 """
 
 # ╔═╡ 0253a998-cf71-47ed-b20a-46aeaf04efee
-p = polyhedron(model)
+p = polyhedron(model);
 
 # ╔═╡ a7821789-cbbf-471d-9221-901a4c6d0e8e
 begin
-	plot(p, ratio=:equal)
-	plot!([0, 1], [0, 1], arrow=true, color=:white, lw=2)
-	scatter!([xopt], [yopt], color=:white, markersize=10)
+	plot(p, ratio=:equal, alpha=0.3, color=:blue, label="polyhedron")
+	plot!([0, 1], [0, 1], arrow=true, color=:black, lw=2, label="objective")
+	scatter!([xopt], [yopt], color=:black, markersize=10, label="optimum")
+	plot!(legend=:topleft)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -119,7 +103,6 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 GLPK = "60bf3e95-4087-53dc-ae20-288a0d20c6a6"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
-Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Polyhedra = "67491407-f73d-577b-9b50-8179a7c68029"
@@ -1102,10 +1085,7 @@ version = "0.9.1+5"
 # ╟─bf9ecbf4-f5e9-11eb-31bc-c9607ce892c7
 # ╠═d497b9fd-743b-423b-9541-0d41d22912e3
 # ╠═a8ac9c3a-9b41-4ded-b0be-ad07e3f8142f
-# ╟─913f4b55-ff50-48b5-8238-f15a5bb0ff34
-# ╟─77fbe616-c350-4f3d-9efe-5d584e9ee4f1
 # ╟─9fa09239-0400-4c36-8acb-e64d144f7c90
-# ╠═8872efb4-ca33-4138-8ac5-7210c64d79a2
 # ╟─b8123f92-192f-4a25-a5ec-037a497253fa
 # ╟─58064ddb-b396-4141-afc8-0984c561e15c
 # ╟─decbc219-4511-493e-94c9-5a3d72c758f0
@@ -1113,7 +1093,6 @@ version = "0.9.1+5"
 # ╟─9cb0e255-102f-417d-93ff-c80dbd18254e
 # ╠═31d10bb4-95c2-4b86-86eb-4c10e199e4c2
 # ╟─ae0f4150-b685-4a94-a56c-1886be87e1f8
-# ╠═7939aed0-5d04-4c32-84be-4c891964334c
 # ╠═0253a998-cf71-47ed-b20a-46aeaf04efee
 # ╠═a7821789-cbbf-471d-9221-901a4c6d0e8e
 # ╟─00000000-0000-0000-0000-000000000001

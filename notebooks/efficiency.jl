@@ -5,13 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ bca07932-eb86-40e3-9b47-aace0efda5d0
-using PlutoUI
-
-# ╔═╡ a3e741c1-6943-4b3d-bf7f-1c1f879f14ee
-using BenchmarkTools
-
-# ╔═╡ 27ecdb42-627e-4361-9e30-855e193b26f6
-using Profile, ProfileSVG
+using PlutoUI, Profile, ProfileSVG, BenchmarkTools
 
 # ╔═╡ 5de2a556-f3af-4a64-a5c6-32d30f758be3
 TableOfContents()
@@ -257,7 +251,7 @@ Profile = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 ProfileSVG = "132c30aa-f267-4189-9183-c8a63c7e05e6"
 
 [compat]
-BenchmarkTools = "~1.1.1"
+BenchmarkTools = "~1.1.3"
 PlutoUI = "~0.7.9"
 ProfileSVG = "~0.2.1"
 """
@@ -282,9 +276,9 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BenchmarkTools]]
 deps = ["JSON", "Logging", "Printf", "Statistics", "UUIDs"]
-git-tree-sha1 = "c31ebabde28d102b602bada60ce8922c266d205b"
+git-tree-sha1 = "aa3aba5ed8f882ed01b71e09ca2ba0f77f44a99e"
 uuid = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-version = "1.1.1"
+version = "1.1.3"
 
 [[ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -308,9 +302,9 @@ uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
 [[FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
-git-tree-sha1 = "256d8e6188f3f1ebfa1a5d17e072a0efafa8c5bf"
+git-tree-sha1 = "937c29268e405b6808d958a9ac41bfe1a31b08e7"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.10.1"
+version = "1.11.0"
 
 [[FixedPointNumbers]]
 deps = ["Statistics"]
@@ -498,7 +492,6 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╠═602b6bd3-7108-4ed8-a054-9f728d060b47
 # ╠═b2c57bd3-f957-4747-904d-b473810b9339
 # ╟─f7b1b44f-2aa6-4c5c-97a2-ac7037fb48ce
-# ╠═a3e741c1-6943-4b3d-bf7f-1c1f879f14ee
 # ╠═a0f3b8a4-a0c6-43b4-b55c-641b14d4f05a
 # ╠═63a87cc9-e078-4390-bfb9-eab65e251a30
 # ╠═2fb62e6a-c94c-4604-9520-7896b560b7b2
@@ -507,7 +500,6 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╠═a4c47df1-e479-4c66-94b4-61de82fa7fbb
 # ╠═7fa4ff99-b224-4083-9454-26ac7b0ea826
 # ╟─94c78148-c651-4a59-9e62-5c7e9576d1e8
-# ╠═27ecdb42-627e-4361-9e30-855e193b26f6
 # ╠═96abb429-a0ca-41a2-8bbb-ec15e195d48f
 # ╟─0397d025-dcf2-41dd-a1d1-9cc8820fd02d
 # ╟─0fb6ed33-601c-4392-b7d9-32230c979d39

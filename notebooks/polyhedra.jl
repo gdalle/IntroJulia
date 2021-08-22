@@ -4,14 +4,17 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        el
+    end
+end
+
 # ╔═╡ b988cf58-a1ba-4b84-8214-a2648ef5fc6a
-using PlutoUI
-
-# ╔═╡ bfc5a40a-247c-4031-a596-47715865a84b
-using Markdown: MD, Admonition, Code
-
-# ╔═╡ bf76ba7a-04bf-4bb5-a26a-beb71497a1de
-using Polyhedra, Plots
+using PlutoUI, Markdown, Plots, Polyhedra, LinearAlgebra
 
 # ╔═╡ 13f33d3c-0271-11ec-29ba-2778e0ee2c14
 md"""
@@ -20,14 +23,6 @@ md"""
 
 # ╔═╡ 2f31f59c-d5d0-4bf7-a722-8a965ebfff31
 TableOfContents()
-
-# ╔═╡ 368f1159-2767-460a-8502-89664e1bd2b6
-begin
-	hint(text) = MD(Admonition("hint", "Hint", [text]))
-	not_defined(var) = MD(Admonition("info", "Not defined", [md"Make sure you defined **$(Code(string(var)))**"]))
-	keep_working(text=md"You're not there yet.") = MD(Admonition("danger", "Keep working!", [text]))
-	correct(text=md"Good job.") = MD(Admonition("tip", "Correct!", [text]))
-end;
 
 # ╔═╡ ed5f052e-3604-4301-81fc-5a9fe7ce1cd3
 md"""
@@ -46,14 +41,40 @@ md"""
 
 # ╔═╡ d0db7f9d-b9e4-4c0e-a9e9-3a58eb57127b
 md"""
-One way to represent a polyhedron is as a finite intersection of half-spaces. Each half-space is defined by an equation of the form ``\langle a, x \rangle \leq \beta``.
+One way to represent a polyhedron is as a finite intersection of half-spaces. Each half-space is defined by an equation of the form ``a^\top x \leq b``.
 """
 
+# ╔═╡ b4e52e92-2086-4a11-a59c-de8df639c500
+@bind nb_half_spaces Slider(1:20, default=10, show_value=true)
+
 # ╔═╡ f70cd9db-1775-4e6d-8d0d-532712098dcc
-h = HalfSpace([1, 1], 1) ∩ HalfSpace([-1, 0], 0) ∩ HalfSpace([0, -1], 0)
+a_vals, b_vals = [randn(2) for k = 1:nb_half_spaces], ones(nb_half_spaces);
+
+# ╔═╡ bd4445e4-6f3e-4388-86f7-62f2ceeae491
+half_spaces = [HalfSpace(a, b) for (a, b) in zip(a_vals, b_vals)];
+
+# ╔═╡ 3fe3296c-75cc-433c-aced-4f262051bce5
+ph = polyhedron(intersect(half_spaces...));
+
+# ╔═╡ 61fe1760-5c48-422d-816b-c9c1cbabacb6
+if hasrays(ph)
+	md">The polyhedron is unbounded."
+end
 
 # ╔═╡ 30eb8803-459e-4023-a16d-d2317f318846
-plot(polyhedron(h), ratio=:equal)
+begin
+	plot(xlim=(-2, 2), ylim=(-2, 2))
+	plot!([], [], color=:blue, label="hyperplanes")
+	for (a, b) in zip(a_vals, b_vals)
+		plot!([-2, 2], [-2a[1]-b, 2a[1]-b]/-a[2], color=:blue, label=nothing)
+	end
+	if hasrays(ph)
+		md">The polyhedron is unbounded."
+	else
+		plot!(ph, ratio=:equal, color=:blue, alpha=0.3, label="P")
+	end
+	plot!(legend=true)
+end
 
 # ╔═╡ d6574e35-4a41-4ff5-840e-913d7d30b65e
 md"""
@@ -66,21 +87,57 @@ The Minkowski-Weyl theorem gives another possible representation of a polyhedron
 """
 
 # ╔═╡ c01cb4d2-302a-4d2e-b740-20d8d311a219
-v = convexhull([0, 0], [0, 1], [1, 0])
+@bind nb_vertices Slider(1:20, default=10, show_value=true)
+
+# ╔═╡ 4f96af69-4a52-4f2a-b931-4c84bc6422b6
+vertices = [randn(2) for k = 1:nb_vertices];
+
+# ╔═╡ da111fe3-ab33-4a33-b4b6-9176d175ae32
+pv = polyhedron(convexhull(vertices...));
 
 # ╔═╡ 763ad98b-c39b-42ba-b39d-9523239f41b2
-plot(polyhedron(v), ratio=:equal)
+begin
+	scatter(
+		[vert[1] for vert in vertices],
+		[vert[2] for vert in vertices],
+		ratio=:equal, color=:red, label="vertices"
+	)
+	plot!(pv, ratio=:equal, color=:red, alpha=0.3, label="P")
+	plot!(legend=true)
+end
+
+# ╔═╡ 68ae408d-2529-471a-a769-7d8a88e24f23
+md"""
+Converting one representation into the other is not obvious, but Polyhedra.jl handles it for us. To illustrate the challenge, see how the number of vertices can grow with the ambient dimension.
+"""
+
+# ╔═╡ 506c7a98-6155-455c-95f1-dd53b6cf42fc
+@bind dimens Slider(1:10, default=5, show_value=true)
+
+# ╔═╡ 0daee57f-9162-4cf0-91d4-5b37cabdc6b6
+a_vals_high_dim = [randn(dimens) for k = 1:nb_half_spaces];
+
+# ╔═╡ 2c179530-f775-43cf-8ed4-bf24421d2ae0
+half_spaces_high_dim = [HalfSpace(a, b) for (a, b) in zip(a_vals_high_dim, b_vals)];
+
+# ╔═╡ bf54cb65-a72d-4b9a-b5e8-761df3498b98
+ph_high_dim = polyhedron(intersect(half_spaces_high_dim...));
+
+# ╔═╡ 535c12ef-bc14-4cdc-87b9-3de750ce4af6
+md"""
+A random polyhedron with $(nb_half_spaces) constraints in dimension $dimens has $(npoints(ph_high_dim)) vertices.
+"""
 
 # ╔═╡ a282ccd5-cff0-4847-b7a7-b9199b446e53
 md"""
-# Linear programs
+# Linear Programs
 """
 
 # ╔═╡ 02922ba8-f952-4af8-ab30-8129c85486a7
 md"""
-A linear program is an optimization problem of the form
+A Linear Program (LP) is an optimization problem of the form
 ```math
-\max_{x \in \mathcal{P}} \langle c, x \rangle
+\max_x ~ c^\top x \quad \text{s.t.} \quad x \in \mathcal{P}
 ```
 where ``\mathcal{P}`` is a polyhedron.
 """
@@ -90,9 +147,45 @@ md"""
 ## Solutions of an LP
 """
 
+# ╔═╡ d37f7fb7-f708-410e-a224-aa80eafb688a
+md"""
+A very useful theorem tells us that if an LP has an optimal solution, then at least one of its vertices is also an optimal solution. Here is a nice way to visualize it: solving an LP basically amounts to finding the point of the polyhedron that is furthest in the direction of the arrow given by vector ``c``.
+"""
+
+# ╔═╡ 879d2bc8-3094-4f97-99a5-b9bb007ee03f
+normalized_vertices = vertices ./ norm.(vertices);
+
+# ╔═╡ 1c928d09-986b-40a6-9fc7-a2f6203280ea
+pv_circle = polyhedron(convexhull(normalized_vertices...));
+
+# ╔═╡ cdbf107f-6d70-4f08-a238-ea1ea0bf3c4e
+@bind angle Slider(0:360, default=0, show_value=true)
+
+# ╔═╡ 805679f3-2703-4d2e-8909-8d03814ecd3f
+c = 0.5 * [cosd(angle), sind(angle)]
+
+# ╔═╡ 77572418-9605-4262-b894-74e783958470
+begin
+	plot(xlim=(-1.3,1.3), ylim=(-1.3,1.3))
+	scatter!(
+		[vert[1] for vert in normalized_vertices],
+		[vert[2] for vert in normalized_vertices],
+		ratio=:equal, color=:red, label="vertices"
+	)
+	plot!(pv_circle, ratio=:equal, color=:red, alpha=0.3, label="polyhedron")
+	
+	plot!([0, c[1]], [0, c[2]], color=:black, lw=2, arrow=true, label="objective")
+	candidates = collect(points(pv_circle))
+	optimum = candidates[argmax([c'cand for cand in candidates])]
+	scatter!([optimum[1]], [optimum[2]], color=:black, markersize=10, label="optimum")
+	
+	plot!(legend=:bottomleft)
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -173,9 +266,9 @@ version = "3.14.0"
 
 [[ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
-git-tree-sha1 = "024fe24d83e4a5bf5fc80501a314ce0d1aa35597"
+git-tree-sha1 = "32a2b8af383f11cbb65803883837a149d10dfe8a"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
-version = "0.11.0"
+version = "0.10.12"
 
 [[Colors]]
 deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
@@ -269,9 +362,9 @@ version = "2.2.10+0"
 
 [[FFMPEG]]
 deps = ["FFMPEG_jll"]
-git-tree-sha1 = "b57e3acbe22f8484b4b5ff66a7499717fe1a9cc8"
+git-tree-sha1 = "c82bef6fc01e30d500f588cd01d29bdd44f1924e"
 uuid = "c87230d0-a227-11e9-1b43-d7ebe4e7570a"
-version = "0.4.1"
+version = "0.3.0"
 
 [[FFMPEG_jll]]
 deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers", "LAME_jll", "LibVPX_jll", "Libdl", "Ogg_jll", "OpenSSL_jll", "Opus_jll", "Pkg", "Zlib_jll", "libass_jll", "libfdk_aac_jll", "libvorbis_jll", "x264_jll", "x265_jll"]
@@ -341,9 +434,9 @@ version = "0.2.5"
 
 [[GeometryBasics]]
 deps = ["EarCut_jll", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
-git-tree-sha1 = "15ff9a14b9e1218958d3530cc288cf31465d9ae2"
+git-tree-sha1 = "4136b8a5668341e58398bb472754bff4ba0456ff"
 uuid = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
-version = "0.3.13"
+version = "0.3.12"
 
 [[Gettext_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "XML2_jll"]
@@ -759,9 +852,9 @@ version = "1.6.1"
 
 [[StaticArrays]]
 deps = ["LinearAlgebra", "Random", "Statistics"]
-git-tree-sha1 = "3240808c6d463ac46f1c1cd7638375cd22abbccb"
+git-tree-sha1 = "da4cf579416c81994afd6322365d00916c79b8ae"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.2.12"
+version = "0.12.5"
 
 [[Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -779,10 +872,10 @@ uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 version = "0.33.9"
 
 [[StructArrays]]
-deps = ["Adapt", "DataAPI", "StaticArrays", "Tables"]
-git-tree-sha1 = "000e168f5cc9aded17b6999a560b7c11dda69095"
+deps = ["Adapt", "DataAPI", "Tables"]
+git-tree-sha1 = "44b3afd37b17422a62aea25f04c1f7e09ce6b07f"
 uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
-version = "0.6.0"
+version = "0.5.1"
 
 [[Suppressor]]
 git-tree-sha1 = "a819d77f31f83e5792a76081eee1ea6342ab8787"
@@ -1049,24 +1142,39 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
-# ╠═13f33d3c-0271-11ec-29ba-2778e0ee2c14
+# ╟─13f33d3c-0271-11ec-29ba-2778e0ee2c14
 # ╠═b988cf58-a1ba-4b84-8214-a2648ef5fc6a
 # ╠═2f31f59c-d5d0-4bf7-a722-8a965ebfff31
-# ╠═bfc5a40a-247c-4031-a596-47715865a84b
-# ╠═368f1159-2767-460a-8502-89664e1bd2b6
-# ╠═ed5f052e-3604-4301-81fc-5a9fe7ce1cd3
-# ╠═ef1cc849-b22d-47d8-90a2-7029430fcb45
-# ╠═bf76ba7a-04bf-4bb5-a26a-beb71497a1de
-# ╠═01046c43-ab9f-4bfd-a225-675c978e430e
-# ╠═d0db7f9d-b9e4-4c0e-a9e9-3a58eb57127b
+# ╟─ed5f052e-3604-4301-81fc-5a9fe7ce1cd3
+# ╟─ef1cc849-b22d-47d8-90a2-7029430fcb45
+# ╟─01046c43-ab9f-4bfd-a225-675c978e430e
+# ╟─d0db7f9d-b9e4-4c0e-a9e9-3a58eb57127b
+# ╠═b4e52e92-2086-4a11-a59c-de8df639c500
 # ╠═f70cd9db-1775-4e6d-8d0d-532712098dcc
-# ╠═30eb8803-459e-4023-a16d-d2317f318846
-# ╠═d6574e35-4a41-4ff5-840e-913d7d30b65e
-# ╠═3313d6c0-fb64-4e2b-ab2b-5ae2e94536d4
+# ╠═bd4445e4-6f3e-4388-86f7-62f2ceeae491
+# ╠═3fe3296c-75cc-433c-aced-4f262051bce5
+# ╟─61fe1760-5c48-422d-816b-c9c1cbabacb6
+# ╟─30eb8803-459e-4023-a16d-d2317f318846
+# ╟─d6574e35-4a41-4ff5-840e-913d7d30b65e
+# ╟─3313d6c0-fb64-4e2b-ab2b-5ae2e94536d4
 # ╠═c01cb4d2-302a-4d2e-b740-20d8d311a219
-# ╠═763ad98b-c39b-42ba-b39d-9523239f41b2
-# ╠═a282ccd5-cff0-4847-b7a7-b9199b446e53
-# ╠═02922ba8-f952-4af8-ab30-8129c85486a7
-# ╠═4c158012-dc30-4646-a7ab-3a2dfcf7895c
+# ╠═4f96af69-4a52-4f2a-b931-4c84bc6422b6
+# ╠═da111fe3-ab33-4a33-b4b6-9176d175ae32
+# ╟─763ad98b-c39b-42ba-b39d-9523239f41b2
+# ╟─68ae408d-2529-471a-a769-7d8a88e24f23
+# ╠═506c7a98-6155-455c-95f1-dd53b6cf42fc
+# ╠═0daee57f-9162-4cf0-91d4-5b37cabdc6b6
+# ╠═2c179530-f775-43cf-8ed4-bf24421d2ae0
+# ╠═bf54cb65-a72d-4b9a-b5e8-761df3498b98
+# ╟─535c12ef-bc14-4cdc-87b9-3de750ce4af6
+# ╟─a282ccd5-cff0-4847-b7a7-b9199b446e53
+# ╟─02922ba8-f952-4af8-ab30-8129c85486a7
+# ╟─4c158012-dc30-4646-a7ab-3a2dfcf7895c
+# ╟─d37f7fb7-f708-410e-a224-aa80eafb688a
+# ╠═879d2bc8-3094-4f97-99a5-b9bb007ee03f
+# ╠═1c928d09-986b-40a6-9fc7-a2f6203280ea
+# ╠═cdbf107f-6d70-4f08-a238-ea1ea0bf3c4e
+# ╠═805679f3-2703-4d2e-8909-8d03814ecd3f
+# ╟─77572418-9605-4262-b894-74e783958470
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

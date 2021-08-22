@@ -24,8 +24,8 @@ notebooks:
 
   - title: Linear optimization
     children:
-      # - title: "Polyhedra [!]"
-      #   url:
+      - title: "Polyhedra"
+        url: /notebooks/polyhedra.jl.html
       # - title: "The simplex algorithm [!]"
       #   url:
       - title: "Linear Programming"

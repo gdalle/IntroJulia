@@ -65,7 +65,7 @@ In addition, Julia packages are often gathered into GitHub "groups" or organizat
 
 If a Julia package doesn't exist:
 
-- Look for it in C and use [built-in C callers](https://docs.julialang.org/en/v1/manual/calling-c-and-fortran-code/)
+- Look for it in C and use the [built-in C callers](https://docs.julialang.org/en/v1/manual/calling-c-and-fortran-code/)
 - Look for it in Python and use [PyCall.jl](https://github.com/JuliaPy/PyCall.jl)
 - (you get the idea)
 ...or code / wrap it yourself in Julia and contribute to the community!

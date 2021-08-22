@@ -5,13 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ 202b23a5-0e7c-4bfc-99c4-e5efd8e6343a
-using PlutoUI
-
-# ╔═╡ f4936cc0-aef0-48e7-94ca-2fa9421a4fcb
-using Markdown: MD, Admonition, Code
-
-# ╔═╡ 5a855d3b-06cc-4df5-bedf-e4129c79d307
-using Plots
+using PlutoUI, Markdown, Plots
 
 # ╔═╡ fa8022a0-b4b1-4157-b761-b90c8aa31274
 md"""
@@ -23,10 +17,18 @@ TableOfContents()
 
 # ╔═╡ d1824521-94e0-4d76-b561-77ffe8aabdf8
 begin
-	hint(text) = MD(Admonition("hint", "Hint", [text]))
-	not_defined(var) = MD(Admonition("info", "Not defined", [md"Make sure you defined **$(Code(string(var)))**"]))
-	keep_working(text=md"You're not there yet.") = MD(Admonition("danger", "Keep working!", [text]))
-	correct(text=md"Good job.") = MD(Admonition("tip", "Correct!", [text]))
+	hint(text) = Markdown.MD(Markdown.Admonition("hint", "Hint", [text]))
+	not_defined(var) = Markdown.MD(Markdown.Admonition(
+		"info", "Not defined", [
+			md"Have you defined **$(Markdown.Code(string(var)))**?"
+		]
+	))
+	keep_working(text=md"You're almost there") = Markdown.MD(Markdown.Admonition(
+		"danger", "Keep working!", [text]
+	))
+	correct(text=md"Well done.") = Markdown.MD(Markdown.Admonition(
+		"tip", "Correct!", [text]
+	))
 end;
 
 # ╔═╡ 9f45b9f5-21a8-421b-873d-ffcaeaf293d9
@@ -58,9 +60,10 @@ md"""
 The behaviors described below are specific to Pluto notebooks and do not apply to Julia as a whole:
 -  To put several lines in a Pluto cell, you must wrap them in a `begin ... end` block.
 - You cannot redefine a variable with the same name twice in the same notebook.
+- If you want interactivity to work, avoid modifying variables in another cell that the one containing their definition.
 - By default, the output of a cell is the value of its last expression, you can hide it by ending the cell with `;`.
 - The standard `print` and `println` functions will not work in Pluto notebooks since they will display text in the terminal from which you launched the notebook. Two possible workarounds: wrap your cell in a `with_terminal() do ... end` block or use the `PlutoUI: Print` function.
-- Usually, packages have to be installed (with `Pkg.add("MyPackage")`) before they can be used. However, Pluto takes care of that for us, so when you need a package, just write `using MyPackage` in a cell and it will be downloaded and installed in a local environment specific to the current notebook.
+- Usually, packages have to be installed (with `import Pkg; Pkg.add("MyPackage")`) before they can be used. However, Pluto takes care of that for us, so when you need a package, just write `using MyPackage` in a cell and it will be downloaded and installed in a local environment specific to the current notebook.
 """
 
 # ╔═╡ 2f3f1509-409a-4416-a86a-24686b164bb6
@@ -201,11 +204,11 @@ md"""
 Basic functions have lots of different implementations for each input type! As an example, try to compute the number of methods for addition in Julia and store the result in a variable named `nb_methods_addition`.
 """
 
-# ╔═╡ 63b373bd-2ddf-4c2b-9294-5165abee2e67
-
-
 # ╔═╡ 385169fa-c03e-4dce-b4b7-7452be6a5f49
 hint(md"Search the docs for `+`, `methods` and `length`.")
+
+# ╔═╡ 63b373bd-2ddf-4c2b-9294-5165abee2e67
+
 
 # ╔═╡ be6daa5b-27c1-4ffc-9683-f71560255da4
 if !@isdefined nb_methods_addition
@@ -247,11 +250,11 @@ md"""
 Note that arrays can store arbitrary content, including variables with different types, but this will make your code very inefficient. In the cell below, try to guess the type of the array `[1, "1"]` without creating it, and store your guess into `type_of_array`.
 """
 
-# ╔═╡ 2d4cf48a-ab3d-4049-a2d8-6006602d0c6d
-
-
 # ╔═╡ 8941fec5-dc88-4715-8392-8813e6d63c6b
 hint(md"""Use the function `supertypes` on the types of `1` and `"1"` to look for the lowest common supertype.""")
+
+# ╔═╡ 2d4cf48a-ab3d-4049-a2d8-6006602d0c6d
+
 
 # ╔═╡ bae28a24-06e6-4181-8e90-abe86fc1f26e
 if !@isdefined type_of_array
@@ -423,7 +426,7 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-Plots = "~1.19.4"
+Plots = "~1.20.1"
 PlutoUI = "~0.7.9"
 """
 
@@ -459,10 +462,10 @@ uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.16.0+6"
 
 [[ColorSchemes]]
-deps = ["ColorTypes", "Colors", "FixedPointNumbers", "Random", "StaticArrays"]
-git-tree-sha1 = "ed268efe58512df8c7e224d2e170afd76dd6a417"
+deps = ["ColorTypes", "Colors", "FixedPointNumbers", "Random"]
+git-tree-sha1 = "9995eb3977fbf67b86d0a0a0508e83017ded03f2"
 uuid = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
-version = "3.13.0"
+version = "3.14.0"
 
 [[ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -478,9 +481,9 @@ version = "0.12.8"
 
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
-git-tree-sha1 = "344f143fa0ec67e47917848795ab19c6a455f32c"
+git-tree-sha1 = "727e463cfebd0c7b999bbf3e9e7e16f254b94193"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "3.32.0"
+version = "3.34.0"
 
 [[CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -499,9 +502,9 @@ version = "1.7.0"
 
 [[DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "4437b64df1e0adccc3e5d1adbc3ac741095e4677"
+git-tree-sha1 = "7d9d316f04214f7efdbb6398d545446e246eff02"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.18.9"
+version = "0.18.10"
 
 [[DataValueInterfaces]]
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
@@ -586,15 +589,15 @@ version = "3.3.5+0"
 
 [[GR]]
 deps = ["Base64", "DelimitedFiles", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Printf", "Random", "Serialization", "Sockets", "Test", "UUIDs"]
-git-tree-sha1 = "9f473cdf6e2eb360c576f9822e7c765dd9d26dbc"
+git-tree-sha1 = "182da592436e287758ded5be6e32c406de3a2e47"
 uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.58.0"
+version = "0.58.1"
 
 [[GR_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Pkg", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "eaf96e05a880f3db5ded5a5a8a7817ecba3c7392"
+git-tree-sha1 = "d59e8320c2747553788e4fc42231489cc602fa50"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.58.0+0"
+version = "0.58.1+0"
 
 [[GeometryBasics]]
 deps = ["EarCut_jll", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
@@ -653,9 +656,9 @@ version = "1.3.0"
 
 [[JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
-git-tree-sha1 = "81690084b6198a2e1da36fcfda16eeca9f9f24e4"
+git-tree-sha1 = "8076680b162ada2a031f707ac7b4953e30667a37"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.21.1"
+version = "0.21.2"
 
 [[JpegTurbo_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -768,9 +771,9 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[MacroTools]]
 deps = ["Markdown", "Random"]
-git-tree-sha1 = "6a8a2a625ab0dea913aba95c11370589e0239ff0"
+git-tree-sha1 = "0fb723cd8c45858c22169b2e42269e53271a6df7"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
-version = "0.5.6"
+version = "0.5.7"
 
 [[Markdown]]
 deps = ["Base64"]
@@ -793,9 +796,9 @@ version = "0.3.1"
 
 [[Missings]]
 deps = ["DataAPI"]
-git-tree-sha1 = "4ea90bd5d3985ae1f9a908bd4500ae88921c5ce7"
+git-tree-sha1 = "2ca267b08821e86c5ef4376cffed98a46c2cb205"
 uuid = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
-version = "1.0.0"
+version = "1.0.1"
 
 [[Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
@@ -842,9 +845,9 @@ version = "8.44.0+0"
 
 [[Parsers]]
 deps = ["Dates"]
-git-tree-sha1 = "94bf17e83a0e4b20c8d77f6af8ffe8cc3b386c0a"
+git-tree-sha1 = "438d35d2d95ae2c5e8780b330592b6de8494e779"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "1.1.1"
+version = "2.0.3"
 
 [[Pixman_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -870,9 +873,9 @@ version = "1.0.11"
 
 [[Plots]]
 deps = ["Base64", "Contour", "Dates", "FFMPEG", "FixedPointNumbers", "GR", "GeometryBasics", "JSON", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs"]
-git-tree-sha1 = "1e72752052a3893d0f7103fbac728b60b934f5a5"
+git-tree-sha1 = "8365fa7758e2e8e4443ce866d6106d8ecbb4474e"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.19.4"
+version = "1.20.1"
 
 [[PlutoUI]]
 deps = ["Base64", "Dates", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "Suppressor"]
@@ -905,9 +908,9 @@ deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[RecipesBase]]
-git-tree-sha1 = "b3fb709f3c97bfc6e948be68beeecb55a0b340ae"
+git-tree-sha1 = "44a75aa7a527910ee3d1751d1f0e4148698add9e"
 uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-version = "1.1.1"
+version = "1.1.2"
 
 [[RecipesPipeline]]
 deps = ["Dates", "NaNMath", "PlotUtils", "RecipesBase"]
@@ -963,9 +966,9 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[StaticArrays]]
 deps = ["LinearAlgebra", "Random", "Statistics"]
-git-tree-sha1 = "885838778bb6f0136f8317757d7803e0d81201e4"
+git-tree-sha1 = "3240808c6d463ac46f1c1cd7638375cd22abbccb"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.2.9"
+version = "1.2.12"
 
 [[Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -1244,7 +1247,6 @@ version = "0.9.1+5"
 # ╟─fa8022a0-b4b1-4157-b761-b90c8aa31274
 # ╠═202b23a5-0e7c-4bfc-99c4-e5efd8e6343a
 # ╠═857b194c-2397-4ad7-95a9-38ec35815995
-# ╟─f4936cc0-aef0-48e7-94ca-2fa9421a4fcb
 # ╟─d1824521-94e0-4d76-b561-77ffe8aabdf8
 # ╟─9f45b9f5-21a8-421b-873d-ffcaeaf293d9
 # ╟─8dbbb4f8-4948-4349-a87d-c579bd014507
@@ -1276,8 +1278,8 @@ version = "0.9.1+5"
 # ╠═2f175b45-db50-4b8f-8e92-519971921551
 # ╟─05fc5ad7-90ef-43b7-bb8e-d8e34f4101c0
 # ╟─0f4564c4-6273-4613-b858-80360e85aeab
-# ╠═63b373bd-2ddf-4c2b-9294-5165abee2e67
 # ╟─385169fa-c03e-4dce-b4b7-7452be6a5f49
+# ╠═63b373bd-2ddf-4c2b-9294-5165abee2e67
 # ╟─be6daa5b-27c1-4ffc-9683-f71560255da4
 # ╟─b242483f-9331-4f76-a030-b100b2bddea3
 # ╠═4af026ba-238c-4627-aaed-8e4c45a0a0d0
@@ -1286,8 +1288,8 @@ version = "0.9.1+5"
 # ╠═7eac7c25-ccd1-412e-971a-d55fdff3abf5
 # ╠═b66dfcc9-147e-48ff-9a31-45e59b9eaa23
 # ╟─4cc75d1e-132f-4530-8809-b56883bbc157
-# ╠═2d4cf48a-ab3d-4049-a2d8-6006602d0c6d
 # ╟─8941fec5-dc88-4715-8392-8813e6d63c6b
+# ╠═2d4cf48a-ab3d-4049-a2d8-6006602d0c6d
 # ╟─bae28a24-06e6-4181-8e90-abe86fc1f26e
 # ╟─ae5f5814-a36f-438a-bd01-5fc12470e650
 # ╠═c9599e1d-4e28-463a-be9a-bf1537569c26
@@ -1314,7 +1316,6 @@ version = "0.9.1+5"
 # ╟─876a902d-29ef-4b82-8101-851ae87aac22
 # ╟─f3e299eb-704b-456d-b00a-bbc0dca6589a
 # ╟─536f5bcb-3f1e-4427-b8e3-715710dd410b
-# ╠═5a855d3b-06cc-4df5-bedf-e4129c79d307
 # ╠═ca0f6333-a0fa-4fe4-8769-2825991b679d
 # ╟─243c6579-6039-413f-b8bb-ec2c21567187
 # ╟─00000000-0000-0000-0000-000000000001
