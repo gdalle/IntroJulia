@@ -28,85 +28,133 @@ Here we will compare several ways to compute sequences ``(x_n)`` given by initia
 """
 
 # ╔═╡ 781a7cdd-d36e-40b4-9de1-f832cba41377
-function seq_rec1(w, y, n)
+function seq_rec(w, y, n)
 	d = length(w)
 	if n <= d
 		return y[n]
 	else
-		return sum([w[k] * seq_rec1(w, y, n-k) for k = 1:d])
+		return sum([w[i] * seq_rec(w, y, n-i) for i = 1:d])
 	end
 end
 
 # ╔═╡ 75010618-78e8-4490-83bb-158c781afa30
-function seq_rec2(w, y, n)
+function seq_loop1(w, y, n)
 	d = length(w)
-	if n <= d
-		return y[n]
-	else
-		return sum(w[k] * seq_rec2(w, y, n-k) for k = 1:d)
+	x = similar(y, n)
+	for k = 1:n
+		if k <= d
+			x[k] = y[k]
+		else
+			x[k] = sum([w[i] * x[k-i] for i = 1:d])
+		end
 	end
+	return x[n]
 end
 
-# ╔═╡ f49d49f1-685e-470e-9f3d-2262c4916be5
-function seq_loop(w, y, n)
-    x = similar(y, n)
-    d = length(w)
-    x[1:min(d, n)] .= y[1:min(d, n)]
-    for k = d+1:n
-        x[k] = sum(w[i] * x[k-i] for i = 1:d)
-    end
-    return x[n]
+# ╔═╡ 8fd4bbea-6c88-4302-b8b6-128aff82db48
+function seq_loop2(w, y, n)
+	d = length(w)
+	x = similar(y, n)
+	for k = 1:n
+		if k <= d
+			x[k] = y[k]
+		else
+			x[k] = sum(w[i] * x[k-i] for i = 1:d)
+		end
+	end
+	return x[n]
 end
 
-# ╔═╡ 602b6bd3-7108-4ed8-a054-9f728d060b47
-w, y = [1, 1], [1, 1]
+# ╔═╡ f9b8eed6-c289-4b41-828d-fd469fd3a321
+wfib, yfib = [1, 1], [1, 1]
 
-# ╔═╡ b2c57bd3-f957-4747-904d-b473810b9339
-seq_rec1(w, y, 10), seq_rec2(w, y, 10), seq_loop(w, y, 10)
+# ╔═╡ 2b7a5cdb-8154-4009-ac63-57749b6cc5d3
+seq_rec(wfib, yfib, 10)
+
+# ╔═╡ a0e1699d-4a2b-42dc-9c65-8f91d7a352a7
+seq_loop1(wfib, yfib, 10)
+
+# ╔═╡ 504f229e-5d35-41c9-af8e-3463ed29c9c9
+seq_loop2(wfib, yfib, 10)
 
 # ╔═╡ f7b1b44f-2aa6-4c5c-97a2-ac7037fb48ce
 md"""
 ## Benchmarking
 
-The package [BenchmarkTools.jl](https://github.com/JuliaCI/BenchmarkTools.jl) is well-suited to compare functions based on their time and space complexity by running them repeatedly and returning the CPU time (with the `@belapsed` macro) or memory use (with the `@ballocated` macro). The general macro`@benchmark` does both of these things and much more, but doesn't work in Pluto notebooks since it prints in the original REPL.
+To evaluate the efficiency of a function, we need to know how long it takes and how much memory it uses. Base Julia includes macros for these things:
+- `@elapsed` returns the computation time (in seconds)
+- `@allocated` returns the allocated memory (in bytes)
+- `@time` prints both (in the REPL!) and returns the function result
 """
 
+# ╔═╡ 299e7754-b4e9-4c53-83d6-6f30e130ed01
+f1(n) = inv(rand(n, n))
+
+# ╔═╡ 1fb43343-083b-4b1a-b622-d88c9aa0808c
+@elapsed f1(100)
+
+# ╔═╡ a28f7911-3dbb-45fb-a82d-2834d3c8502c
+@allocated f1(100)
+
+# ╔═╡ 4da8a7ca-3cea-4629-a66d-44f3b907af09
+with_terminal() do
+	@time f1(100)
+end
+
+# ╔═╡ c0a7c1fe-457f-4e52-b0ea-2821e40817ea
+md"""
+Since we have small functions here, we would get a more accurate evaluation by running them repeatedly. This is what package [BenchmarkTools.jl](https://github.com/JuliaCI/BenchmarkTools.jl) does with the following macros:
+- `@belapsed` for time
+- `@ballocated` for space
+- `@benchmark` for both
+"""
+
+# ╔═╡ 64189969-f5b2-49cf-a2e9-d837e76ed79d
+w, y = randn(5), randn(5)
+
+# ╔═╡ 834f6172-15bc-4e7d-ae22-e18ef2e8e22b
+@benchmark seq_rec(w, y, 20)
+
 # ╔═╡ a0f3b8a4-a0c6-43b4-b55c-641b14d4f05a
-@belapsed seq_rec1(w, y, 20)
+@benchmark seq_loop1(w, y, 1000)
 
 # ╔═╡ 63a87cc9-e078-4390-bfb9-eab65e251a30
-@belapsed seq_rec2(w, y, 20)
-
-# ╔═╡ 2fb62e6a-c94c-4604-9520-7896b560b7b2
-@belapsed seq_loop(w, y, 20)
+@benchmark seq_loop2(w, y, 1000)
 
 # ╔═╡ 1d0af35c-0cee-4f70-9346-014ab294a614
 md"""
-Unsurprisingly, the non-recursive versions are much faster since they memoize computations instead of repeating them. The difference in performance between `seq_rec1` and `sec_req2` is mainly due to excessive allocations in the first one: on line 6, it is not necessary to create an array before computing the sum!
+Unsurprisingly, `seq_rec` is much slower than the loop-based functions, because the same values are computed multiple times in the recursion tree. The difference in performance between `seq_loop1` and `sec_loop2` is due to excessive allocations in the first one: on line 8, it is not necessary to create an array before computing the sum!
 """
-
-# ╔═╡ 73616875-3e9c-481f-9902-534b367ca791
-@ballocated seq_rec1(w, y, 20)
-
-# ╔═╡ a4c47df1-e479-4c66-94b4-61de82fa7fbb
-@ballocated seq_rec2(w, y, 20)
-
-# ╔═╡ 7fa4ff99-b224-4083-9454-26ac7b0ea826
-@ballocated seq_loop(w, y, 20)
 
 # ╔═╡ 94c78148-c651-4a59-9e62-5c7e9576d1e8
 md"""
 ## Profiling
 
-Sometimes it is not enough to measure the time taken by the whole program: you have to dig in and separate the influence of each subfunction. This is what [profiling](https://docs.julialang.org/en/v1/manual/profile/) is about. To facilitate visualization of the call stack, we will use [ProfileSVG.jl](https://github.com/kimikage/ProfileSVG.jl).
+Sometimes it is not enough to measure the time taken by the whole program: you have to dig in and separate the influence of each subfunction. This is what [profiling](https://docs.julialang.org/en/v1/manual/profile/) is about.
+
+Note that you should always run the function once to compile it before profiling it, otherwise the compilation time will bias your analysis.
 """
 
-# ╔═╡ 96abb429-a0ca-41a2-8bbb-ec15e195d48f
-@profview seq_loop(w, y, 10^8)
+# ╔═╡ 4df3ba6b-49d4-4d65-8839-bb8976ab8b8c
+with_terminal() do
+	@profile seq_loop2(w, y, 10^7)
+	Profile.print()
+end
 
-# ╔═╡ 0397d025-dcf2-41dd-a1d1-9cc8820fd02d
+# ╔═╡ 46422b77-ae0a-4174-9c73-4f6399b63b5d
 md"""
-This flame graph tells us that even in our "efficient" version, we still spend most of the time storing stuff in the `x` array (that is what the function `setindex!` does). Maybe there is a more clever implementation? Try to find one using the exponents of a matrix.
+As you can see, this is not very pleasant to work with. Profiling results are much easier to analyze with the help of a flame graph. To generate one, we will use [ProfileSVG.jl](https://github.com/kimikage/ProfileSVG.jl).
+"""
+
+# ╔═╡ 7c57439e-77c6-4e3f-bace-d7ebc428cac9
+@profview seq_loop2(w, y, 10^7)
+
+# ╔═╡ 091d3e08-9ae3-4b33-be00-de62a5998c80
+md"""
+Each layer of the flame graph represents one level of the call stack (the nested sequence of functions that are called by your code). The width of a tile is proportional to its execution time.
+Let's disregard the right-hand part (which might be caused by Pluto internals) and focus on the left-hand part. This tells us that most of the computation is spent in the sum, more specifically in the iteration part.
+
+Maybe there is a more efficient version, for instance one that uses matrix powers? Try to code it and compare it with the previous ones.
 """
 
 # ╔═╡ 0fb6ed33-601c-4392-b7d9-32230c979d39
@@ -181,13 +229,13 @@ begin
 end
 
 # ╔═╡ f352b77a-4e83-4c84-bdcb-9d024b25673f
-@belapsed norm($p_stupid)
+@benchmark norm($p_stupid)
 
 # ╔═╡ 9ce1abc9-5377-4fba-a059-3596cbdd3bcd
-@belapsed norm($p_clever)
+@benchmark norm($p_clever)
 
 # ╔═╡ 44967cf2-8aff-4b85-aa4a-5833b9b29ab5
-@belapsed norm($p_genius)
+@benchmark norm($p_genius)
 
 # ╔═╡ c1310939-87c2-405f-94d6-c7d1310ff700
 md"""
@@ -227,10 +275,10 @@ end
 array_to_sum = rand(Float64, 100)
 
 # ╔═╡ 69d3196a-3a5c-4b60-9d61-04b79c438991
-@belapsed unstable_sum($array_to_sum)
+@benchmark unstable_sum($array_to_sum)
 
 # ╔═╡ 5283a72d-30d2-41d7-afa7-b5df4ee15194
-@belapsed stable_sum($array_to_sum)
+@benchmark stable_sum($array_to_sum)
 
 # ╔═╡ fdf97758-26c1-4157-a5d1-af89578f6277
 md"""
@@ -488,20 +536,27 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╟─62eeeb90-8bdf-4a70-bcef-ab31136c264c
 # ╠═781a7cdd-d36e-40b4-9de1-f832cba41377
 # ╠═75010618-78e8-4490-83bb-158c781afa30
-# ╠═f49d49f1-685e-470e-9f3d-2262c4916be5
-# ╠═602b6bd3-7108-4ed8-a054-9f728d060b47
-# ╠═b2c57bd3-f957-4747-904d-b473810b9339
+# ╠═8fd4bbea-6c88-4302-b8b6-128aff82db48
+# ╠═f9b8eed6-c289-4b41-828d-fd469fd3a321
+# ╠═2b7a5cdb-8154-4009-ac63-57749b6cc5d3
+# ╠═a0e1699d-4a2b-42dc-9c65-8f91d7a352a7
+# ╠═504f229e-5d35-41c9-af8e-3463ed29c9c9
 # ╟─f7b1b44f-2aa6-4c5c-97a2-ac7037fb48ce
+# ╠═299e7754-b4e9-4c53-83d6-6f30e130ed01
+# ╠═1fb43343-083b-4b1a-b622-d88c9aa0808c
+# ╠═a28f7911-3dbb-45fb-a82d-2834d3c8502c
+# ╠═4da8a7ca-3cea-4629-a66d-44f3b907af09
+# ╟─c0a7c1fe-457f-4e52-b0ea-2821e40817ea
+# ╠═64189969-f5b2-49cf-a2e9-d837e76ed79d
+# ╠═834f6172-15bc-4e7d-ae22-e18ef2e8e22b
 # ╠═a0f3b8a4-a0c6-43b4-b55c-641b14d4f05a
 # ╠═63a87cc9-e078-4390-bfb9-eab65e251a30
-# ╠═2fb62e6a-c94c-4604-9520-7896b560b7b2
 # ╟─1d0af35c-0cee-4f70-9346-014ab294a614
-# ╠═73616875-3e9c-481f-9902-534b367ca791
-# ╠═a4c47df1-e479-4c66-94b4-61de82fa7fbb
-# ╠═7fa4ff99-b224-4083-9454-26ac7b0ea826
 # ╟─94c78148-c651-4a59-9e62-5c7e9576d1e8
-# ╠═96abb429-a0ca-41a2-8bbb-ec15e195d48f
-# ╟─0397d025-dcf2-41dd-a1d1-9cc8820fd02d
+# ╠═4df3ba6b-49d4-4d65-8839-bb8976ab8b8c
+# ╟─46422b77-ae0a-4174-9c73-4f6399b63b5d
+# ╠═7c57439e-77c6-4e3f-bace-d7ebc428cac9
+# ╟─091d3e08-9ae3-4b33-be00-de62a5998c80
 # ╟─0fb6ed33-601c-4392-b7d9-32230c979d39
 # ╟─a6e9da76-1ff0-4b54-9b55-4856ca32b251
 # ╟─fa483fea-bf9f-4764-8d4f-c6d33e3336fb
