@@ -5,7 +5,12 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ bca07932-eb86-40e3-9b47-aace0efda5d0
-using PlutoUI, Profile, ProfileSVG, BenchmarkTools
+using PlutoUI, Profile, ProfileSVG, BenchmarkTools, ProgressMeter
+
+# ╔═╡ 0212b449-3bdc-4a8f-81b3-38432ff39785
+md"""
+> 🏠[Course home](https://gdalle.github.io/IntroJulia/)
+"""
 
 # ╔═╡ 5de2a556-f3af-4a64-a5c6-32d30f758be3
 TableOfContents()
@@ -77,6 +82,20 @@ seq_loop1(wfib, yfib, 10)
 # ╔═╡ 504f229e-5d35-41c9-af8e-3463ed29c9c9
 seq_loop2(wfib, yfib, 10)
 
+# ╔═╡ 3d98e7db-c643-4500-987d-4a225e55b2a5
+md"""
+### Tracking loops
+
+In long-running code, the best way to track loops is not a periodic `println(i)`. There are packages designed for this purpose, such as [ProgressMeter.jl](https://github.com/timholy/ProgressMeter.jl). However, they do not work in Pluto notebooks since all cells are computed "simultaneously". Here's an example of what it looks like in the REPL.
+"""
+
+# ╔═╡ b4f2a99e-de45-49d2-be86-9f2d03357462
+with_terminal() do
+	@showprogress 1 "Computing..." for i in 1:50
+    	sleep(0.1)
+	end
+end
+
 # ╔═╡ f7b1b44f-2aa6-4c5c-97a2-ac7037fb48ce
 md"""
 ## Benchmarking
@@ -130,7 +149,7 @@ Unsurprisingly, `seq_rec` is much slower than the loop-based functions, because 
 md"""
 ## Profiling
 
-Sometimes it is not enough to measure the time taken by the whole program: you have to dig in and separate the influence of each subfunction. This is what [profiling](https://docs.julialang.org/en/v1/manual/profile/) is about.
+Sometimes it is not enough to measure the time taken by the whole program: you have to dig in and separate the influence of each subfunction. This is what [profiling](https://docs.julialang.org/en/v1/manual/profile/) is about. What the basic `@profile` macro does is run your function and ping it periodically to figure out in which subroutine it currently is. The ping count in each nested call gives a good approximation of the computation time, and can help you detect bottlenecks. 
 
 Note that you should always run the function once to compile it before profiling it, otherwise the compilation time will bias your analysis.
 """
@@ -138,7 +157,7 @@ Note that you should always run the function once to compile it before profiling
 # ╔═╡ 4df3ba6b-49d4-4d65-8839-bb8976ab8b8c
 with_terminal() do
 	@profile seq_loop2(w, y, 10^7)
-	Profile.print()
+	Profile.print(sortedby=:count, format=:tree)
 end
 
 # ╔═╡ 46422b77-ae0a-4174-9c73-4f6399b63b5d
@@ -297,11 +316,13 @@ BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Profile = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 ProfileSVG = "132c30aa-f267-4189-9183-c8a63c7e05e6"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 
 [compat]
 BenchmarkTools = "~1.1.3"
 PlutoUI = "~0.7.9"
 ProfileSVG = "~0.2.1"
+ProgressMeter = "~1.7.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -343,6 +364,10 @@ version = "0.12.8"
 [[Dates]]
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
+
+[[Distributed]]
+deps = ["Random", "Serialization", "Sockets"]
+uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[Downloads]]
 deps = ["ArgTools", "LibCURL", "NetworkOptions"]
@@ -460,6 +485,12 @@ git-tree-sha1 = "e4df82a5dadc26736f106f8d7fc97c42cc6c91ae"
 uuid = "132c30aa-f267-4189-9183-c8a63c7e05e6"
 version = "0.2.1"
 
+[[ProgressMeter]]
+deps = ["Distributed", "Printf"]
+git-tree-sha1 = "afadeba63d90ff223a6a48d2009434ecee2ec9e8"
+uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
+version = "1.7.1"
+
 [[REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
@@ -530,6 +561,7 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 """
 
 # ╔═╡ Cell order:
+# ╟─0212b449-3bdc-4a8f-81b3-38432ff39785
 # ╠═bca07932-eb86-40e3-9b47-aace0efda5d0
 # ╠═5de2a556-f3af-4a64-a5c6-32d30f758be3
 # ╟─9331fad2-f29e-11eb-0349-477bd2e7e412
@@ -541,6 +573,8 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╠═2b7a5cdb-8154-4009-ac63-57749b6cc5d3
 # ╠═a0e1699d-4a2b-42dc-9c65-8f91d7a352a7
 # ╠═504f229e-5d35-41c9-af8e-3463ed29c9c9
+# ╟─3d98e7db-c643-4500-987d-4a225e55b2a5
+# ╠═b4f2a99e-de45-49d2-be86-9f2d03357462
 # ╟─f7b1b44f-2aa6-4c5c-97a2-ac7037fb48ce
 # ╠═299e7754-b4e9-4c53-83d6-6f30e130ed01
 # ╠═1fb43343-083b-4b1a-b622-d88c9aa0808c

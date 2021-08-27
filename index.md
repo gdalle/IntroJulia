@@ -11,6 +11,8 @@ This website contains a series of notebooks illustrating the use of the Julia pr
 
 All of the links in the menu point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there. You will need to [install Julia](https://julialang.org/downloads/) and add the [Pluto package](https://github.com/fonsp/Pluto.jl). I sometimes had issues with Pluto in Firefox, so you may want to try Google Chrome.
 
+While these notebooks are great for interactive exploration of short code snippets, they have serious downsides when it comes to larger tasks. We strongly advise you to choose another tool for more ambitious projects, ideally an IDE such as VSCode (more on this below).
+
 ## The basics
 
 ### What is Julia?
@@ -68,6 +70,7 @@ If a Julia package doesn't exist:
 - Look for it in C and use the [built-in C callers](https://docs.julialang.org/en/v1/manual/calling-c-and-fortran-code/)
 - Look for it in Python and use [PyCall.jl](https://github.com/JuliaPy/PyCall.jl)
 - (you get the idea)
+
 ...or code / wrap it yourself in Julia and contribute to the community!
 
 ### Workflow
@@ -79,21 +82,23 @@ Some workflow tips can be found [in the manual](https://docs.julialang.org/en/v1
 - [JET.jl](https://github.com/aviatesk/JET.jl): statically debug source code
 - [JuliaFormatter.jl](https://github.com/domluna/JuliaFormatter.jl) and its [VSCode extension](https://marketplace.visualstudio.com/items?itemName=singularitti.vscode-julia-formatter): format source code
 
+### Getting started
+
+The [PkgTemplates.jl](https://github.com/invenia/PkgTemplates.jl) package enables you to create packages in a standardized way. It takes care of the file structure for you, and even integerates with GitHub Actions or Travis CI to set up a continuous integration workflow.
+
 ### Style
 
 Julia has no universally agreed-upon style guide like Python. The main official guidelines can be found [here](https://docs.julialang.org/en/v1/manual/style-guide/).
 
 For an exhaustive style reference, have a look at the unofficial (but widely used) [BlueStyle](https://github.com/invenia/BlueStyle) by Invenia.
 
+### Unit testing
+
+Julia has built-in support for [unit testing](https://docs.julialang.org/en/v1/stdlib/Test/). This allows you to check that recent modifications did not modify the expected behavior of your code.
+
 ### Documentation
 
 If you are courageous enough to write documentation (which you should be), the best place to put it is next to your code using docstrings. Julia docstrings are basically Markdown, see [this reference](https://docs.julialang.org/en/v1/manual/documentation/) to know how to write them.
 
 If you want to automatically generate a nice HTML documentation website, harnessing the power of
-[Documenter.jl](https://github.com/JuliaDocs/Documenter.jl) is the way to go.
-
-### Unit testing
-
-Julia has built-in support for [unit testing](https://docs.julialang.org/en/v1/stdlib/Test/).
-
-The nice thing about `Documenter.jl` is that is also enables testing from within the documentation itself. Inside a docstring, you can put examples of REPL input and expected output, which will be run again and checked for correctness every time the documentation is updated. These code examples are called doctests.
+[Documenter.jl](https://github.com/JuliaDocs/Documenter.jl) is the way to go. This pakcage also enables testing from within the documentation itself. Inside a docstring, you can put examples of REPL input and expected output, which will be run again and checked for correctness every time the documentation is updated. These code examples are called doctests.
