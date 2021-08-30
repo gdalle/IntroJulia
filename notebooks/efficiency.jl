@@ -171,7 +171,7 @@ As you can see, this is not very pleasant to work with. Profiling results are mu
 # ╔═╡ 091d3e08-9ae3-4b33-be00-de62a5998c80
 md"""
 Each layer of the flame graph represents one level of the call stack (the nested sequence of functions that are called by your code). The width of a tile is proportional to its execution time.
-Let's disregard the right-hand part (which might be caused by Pluto internals) and focus on the left-hand part. This tells us that most of the computation is spent in the sum, more specifically in the iteration part.
+Let's disregard the right-hand part (which is caused by Pluto using multiprocessing) and focus on the left-hand part. This tells us that most of the computation is spent in the sum, more specifically in the iteration part.
 
 Maybe there is a more efficient version, for instance one that uses matrix powers? Try to code it and compare it with the previous ones.
 """
