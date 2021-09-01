@@ -24,11 +24,9 @@ Maybe the solution to the two-language problem (see this [Nature article](https:
 
 ### Learning Julia
 
-The Julia website has a great list of [resources for beginners](https://julialang.org/learning/). Naturally, the primary source of knowledge is the [Julia manual](https://docs.julialang.org/en/v1/).
+The Julia website has a great list of [resources for beginners](https://julialang.org/learning/), as well as many free [tutorials](https://juliaacademy.com/) contributed by the community.
 
-If you just need a quick refresher about syntax, this [cheat sheet](https://juliadocs.github.io/Julia-Cheat-Sheet/) is the place to go.
-
-In addition, here are two handmade tutorials prepared by students from my lab: [IntroJulia](https://github.com/gdalle/IntroJulia) and [Julia Day course](https://github.com/mfherbst/course_julia_day). We also have a working group on [high-performance computation in Julia](https://github.com/adrien-le-franc/JuliaHPC-Cermics).
+If you just need a quick refresher about syntax, this [cheat sheet](https://juliadocs.github.io/Julia-Cheat-Sheet/) is the place to go. For more involved questions, the primary source of knowledge is the [Julia manual](https://docs.julialang.org/en/v1/).
 
 If you want to go further, here is a list of quality books and tutorials:
 
@@ -36,6 +34,10 @@ If you want to go further, here is a list of quality books and tutorials:
 - [ThinkJulia](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html)
 - [From Zero to Julia](https://techytok.com/from-zero-to-julia/)
 - [IntroToJulia](https://ucidatascienceinitiative.github.io/IntroToJulia/)
+
+Beyond the present website, other students from my own research lab have also worked on interactive tutorials, which you will find below:
+- [Julia Day course](https://github.com/mfherbst/course_julia_day)
+- [HPC in Julia](https://github.com/adrien-le-franc/JuliaHPC-Cermics)
 
 ### Development environment
 
