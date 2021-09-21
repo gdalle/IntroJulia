@@ -31,8 +31,10 @@ notebooks:
       - title: "Linear Programming"
         url: /notebooks/jump.jl.html
 
-  # - title: Combinatorial optimization
-  #   children:
+  - title: Combinatorial optimization
+    children:
+        - title: "Branch & Bound"
+          url: /notebooks/branch_bound.jl.html
   #     - title: "Integer LP with JuMP [!]"
   #       url:
   #     - title: "Heuristics [!]"
