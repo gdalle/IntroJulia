@@ -22,7 +22,7 @@ title: Introduction to Julia
 name: Guillaume Dalle
 email: guillaume.dalle@enpc.fr
 description: >- # this means to ignore newlines until "baseurl:"
-  Notebooks illustrating various features of Julia with a focus on optimization
+  An interactive introduction to the Julia language.
 baseurl: "/IntroJulia" # the subpath of your site, e.g. /blog
 url: "https://gdalle.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  gdalle
