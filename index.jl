@@ -4,14 +4,11 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ d8fcbd0e-8329-11ec-0c8c-ef71e26600bd
-begin
-	using PlutoUI
-	PlutoUI.TableOfContents()
-end
+# ╔═╡ c35189d5-fbe8-4637-b004-2d15b7399af5
+using PlutoUI
 
 # ╔═╡ 03065b03-74c2-404f-83d1-103c1fcd9a4b
-
+TableOfContents()
 
 # ╔═╡ 69f4feb4-a170-4a79-a316-8697021770c9
 md"""
@@ -42,14 +39,14 @@ md"""
 ### Available notebooks
 
 1. General stuff
-- [Basics of Julia](gdalle.github.io/IntroJulia/basics.jl.html)
-- [Writing efficient code](gdalle.github.io/IntroJulia/efficiency.jl.html)
+- [Basics of Julia](basics.html)
+- [Writing efficient code](efficiency.html)
 
 2. Optimization
-- [Graph theory](gdalle.github.io/IntroJulia/graphs.jl.html)
-- [Polyhedra](gdalle.github.io/IntroJulia/polyhedra.jl.html)
-- [Linear Programming](gdalle.github.io/IntroJulia/jump.jl.html)
-- [Branch & Bound](gdalle.github.io/IntroJulia/branch_bound.jl.html)
+- [Graph theory](graphs.html)
+- [Polyhedra](polyhedra.html)
+- [Linear Programming](jump.html)
+- [Branch & Bound](branch_bound.html)
 """
 
 # ╔═╡ 79c1ea6e-112c-47e2-a676-437f24298664
@@ -405,8 +402,8 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 """
 
 # ╔═╡ Cell order:
-# ╟─d8fcbd0e-8329-11ec-0c8c-ef71e26600bd
-# ╟─03065b03-74c2-404f-83d1-103c1fcd9a4b
+# ╠═c35189d5-fbe8-4637-b004-2d15b7399af5
+# ╠═03065b03-74c2-404f-83d1-103c1fcd9a4b
 # ╟─69f4feb4-a170-4a79-a316-8697021770c9
 # ╟─7c628ff7-ebfb-420d-a1ee-96214f093630
 # ╟─d8fd4350-e70c-42ae-aaf1-80459e7790b7
