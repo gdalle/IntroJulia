@@ -64,6 +64,13 @@ Maybe the solution to the two-language problem (see this [Nature article](https:
 - C-level speed (when done right) for high-performance computing
 """
 
+# ╔═╡ a5430a82-913f-439b-966d-73bad7f17283
+md"""
+### Installing Julia
+
+To install the latest version of Julia, follow the [platform-specific instructions](https://julialang.org/downloads/platform/). If you need multiple versions of Julia to coexist on your system, or if you don't want to bother with manual updates, take a look at [jill](https://github.com/abelsiqueira/jill) or [jill.py](https://github.com/johnnychen94/jill.py).
+"""
+
 # ╔═╡ 7183b4db-8779-4750-bb96-433414774c5d
 md"""
 ### Learning Julia
@@ -126,7 +133,7 @@ In addition, Julia packages are often gathered into GitHub "groups" or organizat
 If a Julia package doesn't exist:
 
 - Look for it in C and use the [built-in C callers](https://docs.julialang.org/en/v1/manual/calling-c-and-fortran-code/)
-- Look for it in Python and use [PyCall.jl](https://github.com/JuliaPy/PyCall.jl)
+- Look for it in Python and use [PyCall.jl](https://github.com/JuliaPy/PyCall.jl), or better yet [PythonCall.jl](https://github.com/cjdoris/PythonCall.jl)
 - (you get the idea)
 
 ...or code / wrap it yourself in Julia and contribute to the community!
@@ -411,6 +418,7 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╟─813cd7f7-85e1-4cdf-bde3-af259d9aa429
 # ╟─79c1ea6e-112c-47e2-a676-437f24298664
 # ╟─2ffec8d3-6168-4261-8846-e8269125077d
+# ╟─a5430a82-913f-439b-966d-73bad7f17283
 # ╟─7183b4db-8779-4750-bb96-433414774c5d
 # ╟─50d7a8f0-afe5-4f34-b48b-7f95f56a61e7
 # ╟─81191fe3-039e-4e0a-a551-79751f1894eb
