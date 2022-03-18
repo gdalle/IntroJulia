@@ -124,13 +124,13 @@ In the following cells, I run the function once to ensure it is precompiled befo
 w, y = randn(5), randn(5)
 
 # ╔═╡ 834f6172-15bc-4e7d-ae22-e18ef2e8e22b
-seq_rec(w, y, 1); @benchmark seq_rec($w, $y, 20)
+seq_rec(w, y, 1); @benchmark $seq_rec($w, $y, 20)
 
 # ╔═╡ a0f3b8a4-a0c6-43b4-b55c-641b14d4f05a
-seq_loop1(w, y, 1); @benchmark seq_loop1($w, $y, 1000)
+seq_loop1(w, y, 1); @benchmark $seq_loop1($w, $y, 1000)
 
 # ╔═╡ 63a87cc9-e078-4390-bfb9-eab65e251a30
-seq_loop2(w, y, 1); @benchmark seq_loop2($w, $y, 1000)
+seq_loop2(w, y, 1); @benchmark $seq_loop2($w, $y, 1000)
 
 # ╔═╡ 1d0af35c-0cee-4f70-9346-014ab294a614
 md"""
@@ -264,13 +264,13 @@ begin
 end
 
 # ╔═╡ f352b77a-4e83-4c84-bdcb-9d024b25673f
-norm(p_stupid); @benchmark norm($p_stupid)
+norm(p_stupid); @benchmark $norm($p_stupid)
 
 # ╔═╡ 9ce1abc9-5377-4fba-a059-3596cbdd3bcd
-norm(p_clever); @benchmark norm($p_clever)
+norm(p_clever); @benchmark $norm($p_clever)
 
 # ╔═╡ 44967cf2-8aff-4b85-aa4a-5833b9b29ab5
-norm(p_genius); @benchmark norm($p_genius)
+norm(p_genius); @benchmark $norm($p_genius)
 
 # ╔═╡ c1310939-87c2-405f-94d6-c7d1310ff700
 md"""
@@ -321,10 +321,10 @@ function randsum_stable(n)
 end
 
 # ╔═╡ 72421355-fac2-4c68-b9a3-f2c49a02c986
-randsum_unstable(1); @benchmark randsum_unstable(100)
+randsum_unstable(1); @benchmark $randsum_unstable(100)
 
 # ╔═╡ 908796b8-5880-4cbf-9102-92cbd39cae49
-randsum_stable(1); @benchmark randsum_stable(100)
+randsum_stable(1); @benchmark $randsum_stable(100)
 
 # ╔═╡ 769a8892-1f5a-49ea-947d-dbef2262fd6e
 md"""
