@@ -1,11 +1,18 @@
 ### A Pluto.jl notebook ###
-# v0.18.2
+# v0.18.4
 
 using Markdown
 using InteractiveUtils
 
 # ╔═╡ bca07932-eb86-40e3-9b47-aace0efda5d0
-using PlutoUI, Profile, ProfileSVG, BenchmarkTools, ProgressLogging
+begin
+	using BenchmarkTools
+	using JET
+	using PlutoUI
+	using Profile
+	using ProfileSVG
+	using ProgressLogging
+end
 
 # ╔═╡ 0212b449-3bdc-4a8f-81b3-38432ff39785
 md"""
@@ -74,7 +81,7 @@ end
 wfib, yfib = [1, 1], [1, 1]
 
 # ╔═╡ 2b7a5cdb-8154-4009-ac63-57749b6cc5d3
-55 == seq_rec(wfib, yfib, 10) == seq_loop1(wfib, yfib, 10)== seq_loop2(wfib, yfib, 10)
+55 == seq_rec(wfib, yfib, 10) == seq_loop1(wfib, yfib, 10) == seq_loop2(wfib, yfib, 10)
 
 # ╔═╡ 3d98e7db-c643-4500-987d-4a225e55b2a5
 md"""
@@ -117,20 +124,20 @@ Since we have small functions here, we would get a more accurate evaluation by r
 - `@belapsed` for time
 - `@ballocated` for space
 - `@benchmark` for both
-In the following cells, I run the function once to ensure it is precompiled before starting the benchmark.
+In the following cells, we run the function once to ensure it is precompiled before starting the benchmark. We also [interpolate](https://juliaci.github.io/BenchmarkTools.jl/stable/manual/#Interpolating-values-into-benchmark-expressions) the external (global) variables with a dollar sign to make sure they don't hurt performance.
 """
 
 # ╔═╡ 64189969-f5b2-49cf-a2e9-d837e76ed79d
 w, y = randn(5), randn(5)
 
 # ╔═╡ 834f6172-15bc-4e7d-ae22-e18ef2e8e22b
-seq_rec(w, y, 1); @benchmark $seq_rec($w, $y, 20)
+seq_rec(w, y, 1); @benchmark seq_rec($w, $y, 20)
 
 # ╔═╡ a0f3b8a4-a0c6-43b4-b55c-641b14d4f05a
-seq_loop1(w, y, 1); @benchmark $seq_loop1($w, $y, 1000)
+seq_loop1(w, y, 1); @benchmark seq_loop1($w, $y, 1000)
 
 # ╔═╡ 63a87cc9-e078-4390-bfb9-eab65e251a30
-seq_loop2(w, y, 1); @benchmark $seq_loop2($w, $y, 1000)
+seq_loop2(w, y, 1); @benchmark seq_loop2($w, $y, 1000)
 
 # ╔═╡ 1d0af35c-0cee-4f70-9346-014ab294a614
 md"""
@@ -224,7 +231,7 @@ Julia is fast when it can infer the type of each variable at compiletime (i.e. b
 
 # ╔═╡ 9d1951b4-2bf3-4dd3-9ee2-ec8bb6b953f3
 md"""
-### Abstract types
+### Abstract types in containers
 """
 
 # ╔═╡ 1067868e-2ca8-463f-bc55-c444aaf3b37c
@@ -264,13 +271,13 @@ begin
 end
 
 # ╔═╡ f352b77a-4e83-4c84-bdcb-9d024b25673f
-norm(p_stupid); @benchmark $norm($p_stupid)
+norm(p_stupid); @benchmark norm($p_stupid)
 
 # ╔═╡ 9ce1abc9-5377-4fba-a059-3596cbdd3bcd
-norm(p_clever); @benchmark $norm($p_clever)
+norm(p_clever); @benchmark norm($p_clever)
 
 # ╔═╡ 44967cf2-8aff-4b85-aa4a-5833b9b29ab5
-norm(p_genius); @benchmark $norm($p_genius)
+norm(p_genius); @benchmark norm($p_genius)
 
 # ╔═╡ c1310939-87c2-405f-94d6-c7d1310ff700
 md"""
@@ -289,8 +296,14 @@ end
 
 # ╔═╡ 26c9d3a2-a54a-43d7-897e-64c34eeac81f
 md"""
-In the output of `@code_warntype`, the red annotations indicate types that could not be inferred with sufficient precision. Note that this only works for simple code: if you need to analyse nested functions, you will be better off with JET.jl.
+In the output of `@code_warntype`, the red annotations indicate types that could not be inferred with sufficient precision. Note that this only works for simple code: if you need to analyse nested functions, you will be better off with the macro `@report_opt` from JET.jl, which works in a similar way.
 """
+
+# ╔═╡ b1d31667-46c8-406a-8d25-19802181f37f
+@report_opt norm(p_stupid)
+
+# ╔═╡ 44f17b4d-c498-4126-9647-4eceaa4a3f21
+@report_opt norm(p_genius)
 
 # ╔═╡ 5aee27ef-c3cf-43b0-b1fd-e058e90bf112
 md"""
@@ -321,10 +334,10 @@ function randsum_stable(n)
 end
 
 # ╔═╡ 72421355-fac2-4c68-b9a3-f2c49a02c986
-randsum_unstable(1); @benchmark $randsum_unstable(100)
+randsum_unstable(1); @benchmark randsum_unstable(100)
 
 # ╔═╡ 908796b8-5880-4cbf-9102-92cbd39cae49
-randsum_stable(1); @benchmark $randsum_stable(100)
+randsum_stable(1); @benchmark randsum_stable(100)
 
 # ╔═╡ 769a8892-1f5a-49ea-947d-dbef2262fd6e
 md"""
@@ -341,9 +354,20 @@ with_terminal() do
 	@code_warntype randsum_unstable(1)
 end
 
+# ╔═╡ b3be8a6e-c00f-413f-858e-aee32f32dd18
+md"""
+This time, JET.jl would not have caught it, probably since it considers a union type `Union{Float64, Int64}` to be successfully inferred, even though it hurts performance.
+"""
+
+# ╔═╡ 2b0f6c30-112e-45bc-a3ea-3da4012922a9
+ @report_opt randsum_unstable(1)
+
+# ╔═╡ 5d07342c-d4b4-4f3b-b523-514c0f252813
+@report_opt randsum_stable(1)
+
 # ╔═╡ fdf97758-26c1-4157-a5d1-af89578f6277
 md"""
-## Generic programming
+# Generic programming
 
 The key feature of Julia is multiple dispatch, which allows the right method to be chosen based on argument types. This is what allows multiple packages to work together seamlessly, but to do that we must remain as generic as possible:
 - Do not overspecify input types
@@ -355,14 +379,16 @@ See this [blog post](https://www.stochasticlifestyle.com/type-dispatch-design-po
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Profile = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 ProfileSVG = "132c30aa-f267-4189-9183-c8a63c7e05e6"
 ProgressLogging = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
 
 [compat]
-BenchmarkTools = "~1.1.3"
-PlutoUI = "~0.7.9"
+BenchmarkTools = "~1.3.1"
+JET = "~0.5.10"
+PlutoUI = "~0.7.37"
 ProfileSVG = "~0.2.1"
 ProgressLogging = "~0.1.4"
 """
@@ -395,10 +421,16 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[deps.BenchmarkTools]]
-deps = ["JSON", "Logging", "Printf", "Statistics", "UUIDs"]
-git-tree-sha1 = "42ac5e523869a84eac9669eaceed9e4aa0e1587b"
+deps = ["JSON", "Logging", "Printf", "Profile", "Statistics", "UUIDs"]
+git-tree-sha1 = "4c10eee4af024676200bc7752e536f858c6b8f93"
 uuid = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-version = "1.1.4"
+version = "1.3.1"
+
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "9fb640864691a0936f94f89150711c36072b0e8f"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "1.0.8"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -420,6 +452,10 @@ uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
+[[deps.Distributed]]
+deps = ["Random", "Serialization", "Sockets"]
+uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+
 [[deps.Downloads]]
 deps = ["ArgTools", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
@@ -429,6 +465,9 @@ deps = ["Pkg", "Requires", "UUIDs"]
 git-tree-sha1 = "80ced645013a5dbdc52cf70329399c35ce007fae"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.13.0"
+
+[[deps.FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -468,11 +507,23 @@ version = "1.0.0"
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
+[[deps.JET]]
+deps = ["InteractiveUtils", "JuliaInterpreter", "LoweredCodeUtils", "MacroTools", "Pkg", "Revise", "Test"]
+git-tree-sha1 = "64e24a604f1950b878baae88c2f2a0658e1d6f01"
+uuid = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+version = "0.5.10"
+
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "3c837543ddb02250ef42f4738347454f95079d4e"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.3"
+
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "9c43a2eb47147a8776ca2ba489f15a9f6f2906f8"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.9.11"
 
 [[deps.LeftChildRightSiblingTrees]]
 deps = ["AbstractTrees"]
@@ -506,6 +557,18 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
+[[deps.LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "6b0440822974cab904c8b14d79743565140567f6"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "2.2.1"
+
+[[deps.MacroTools]]
+deps = ["Markdown", "Random"]
+git-tree-sha1 = "3d3e902b31198a27340d0bf00d6ac452866021cf"
+uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+version = "0.5.9"
+
 [[deps.Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
@@ -526,6 +589,11 @@ uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
+
+[[deps.OrderedCollections]]
+git-tree-sha1 = "85f8e6578bf1f9ee0d11e7bb1b1456435479d47c"
+uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+version = "1.4.1"
 
 [[deps.Parsers]]
 deps = ["Dates"]
@@ -581,6 +649,12 @@ deps = ["UUIDs"]
 git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
+
+[[deps.Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "4d4239e93531ac3e7ca7e339f15978d0b5149d03"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.3.3"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -671,7 +745,7 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╟─0fb6ed33-601c-4392-b7d9-32230c979d39
 # ╟─a6e9da76-1ff0-4b54-9b55-4856ca32b251
 # ╟─fa483fea-bf9f-4764-8d4f-c6d33e3336fb
-# ╠═d3c1a86c-8c8f-4ad6-ac3c-2ba0f838d139
+# ╟─d3c1a86c-8c8f-4ad6-ac3c-2ba0f838d139
 # ╟─9d1951b4-2bf3-4dd3-9ee2-ec8bb6b953f3
 # ╟─1067868e-2ca8-463f-bc55-c444aaf3b37c
 # ╠═dacdb662-f46d-4032-a8b8-cdfbaf5317fc
@@ -687,6 +761,8 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╠═1500ca48-f99c-4ea0-beb7-bcadedf11d23
 # ╠═99df78f5-61ac-49b3-b5ad-5fe5cdeffec5
 # ╟─26c9d3a2-a54a-43d7-897e-64c34eeac81f
+# ╠═b1d31667-46c8-406a-8d25-19802181f37f
+# ╠═44f17b4d-c498-4126-9647-4eceaa4a3f21
 # ╟─5aee27ef-c3cf-43b0-b1fd-e058e90bf112
 # ╟─e7c68548-a654-40dd-9b3a-10ce24b6cd5c
 # ╠═b47ab7f4-82af-4f09-851e-2352093a0b71
@@ -696,6 +772,9 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╟─769a8892-1f5a-49ea-947d-dbef2262fd6e
 # ╠═95e7dfdb-0bc0-4cb1-b4ad-f74b006af66c
 # ╠═48ae2243-bf72-4e2f-af0a-17bc377b44e4
+# ╟─b3be8a6e-c00f-413f-858e-aee32f32dd18
+# ╠═2b0f6c30-112e-45bc-a3ea-3da4012922a9
+# ╠═5d07342c-d4b4-4f3b-b523-514c0f252813
 # ╟─fdf97758-26c1-4157-a5d1-af89578f6277
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
