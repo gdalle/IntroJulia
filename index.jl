@@ -1,14 +1,11 @@
 ### A Pluto.jl notebook ###
-# v0.18.2
+# v0.19.4
 
 using Markdown
 using InteractiveUtils
 
 # ╔═╡ c35189d5-fbe8-4637-b004-2d15b7399af5
-using PlutoUI
-
-# ╔═╡ 03065b03-74c2-404f-83d1-103c1fcd9a4b
-TableOfContents()
+using PlutoUI; TableOfContents()
 
 # ╔═╡ 69f4feb4-a170-4a79-a316-8697021770c9
 md"""
@@ -39,18 +36,205 @@ Maybe the solution to the two-language problem (see this [Nature article](https:
 
 # ╔═╡ a5430a82-913f-439b-966d-73bad7f17283
 md"""
-## Installing Julia
+## Installation
 
 To install the latest version of Julia, follow the [platform-specific instructions](https://julialang.org/downloads/platform/).
-If you need multiple versions of Julia to coexist on your system, or if you don't want to bother with manual updates, take a look at [jill](https://github.com/abelsiqueira/jill) or [jill.py](https://github.com/johnnychen94/jill.py).
+If you need multiple versions of Julia to coexist on your system, or if you don't want to bother with manual updates, take a look at [juliaup](https://github.com/JuliaLang/juliaup), [jill](https://github.com/abelsiqueira/jill) or (my personal favorite) [jill.py](https://github.com/johnnychen94/jill.py).
 
 If you want to run the notebooks of this course yourself, you will also need to install the [Pluto.jl](https://github.com/fonsp/Pluto.jl) package.
 """
 
+# ╔═╡ 79c1ea6e-112c-47e2-a676-437f24298664
+md"""
+# The basics
+"""
+
+# ╔═╡ cf6f6e8e-dc13-4473-9cdd-fa8604b6a9e2
+md"""
+## Learning
+"""
+
+# ╔═╡ 7183b4db-8779-4750-bb96-433414774c5d
+md"""
+The Julia website has a great list of [resources for beginners](https://julialang.org/learning/), as well as many free [tutorials](https://juliaacademy.com/) contributed by the community.
+The official [Julia YouTube channel](https://www.youtube.com/c/TheJuliaLanguage/playlists) also contains lots of introductory content.
+"""
+
+# ╔═╡ eec99565-4d72-401d-bdb0-c6a2c7fc815c
+md"""
+If you just need a quick refresher about syntax, this [cheat sheet](https://juliadocs.github.io/Julia-Cheat-Sheet/) is the place to go.
+For more involved questions, the primary source of knowledge is the [Julia manual](https://docs.julialang.org/en/v1/).
+And for the ultimate list of Julia resources, go to [Julia.jl](https://svaksha.github.io/Julia.jl/).
+"""
+
+# ╔═╡ 9c3ec61e-3987-435c-b076-5efca1e205fd
+md"""
+Since Julia originated at MIT, it is no wonder that MIT researchers are teaching it well.
+Check out [Introduction to Computational Thinking](https://computationalthinking.mit.edu/Spring21/) for your first steps, and the [SciML book](https://book.sciml.ai/) when you feel more confident.
+"""
+
+# ╔═╡ 67cff2eb-1636-448c-b99f-a93c76571b73
+md"""
+Here are some other quality books and tutorials:
+
+- [Introducing Julia](https://en.wikibooks.org/wiki/Introducing_Julia) (WikiBooks)
+- [ThinkJulia: How to think like a computer scientist](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html) (Ben Lauwens)
+- [Quantitative economics with Julia](https://julia.quantecon.org/intro.html) (Jesse Perla, Thomas J. Sargent and John Stachurski)
+- [From Zero to Julia](https://techytok.com/from-zero-to-julia/) (Aurelio Amerio)
+- [A Deep Introduction to Julia for Data Science and Scientific Computing](https://ucidatascienceinitiative.github.io/IntroToJulia/) (Chris Rackauckas)
+- [Introduction to the Julia programming language](https://github.com/mfherbst/2022-rwth-julia-workshop) (Michael Herbst)
+"""
+
+# ╔═╡ d3a8ac9b-213d-4c57-a423-c29a3bd7f29b
+md"""
+The following projects use Julia for their code examples:
+
+- [Algorithms for Optimization & Algorithms for Decision-Making](Algorithms for Optimization) (Mykel J. Kochenderfer)
+- [BeautifulAlgorithms.jl](https://github.com/mossr/BeautifulAlgorithms.jl#newtons-method) (Robert Moss)
+- [TheAlgorithms](https://github.com/TheAlgorithms/Julia) (GitHub community)
+"""
+
+# ╔═╡ c6bfaf1e-61a6-4d48-a169-58359ac8229d
+md"""
+## Getting help
+"""
+
+# ╔═╡ 81191fe3-039e-4e0a-a551-79751f1894eb
+md"""
+The Julia [community](https://julialang.org/community/) is very active and welcoming, so don't hesitate to lask for help!
+
+Here is a great list of places where you can find what you need: [New to Julia?](https://julialang.org/about/help/).
+"""
+
+# ╔═╡ 46dc9487-212f-4d57-aded-141ec72ffec5
+md"""
+## Coding environment
+"""
+
+# ╔═╡ 50d7a8f0-afe5-4f34-b48b-7f95f56a61e7
+md"""
+When developing in Julia, you need to select a comfortable [Integrated Develoment Environment](https://en.wikipedia.org/wiki/Integrated_development_environment).
+I strongly recommend using [Visual Studio Code](https://code.visualstudio.com/) with the [Julia for VSCode extension](https://www.julia-vscode.org/), but other IDEs also have [Julia support](https://github.com/JuliaEditorSupport).
+"""
+
+# ╔═╡ 0def1275-d89d-49c1-97bf-2181ff351e52
+md"""
+If you want something a bit lighter, here are two browser-based options:
+- [Pluto](https://github.com/fonsp/Pluto.jl) is a Julia-based reactive notebook server
+- [IJulia](https://github.com/JuliaLang/IJulia.jl) allows you to harness the power of [Jupyter](https://jupyter.org/) (by the way, did you know that the "Ju" in "Jupyter" stands for Julia?)
+"""
+
+# ╔═╡ c5edcb1d-7b7d-414a-ae8e-be836459bcbf
+md"""
+## Workflow
+"""
+
+# ╔═╡ fa4decaa-e06d-413c-aa59-1cec097cdac7
+md"""
+Some workflow tips can be found [in the manual](https://docs.julialang.org/en/v1/manual/workflow-tips/). In particular, you should check out the following packages and add them to your base environment:
+
+- [Revise.jl](https://github.com/timholy/Revise.jl): incorporate changes without restarting the REPL
+- [JuliaFormatter.jl](https://github.com/domluna/JuliaFormatter.jl) and its [VSCode extension](https://marketplace.visualstudio.com/items?itemName=singularitti.vscode-julia-formatter): clean up source code
+- [OhMyREPL.jl](https://github.com/KristofferC/OhMyREPL.jl): put some color in your REPL
+- [Debugger.jl](https://github.com/JuliaDebug/Debugger.jl): dynamically debug source code (much easier to use from within VSCode)
+"""
+
+# ╔═╡ 2311a578-c36b-4327-917a-dbe231e85b32
+md"""
+# Creating a package
+"""
+
+# ╔═╡ 35c3b938-b7d6-44e3-8323-e592b2044be8
+md"""
+## Discovering packages
+"""
+
+# ╔═╡ 9440458f-a7ce-4293-a42b-89d45e34f51c
+md"""
+Before coding something, you want to make sure that someone else hasn't already coded it. For that, you may need to search for packages on a dedicated database: that's what [JuliaObserver](https://juliaobserver.com/) and [JuliaHub](https://juliahub.com/ui/Home) are here for.
+
+In addition, Julia packages are often gathered into GitHub "groups" or organizations, which are listed [here](https://julialang.org/community/organizations/).
+"""
+
+# ╔═╡ b39a7884-13ff-41c6-ac18-b5a91d8510cb
+md"""
+If a Julia package doesn't exist:
+
+- Look for it in C and use the [built-in C callers](https://docs.julialang.org/en/v1/manual/calling-c-and-fortran-code/)
+- Look for it in Python and use [PyCall.jl](https://github.com/JuliaPy/PyCall.jl), or better yet [PythonCall.jl](https://github.com/cjdoris/PythonCall.jl)
+- ... or code / wrap it yourself in Julia and contribute to the community!
+"""
+
+# ╔═╡ 33047fa5-f5fa-419a-956d-c432b069b571
+md"""
+## Package manager
+"""
+
+# ╔═╡ 672ad497-a309-4a56-959e-ba6a5af1dc80
+md"""
+One of the main assets of Julia is a built-in package manager called [Pkg.jl](https://docs.julialang.org/en/v1/stdlib/Pkg/), which handles installation and updates of every library you may need. It also makes it possible to create separate environments for each one of your projects. The [full documentation](https://pkgdocs.julialang.org/v1/) of this utility is a must-read.
+"""
+
+# ╔═╡ c3946ee3-6f6b-489a-bc6b-6b66f0649028
+md"""
+## Structure
+"""
+
+# ╔═╡ b653e7a8-8c25-45c8-81c6-5b891af955d3
+md"""
+The [PkgTemplates.jl](https://github.com/invenia/PkgTemplates.jl) package enables you to create packages in a standardized way. It takes care of the file structure for you, and even integerates with [GitHub Actions](https://docs.github.com/en/actions) or Travis CI to set up a continuous integration workflow.
+"""
+
+# ╔═╡ 2a3fe571-c7c5-4015-ac36-369e8cb5b704
+md"""
+## Style
+"""
+
+# ╔═╡ 952e1ffe-a1e1-497e-96d9-76e2251e5b27
+md"""
+Julia has no universally agreed-upon style guide like Python. The main official guidelines can be found [here](https://docs.julialang.org/en/v1/manual/style-guide/).
+For an exhaustive style reference, have a look at the unofficial (but widely used) [BlueStyle](https://github.com/invenia/BlueStyle) by Invenia.
+"""
+
+# ╔═╡ 28d21757-09a9-440d-95dd-9a7499833c8a
+md"""
+## Testing
+"""
+
+# ╔═╡ c8a6e3e8-f951-4b26-92b4-195176518b7c
+md"""
+Julia has built-in support for [unit testing](https://docs.julialang.org/en/v1/stdlib/Test/). This allows you to check that recent modifications did not modify the expected behavior of your code.
+"""
+
+# ╔═╡ 03a94df6-6927-40d0-ad6e-ff2c9179eea6
+md"""
+## Documentation
+"""
+
+# ╔═╡ dd8f6789-2663-4bfb-ad6b-9c1a2d1e5119
+md"""
+Non-documented code is useless for anyone but its author. You should add documentation as you write (not after), and the best place to put it is in your `.jl` files using docstrings. Julia docstrings are written in Markdown, see [this reference](https://docs.julialang.org/en/v1/manual/documentation/) for general guidelines.
+"""
+
+# ╔═╡ c80724f4-9201-4f8f-b749-d10e123d1e52
+md"""
+If you want to automatically generate a nice HTML documentation website, harnessing the power of
+[Documenter.jl](https://github.com/JuliaDocs/Documenter.jl) is the way to go.
+This package also enables testing from within the documentation itself. Inside a docstring, you can put examples of REPL input and expected output, which will be run again and checked for correctness every time the documentation is updated. These code examples are called doctests.
+"""
+
+# ╔═╡ b293430c-8ebf-4c0e-9408-18c0bfdf8353
+md"""
+## Course contents
+"""
+
+# ╔═╡ b8667519-5a04-48da-ae79-cb2efc51f56d
+md"""
+All the links below point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.All the links below point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.
+"""
+
 # ╔═╡ 813cd7f7-85e1-4cdf-bde3-af259d9aa429
 md"""
-## Table of Contents
-
 1. General stuff
 - [Basics of Julia](basics.html)
 - [Writing efficient code](efficiency.html)
@@ -60,140 +244,6 @@ md"""
 - [Polyhedra](polyhedra.html)
 - [Linear Programming](jump.html)
 - [Branch & Bound](branch_bound.html)
-
-All the links above point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.
-"""
-
-# ╔═╡ 79c1ea6e-112c-47e2-a676-437f24298664
-md"""
-# The basics
-"""
-
-# ╔═╡ 7183b4db-8779-4750-bb96-433414774c5d
-md"""
-## Learning Julia
-
-The Julia website has a great list of [resources for beginners](https://julialang.org/learning/), as well as many free [tutorials](https://juliaacademy.com/) contributed by the community.
-The official [Julia YouTube channel](https://www.youtube.com/c/TheJuliaLanguage/playlists) has lots of introductory content.
-
-If you just need a quick refresher about syntax, this [cheat sheet](https://juliadocs.github.io/Julia-Cheat-Sheet/) is the place to go.
-For more involved questions, the primary source of knowledge is the [Julia manual](https://docs.julialang.org/en/v1/).
-And for the ultimate list of Julia resources, go to [Julia.jl](https://svaksha.github.io/Julia.jl/).
-
-Since Julia originated at MIT, it is no wonder that MIT researchers are teaching it well.
-Check out [Introduction to Computational Thinking](https://computationalthinking.mit.edu/Spring21/) for your first steps, and the [SciML book](https://book.sciml.ai/) when you feel more confident.
-
-Here are some other quality books and tutorials:
-
-- [Introducing Julia](https://en.wikibooks.org/wiki/Introducing_Julia)
-- [ThinkJulia](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html)
-- [From Zero to Julia](https://techytok.com/from-zero-to-julia/)
-- [IntroToJulia](https://ucidatascienceinitiative.github.io/IntroToJulia/)
-
-The following works use Julia for their code examples:
-
-- Mykel J. Kochenderfer's [series of books](https://mykel.kochenderfer.com/textbooks/) on decision-making
-- Robert Moss's [BeautifulAlgorithms.jl](https://github.com/mossr/BeautifulAlgorithms.jl#newtons-method)
-- Julia version of [TheAlgorithms](https://github.com/TheAlgorithms/Julia)
-"""
-
-# ╔═╡ 50d7a8f0-afe5-4f34-b48b-7f95f56a61e7
-md"""
-## Coding environment
-
-When developing in Julia, you want to select a comfortable [Integrated Develoment Environment](https://en.wikipedia.org/wiki/Integrated_development_environment).
-I strongly recomment using [VSCode](https://code.visualstudio.com/) with the [Julia for VSCode extension](https://www.julia-vscode.org/), but other IDEs also have [Julia support](https://github.com/JuliaEditorSupport).
-
-If you want something a bit lighter, here are two browser-based options:
-- [Pluto](https://github.com/fonsp/Pluto.jl) is a Julia-based reactive notebook server
-- [IJulia](https://github.com/JuliaLang/IJulia.jl) allows you to harness the power of [Jupyter](https://jupyter.org/) (did you know that the "Ju" in "Jupyter" stands for Julia?)
-"""
-
-# ╔═╡ fa4decaa-e06d-413c-aa59-1cec097cdac7
-md"""
-## Workflow
-
-Some workflow tips can be found [in the manual](https://docs.julialang.org/en/v1/manual/workflow-tips/). In particular, you should check out the following packages:
-
-- [Revise.jl](https://github.com/timholy/Revise.jl): incorporate changes without restarting the REPL
-- [JuliaFormatter.jl](https://github.com/domluna/JuliaFormatter.jl) and its [VSCode extension](https://marketplace.visualstudio.com/items?itemName=singularitti.vscode-julia-formatter): clean up source code
-- [OhMyREPL.jl](https://github.com/KristofferC/OhMyREPL.jl): put some color in your REPL!
-- [Debugger.jl](https://github.com/JuliaDebug/Debugger.jl): dynamically debug source code (much easier to use from within VSCode)
-- [JET.jl](https://github.com/aviatesk/JET.jl): statically debug source code
-"""
-
-# ╔═╡ 81191fe3-039e-4e0a-a551-79751f1894eb
-md"""
-## Getting help
-
-The Julia [community](https://julialang.org/community/) is very active and welcoming, so don't hesitate to look in the following places:
-
-- a quick Google search
-- the GitHub repository of a specific package, where you will often find a link to its documentation under this badge: ![](https://img.shields.io/badge/docs-stable-blue.svg)
-- the [Julia discourse forum](https://discourse.julialang.org/)
-- the [Julia Slack](https://julialang.org/slack/)
-- the [Humans of Julia Discord](https://discord.gg/mm2kYjB)
-"""
-
-# ╔═╡ 2311a578-c36b-4327-917a-dbe231e85b32
-md"""
-# Creating a package
-"""
-
-# ╔═╡ b39a7884-13ff-41c6-ac18-b5a91d8510cb
-md"""
-## Discovering packages
-
-Before coding something, you want to make sure that someone else hasn't already coded it better and faster than you. For that, you may need to search for packages on a dedicated database: that's what [JuliaObserver](https://juliaobserver.com/) and [JuliaHub](https://juliahub.com/ui/Home) are here for.
-
-In addition, Julia packages are often gathered into GitHub "groups" or organizations, which are listed [here](https://julialang.org/community/organizations/).
-
-If a Julia package doesn't exist:
-
-- Look for it in C and use the [built-in C callers](https://docs.julialang.org/en/v1/manual/calling-c-and-fortran-code/)
-- Look for it in Python and use [PyCall.jl](https://github.com/JuliaPy/PyCall.jl), or better yet [PythonCall.jl](https://github.com/cjdoris/PythonCall.jl)
-- ... or code / wrap it yourself in Julia and contribute to the community!
-"""
-
-# ╔═╡ 672ad497-a309-4a56-959e-ba6a5af1dc80
-md"""
-## Package manager
-
-One of the main assets of Julia is a built-in package manager called `Pkg`, which handles installation and updates of every library you may need. `Pkg` also makes it possible to create separate environments for each one of your projects. The [full documentation](https://pkgdocs.julialang.org/v1/) of this utility is a must-read.
-"""
-
-# ╔═╡ b653e7a8-8c25-45c8-81c6-5b891af955d3
-md"""
-## Structure
-
-The [PkgTemplates.jl](https://github.com/invenia/PkgTemplates.jl) package enables you to create packages in a standardized way. It takes care of the file structure for you, and even integerates with [GitHub Actions](https://docs.github.com/en/actions) or Travis CI to set up a continuous integration workflow.
-
-"""
-
-# ╔═╡ 952e1ffe-a1e1-497e-96d9-76e2251e5b27
-md"""
-## Style
-
-Julia has no universally agreed-upon style guide like Python. The main official guidelines can be found [here](https://docs.julialang.org/en/v1/manual/style-guide/).
-For an exhaustive style reference, have a look at the unofficial (but widely used) [BlueStyle](https://github.com/invenia/BlueStyle) by Invenia.
-"""
-
-# ╔═╡ c8a6e3e8-f951-4b26-92b4-195176518b7c
-md"""
-## Unit testing
-
-Julia has built-in support for [unit testing](https://docs.julialang.org/en/v1/stdlib/Test/). This allows you to check that recent modifications did not modify the expected behavior of your code.
-"""
-
-# ╔═╡ c80724f4-9201-4f8f-b749-d10e123d1e52
-md"""
-## Documentation
-
-Non-documented code is useless code. You should add documentation as you write (not after), and the best place to put it is in your `.jl` files using docstrings. Julia docstrings are written in Markdown, see [this reference](https://docs.julialang.org/en/v1/manual/documentation/) for general guidelines.
-
-If you want to automatically generate a nice HTML documentation website, harnessing the power of
-[Documenter.jl](https://github.com/JuliaDocs/Documenter.jl) is the way to go.
-This package also enables testing from within the documentation itself. Inside a docstring, you can put examples of REPL input and expected output, which will be run again and checked for correctness every time the documentation is updated. These code examples are called doctests.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -412,25 +462,43 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 """
 
 # ╔═╡ Cell order:
-# ╠═c35189d5-fbe8-4637-b004-2d15b7399af5
-# ╠═03065b03-74c2-404f-83d1-103c1fcd9a4b
+# ╟─c35189d5-fbe8-4637-b004-2d15b7399af5
 # ╟─69f4feb4-a170-4a79-a316-8697021770c9
 # ╟─7c628ff7-ebfb-420d-a1ee-96214f093630
 # ╟─7a69d685-dbb7-4387-a7b8-68c6527bfa3a
 # ╟─2ffec8d3-6168-4261-8846-e8269125077d
 # ╟─a5430a82-913f-439b-966d-73bad7f17283
-# ╟─813cd7f7-85e1-4cdf-bde3-af259d9aa429
 # ╟─79c1ea6e-112c-47e2-a676-437f24298664
+# ╟─cf6f6e8e-dc13-4473-9cdd-fa8604b6a9e2
 # ╟─7183b4db-8779-4750-bb96-433414774c5d
-# ╟─50d7a8f0-afe5-4f34-b48b-7f95f56a61e7
-# ╟─fa4decaa-e06d-413c-aa59-1cec097cdac7
+# ╟─eec99565-4d72-401d-bdb0-c6a2c7fc815c
+# ╟─9c3ec61e-3987-435c-b076-5efca1e205fd
+# ╟─67cff2eb-1636-448c-b99f-a93c76571b73
+# ╟─d3a8ac9b-213d-4c57-a423-c29a3bd7f29b
+# ╟─c6bfaf1e-61a6-4d48-a169-58359ac8229d
 # ╟─81191fe3-039e-4e0a-a551-79751f1894eb
+# ╟─46dc9487-212f-4d57-aded-141ec72ffec5
+# ╟─50d7a8f0-afe5-4f34-b48b-7f95f56a61e7
+# ╟─0def1275-d89d-49c1-97bf-2181ff351e52
+# ╟─c5edcb1d-7b7d-414a-ae8e-be836459bcbf
+# ╟─fa4decaa-e06d-413c-aa59-1cec097cdac7
 # ╟─2311a578-c36b-4327-917a-dbe231e85b32
+# ╟─35c3b938-b7d6-44e3-8323-e592b2044be8
+# ╟─9440458f-a7ce-4293-a42b-89d45e34f51c
 # ╟─b39a7884-13ff-41c6-ac18-b5a91d8510cb
+# ╟─33047fa5-f5fa-419a-956d-c432b069b571
 # ╟─672ad497-a309-4a56-959e-ba6a5af1dc80
+# ╟─c3946ee3-6f6b-489a-bc6b-6b66f0649028
 # ╟─b653e7a8-8c25-45c8-81c6-5b891af955d3
+# ╟─2a3fe571-c7c5-4015-ac36-369e8cb5b704
 # ╟─952e1ffe-a1e1-497e-96d9-76e2251e5b27
+# ╟─28d21757-09a9-440d-95dd-9a7499833c8a
 # ╟─c8a6e3e8-f951-4b26-92b4-195176518b7c
+# ╟─03a94df6-6927-40d0-ad6e-ff2c9179eea6
+# ╟─dd8f6789-2663-4bfb-ad6b-9c1a2d1e5119
 # ╟─c80724f4-9201-4f8f-b749-d10e123d1e52
+# ╟─b293430c-8ebf-4c0e-9408-18c0bfdf8353
+# ╟─b8667519-5a04-48da-ae79-cb2efc51f56d
+# ╟─813cd7f7-85e1-4cdf-bde3-af259d9aa429
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
