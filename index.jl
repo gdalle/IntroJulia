@@ -225,7 +225,7 @@ This package also enables testing from within the documentation itself. Inside a
 
 # ╔═╡ b293430c-8ebf-4c0e-9408-18c0bfdf8353
 md"""
-## Course contents
+# Course contents
 """
 
 # ╔═╡ b8667519-5a04-48da-ae79-cb2efc51f56d
@@ -233,17 +233,28 @@ md"""
 All the links below point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.All the links below point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.
 """
 
+# ╔═╡ 87ddbc70-5e7d-4359-8638-4c60a8fcdb2c
+md"""
+## General stuff
+"""
+
+# ╔═╡ 6160429a-6b98-4bfc-ab85-2f8109e99182
+md"""
+1. [Basics of Julia](basics.html)
+2. [Writing efficient code](efficiency.html)
+"""
+
+# ╔═╡ 36a2cf6c-7ca4-4b8c-94db-0d59a2624102
+md"""
+## Optimization
+"""
+
 # ╔═╡ 813cd7f7-85e1-4cdf-bde3-af259d9aa429
 md"""
-1. General stuff
-- [Basics of Julia](basics.html)
-- [Writing efficient code](efficiency.html)
-
-2. Optimization
-- [Graph theory](graphs.html)
-- [Polyhedra](polyhedra.html)
-- [Linear Programming](jump.html)
-- [Branch & Bound](branch_bound.html)
+1. [Graph theory](graphs.html)
+2. [Polyhedra](polyhedra.html)
+3. [Linear Programming](jump.html)
+4. [Branch & Bound](branch_bound.html)
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -499,6 +510,9 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╟─c80724f4-9201-4f8f-b749-d10e123d1e52
 # ╟─b293430c-8ebf-4c0e-9408-18c0bfdf8353
 # ╟─b8667519-5a04-48da-ae79-cb2efc51f56d
+# ╟─87ddbc70-5e7d-4359-8638-4c60a8fcdb2c
+# ╟─6160429a-6b98-4bfc-ab85-2f8109e99182
+# ╟─36a2cf6c-7ca4-4b8c-94db-0d59a2624102
 # ╟─813cd7f7-85e1-4cdf-bde3-af259d9aa429
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
