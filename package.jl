@@ -9,136 +9,100 @@ using PlutoUI; TableOfContents()
 
 # ╔═╡ 69f4feb4-a170-4a79-a316-8697021770c9
 md"""
-!!! danger "Introduction to Julia"
+!!! danger "Introduction to Julia - developing a package"
 	🏠[Course home](https://gdalle.github.io/IntroJulia/)
-	
-This website is an introduction to the Julia programming language, written by [Guillaume Dalle](https://gdalle.github.io). It was originally designed as teaching material for students of École des Ponts (France), but it is accessible to a much wider audience.
 """
 
-# ╔═╡ cbd96f05-da2b-44dc-b3d0-4cb2aa5a574c
+# ╔═╡ 2cb3c53a-71d0-43b1-81e5-4d348e8f6c09
 md"""
-# Warm up
+# Package creation
 """
 
-# ╔═╡ 2ffec8d3-6168-4261-8846-e8269125077d
+# ╔═╡ 9440458f-a7ce-4293-a42b-89d45e34f51c
 md"""
-## What is Julia?
+## Discovering what's out there
 
-Maybe the solution to the two-language problem:
+Before coding something, you want to make sure that someone else hasn't already coded it. For that, you may need to search for packages on a dedicated database: that's what [JuliaObserver](https://juliaobserver.com/) and [JuliaHub](https://juliahub.com/ui/Home) are here for.
 
-- User-friendly syntax for easy programming
-- C-level speed (when done right) for high-performance computing
-
-See the [Julia manifesto](https://julialang.org/blog/2012/02/why-we-created-julia/) or this [Nature article](https://www.nature.com/articles/d41586-019-02310-3) for more details.
+In addition, Julia packages with a common theme are often gathered into GitHub "groups" or organizations. Those are listed [here](https://julialang.org/community/organizations/).
 """
 
-# ╔═╡ a5430a82-913f-439b-966d-73bad7f17283
+# ╔═╡ 93c169dd-37e3-4ac1-971f-2bbec5071ca2
 md"""
-## Installation
+## Interfacing with other languages
 
-To install the latest version of Julia, follow the [platform-specific instructions](https://julialang.org/downloads/platform/).
-If you need multiple versions of Julia to coexist on your system, or if you don't want to bother with manual updates, take a look at [juliaup](https://github.com/JuliaLang/juliaup), [jill](https://github.com/abelsiqueira/jill) or [jill.py](https://github.com/johnnychen94/jill.py) (my personal favorite).
-
-If you want to run the notebooks of this course yourself, you will also need to install the [Pluto.jl](https://github.com/fonsp/Pluto.jl) package.
+Sometimes, the functions you need are only available in other languages. But don't worry, because Julia plays nice with many of its friends:
+- C and Fortran thanks to the [built-in callers](https://docs.julialang.org/en/v1/manual/calling-c-and-fortran-code/)
+- Python thanks to [PyCall.jl](https://github.com/JuliaPy/PyCall.jl), or better yet [PythonCall.jl](https://github.com/cjdoris/PythonCall.jl)
+- R thanks to [RCall.jl](https://github.com/JuliaInterop/RCall.jl)
 """
 
-# ╔═╡ 79c1ea6e-112c-47e2-a676-437f24298664
+# ╔═╡ b653e7a8-8c25-45c8-81c6-5b891af955d3
 md"""
-# Learning
+## Setting up the package structure
+
+The [PkgTemplates.jl](https://github.com/invenia/PkgTemplates.jl) package enables you to create packages in a standardized way. It takes care of the file structure for you, and even integrates with [GitHub Actions](https://docs.github.com/en/actions) or Travis CI to set up a continuous integration workflow (including tests and documentation build, see below).
 """
 
-# ╔═╡ cf6f6e8e-dc13-4473-9cdd-fa8604b6a9e2
+# ╔═╡ b42f7153-eb3b-41cf-8447-99b1157f03b9
 md"""
-## Starting your journey
+# Development workflow
 
-The Julia website has a great list of [resources for beginners](https://julialang.org/learning/) and [tutorials](https://julialang.org/learning/tutorials/)., as well as free [MOOCs](https://juliaacademy.com/) contributed by the community.
-The official [Julia YouTube channel](https://www.youtube.com/c/TheJuliaLanguage/playlists) also boasts lots of introductory content.
-
-If you just need a quick refresher about syntax, this [cheat sheet](https://juliadocs.github.io/Julia-Cheat-Sheet/) is the place to go.
-For more involved questions, the primary source of knowledge is the [Julia manual](https://docs.julialang.org/en/v1/).
-And for the ultimate list of Julia resources, go to [Julia.jl](https://svaksha.github.io/Julia.jl/).
+The Julia manual contains some [workflow tips](https://docs.julialang.org/en/v1/manual/workflow-tips/), but it is just the beginning.
 """
 
-# ╔═╡ 0def1275-d89d-49c1-97bf-2181ff351e52
+# ╔═╡ 672ad497-a309-4a56-959e-ba6a5af1dc80
 md"""
-## Coding environment
+## Package manager
 
-When developing in Julia, you need to select a comfortable code editor.
-I strongly recommend using [Visual Studio Code](https://code.visualstudio.com/) with the [Julia for VSCode extension](https://www.julia-vscode.org/), but other IDEs also have [Julia support](https://github.com/JuliaEditorSupport).
-
-If you want something a bit lighter, here are two browser-based options:
-- [Pluto.jl](https://github.com/fonsp/Pluto.jl) is a Julia-based reactive notebook server (which we are using right now)
-- [IJulia.jl](https://github.com/JuliaLang/IJulia.jl) allows you to harness the power of [Jupyter](https://jupyter.org/). By the way, did you know that the "Ju" in "Jupyter" stands for Julia?
+One of the main assets of Julia is a built-in package manager called [Pkg.jl](https://docs.julialang.org/en/v1/stdlib/Pkg/), which handles installation and updates of every library you may need. It also makes it possible to use separate environments for each one of your projects. The [full documentation](https://pkgdocs.julialang.org/v1/) of this library is a must-read.
 """
 
-# ╔═╡ c6bfaf1e-61a6-4d48-a169-58359ac8229d
+# ╔═╡ fa4decaa-e06d-413c-aa59-1cec097cdac7
 md"""
-## Getting help
+## Useful packages
 
-The Julia [community](https://julialang.org/community/) is very active and welcoming, so don't hesitate to [ask for help](https://julialang.org/about/help/)!
+If you add packages to your base Julia environment (which is called something like `@v1.7`), they will also be available in every project environment. This means you should keep your base environment very light to avoid conflicts.
+Still, here are some essential tools that deserve to be there (in alphabetical order):
+
+- [AbbreviatedStackTraces.jl](https://github.com/BioTurboNick/AbbreviatedStackTraces.jl): display more readable error messages (not in the general registry)
+- [BenchmarkTools.jl](https://github.com/JuliaCI/BenchmarkTools.jl): measure time and memory performance
+- [Cthulhu.jl](https://github.com/JuliaDebug/Cthulhu.jl): analyze type inference
+- [JET.jl](https://github.com/aviatesk/JET.jl): statically debug source code
+- [JuliaFormatter.jl](https://github.com/domluna/JuliaFormatter.jl): clean up source code in a configurable way
+- [OhMyREPL.jl](https://github.com/KristofferC/OhMyREPL.jl): put some color in your REPL
+- [PackageCompatUI.jl](https://github.com/GunnarFarneback/PackageCompatUI.jl): browse and define compatibility requirements
+- [Revise.jl](https://github.com/timholy/Revise.jl): incorporate source changes without restarting the REPL
+- [Term.jl](https://github.com/FedeClaudi/Term.jl): customize REPL outputs
+- [TestEnv.jl](https://github.com/JuliaTesting/TestEnv.jl): activate the test environment of a package
+
+Some of these tools also play nice with the [Julia for VSCode extension](https://www.julia-vscode.org/).
 """
 
-# ╔═╡ 8f379769-4c9a-4152-aba9-88bc6fc4fae7
+# ╔═╡ 952e1ffe-a1e1-497e-96d9-76e2251e5b27
 md"""
-# Books and courses
+## Coding style
+
+Julia has no universally agreed-upon style guide like Python. A few official guidelines can be found [here](https://docs.julialang.org/en/v1/manual/style-guide/).
+For an exhaustive style reference, have a look at the unofficial (but widely used) [BlueStyle](https://github.com/invenia/BlueStyle) by Invenia, or the new [SciMLStyle](https://github.com/SciML/SciMLStyle)
 """
 
-# ╔═╡ 67cff2eb-1636-448c-b99f-a93c76571b73
+# ╔═╡ c8a6e3e8-f951-4b26-92b4-195176518b7c
 md"""
-## MIT courses
+## Testing
 
-Since Julia originated at MIT, it is no wonder that MIT researchers are teaching it well.
-Check out [Introduction to Computational Thinking](https://computationalthinking.mit.edu/Spring21/) for your first steps, and [Parallel Computing and Scientific Machine Learning](https://book.sciml.ai/) when you feel more confident.
+Julia has built-in support for [unit testing](https://docs.julialang.org/en/v1/stdlib/Test/). This allows you to check that your code behaves in the way you expect.
+As part of testing, you can use the [Aqua.jl](https://github.com/JuliaTesting/Aqua.jl) package to assess code quality.
 """
 
-# ╔═╡ 5a361b3d-d3e3-4406-a949-f091af1ab566
+# ╔═╡ dd8f6789-2663-4bfb-ad6b-9c1a2d1e5119
 md"""
-## Other courses
+## Documentation
 
-- [Introducing Julia](https://en.wikibooks.org/wiki/Introducing_Julia) (WikiBooks)
-- [ThinkJulia: How to think like a computer scientist](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html) (Ben Lauwens)
-- [Quantitative economics with Julia](https://julia.quantecon.org/intro.html) (Jesse Perla, Thomas J. Sargent and John Stachurski)
-- [From Zero to Julia](https://techytok.com/from-zero-to-julia/) (Aurelio Amerio)
-- [A Deep Introduction to Julia for Data Science and Scientific Computing](https://ucidatascienceinitiative.github.io/IntroToJulia/) (Chris Rackauckas)
-- [Introduction to the Julia programming language](https://github.com/mfherbst/2022-rwth-julia-workshop) (Michael Herbst)
-"""
+To help future users (including yourself), it is a good idea to document your code in the `.jl` files themselves. This can be done with docstrings written in Markdown, see [this reference](https://docs.julialang.org/en/v1/manual/documentation/) for general guidelines.
 
-# ╔═╡ a4be17de-7154-4788-be2b-5c17ce78b6a9
-md"""
-## Examples of Julia code
-
-- [Algorithms for Optimization & Algorithms for Decision-Making](Algorithms for Optimization) (Mykel J. Kochenderfer)
-- [BeautifulAlgorithms.jl](https://github.com/mossr/BeautifulAlgorithms.jl#newtons-method) (Robert Moss)
-- [TheAlgorithms](https://github.com/TheAlgorithms/Julia) (GitHub community)
-"""
-
-# ╔═╡ b293430c-8ebf-4c0e-9408-18c0bfdf8353
-md"""
-# Table of contents
-"""
-
-# ╔═╡ b8667519-5a04-48da-ae79-cb2efc51f56d
-md"""
-All the links below point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.
-"""
-
-# ╔═╡ 6160429a-6b98-4bfc-ab85-2f8109e99182
-md"""
-## General stuff
-
-1. [Basics of Julia](basics.html)
-1. [Developing packages](package.html)
-1. [Writing efficient code](https://gdalle.github.io/JuliaPerf-CERMICS)
-"""
-
-# ╔═╡ 813cd7f7-85e1-4cdf-bde3-af259d9aa429
-md"""
-## Optimization (_work in progress_)
-
-1. [Graph theory](graphs.html)
-1. [Polyhedra](polyhedra.html)
-1. [Linear Programming](jump.html)
-1. [Branch & Bound](branch_bound.html)
+If you want to automatically generate a nice HTML documentation website, [Documenter.jl](https://github.com/JuliaDocs/Documenter.jl) is the way to go.
+[Literate.jl](https://github.com/fredrikekre/Literate.jl) is also useful for long examples and tutorials.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -381,20 +345,15 @@ version = "17.4.0+0"
 # ╔═╡ Cell order:
 # ╟─c35189d5-fbe8-4637-b004-2d15b7399af5
 # ╟─69f4feb4-a170-4a79-a316-8697021770c9
-# ╟─cbd96f05-da2b-44dc-b3d0-4cb2aa5a574c
-# ╟─2ffec8d3-6168-4261-8846-e8269125077d
-# ╟─a5430a82-913f-439b-966d-73bad7f17283
-# ╟─79c1ea6e-112c-47e2-a676-437f24298664
-# ╟─cf6f6e8e-dc13-4473-9cdd-fa8604b6a9e2
-# ╟─0def1275-d89d-49c1-97bf-2181ff351e52
-# ╟─c6bfaf1e-61a6-4d48-a169-58359ac8229d
-# ╟─8f379769-4c9a-4152-aba9-88bc6fc4fae7
-# ╟─67cff2eb-1636-448c-b99f-a93c76571b73
-# ╟─5a361b3d-d3e3-4406-a949-f091af1ab566
-# ╟─a4be17de-7154-4788-be2b-5c17ce78b6a9
-# ╟─b293430c-8ebf-4c0e-9408-18c0bfdf8353
-# ╟─b8667519-5a04-48da-ae79-cb2efc51f56d
-# ╟─6160429a-6b98-4bfc-ab85-2f8109e99182
-# ╟─813cd7f7-85e1-4cdf-bde3-af259d9aa429
+# ╟─2cb3c53a-71d0-43b1-81e5-4d348e8f6c09
+# ╟─9440458f-a7ce-4293-a42b-89d45e34f51c
+# ╟─93c169dd-37e3-4ac1-971f-2bbec5071ca2
+# ╟─b653e7a8-8c25-45c8-81c6-5b891af955d3
+# ╟─b42f7153-eb3b-41cf-8447-99b1157f03b9
+# ╟─672ad497-a309-4a56-959e-ba6a5af1dc80
+# ╟─fa4decaa-e06d-413c-aa59-1cec097cdac7
+# ╟─952e1ffe-a1e1-497e-96d9-76e2251e5b27
+# ╟─c8a6e3e8-f951-4b26-92b4-195176518b7c
+# ╟─dd8f6789-2663-4bfb-ad6b-9c1a2d1e5119
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
