@@ -1,5 +1,8 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.11
+
+#> [frontmatter]
+#> title = "IntroJulia - package dev"
 
 using Markdown
 using InteractiveUtils
@@ -118,7 +121,7 @@ PlutoUI = "~0.7.32"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.0-rc3"
+julia_version = "1.8.0"
 manifest_format = "2.0"
 project_hash = "843496cd44fbdabc30a5724f73519a3ea6a74f55"
 
@@ -202,7 +205,7 @@ version = "0.6.3"
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "7.83.1+1"
+version = "7.84.0+0"
 
 [[deps.LibGit2]]
 deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
@@ -334,7 +337,7 @@ version = "5.1.1+0"
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.47.0+0"
+version = "1.48.0+0"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]

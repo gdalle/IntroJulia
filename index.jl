@@ -1,5 +1,9 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.11
+
+#> [frontmatter]
+#> title = "IntroJulia"
+#> description = "An interactive introduction to the Julia programming language"
 
 using Markdown
 using InteractiveUtils
@@ -12,12 +16,7 @@ md"""
 !!! danger "Introduction to Julia"
 	🏠[Course home](https://gdalle.github.io/IntroJulia/)
 	
-This website is an introduction to the Julia programming language, written by [Guillaume Dalle](https://gdalle.github.io). It was originally designed as teaching material for students of École des Ponts (France), but it is accessible to a much wider audience.
-"""
-
-# ╔═╡ cbd96f05-da2b-44dc-b3d0-4cb2aa5a574c
-md"""
-# Warm up
+This website is an introduction to the Julia programming language, written by [Guillaume Dalle](https://gdalle.github.io).
 """
 
 # ╔═╡ 2ffec8d3-6168-4261-8846-e8269125077d
@@ -32,24 +31,24 @@ Maybe the solution to the two-language problem:
 See the [Julia manifesto](https://julialang.org/blog/2012/02/why-we-created-julia/) or this [Nature article](https://www.nature.com/articles/d41586-019-02310-3) for more details.
 """
 
+# ╔═╡ 79c1ea6e-112c-47e2-a676-437f24298664
+md"""
+# Getting started
+"""
+
 # ╔═╡ a5430a82-913f-439b-966d-73bad7f17283
 md"""
 ## Installation
 
 To install the latest version of Julia, follow the [platform-specific instructions](https://julialang.org/downloads/platform/).
-If you need multiple versions of Julia to coexist on your system, or if you don't want to bother with manual updates, take a look at [juliaup](https://github.com/JuliaLang/juliaup), [jill](https://github.com/abelsiqueira/jill) or [jill.py](https://github.com/johnnychen94/jill.py) (my personal favorite).
+If you need multiple versions of Julia to coexist on your system, or if you don't want to bother with manual updates, take a look at [juliaup](https://github.com/JuliaLang/juliaup) (which will soon be the default installer), [jill](https://github.com/abelsiqueira/jill) or [jill.py](https://github.com/johnnychen94/jill.py).
 
 If you want to run the notebooks of this course yourself, you will also need to install the [Pluto.jl](https://github.com/fonsp/Pluto.jl) package.
 """
 
-# ╔═╡ 79c1ea6e-112c-47e2-a676-437f24298664
-md"""
-# Learning
-"""
-
 # ╔═╡ cf6f6e8e-dc13-4473-9cdd-fa8604b6a9e2
 md"""
-## Starting your journey
+## Learning the ropes
 
 The Julia website has a great list of [resources for beginners](https://julialang.org/learning/) and [tutorials](https://julialang.org/learning/tutorials/)., as well as free [MOOCs](https://juliaacademy.com/) contributed by the community.
 The official [Julia YouTube channel](https://www.youtube.com/c/TheJuliaLanguage/playlists) also boasts lots of introductory content.
@@ -78,9 +77,43 @@ md"""
 The Julia [community](https://julialang.org/community/) is very active and welcoming, so don't hesitate to [ask for help](https://julialang.org/about/help/)!
 """
 
+# ╔═╡ b293430c-8ebf-4c0e-9408-18c0bfdf8353
+md"""
+# Course notebooks
+"""
+
+# ╔═╡ b8667519-5a04-48da-ae79-cb2efc51f56d
+md"""
+All the links below point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.
+"""
+
+# ╔═╡ 6160429a-6b98-4bfc-ab85-2f8109e99182
+md"""
+## General stuff
+
+1. [Basics of Julia](basics.html)
+1. [Developing packages](package.html)
+1. [Writing efficient code](efficiency.html)
+"""
+
+# ╔═╡ 813cd7f7-85e1-4cdf-bde3-af259d9aa429
+md"""
+## Optimization (_work in progress_)
+
+1. [Graph theory](graphs.html)
+1. [Polyhedra](polyhedra.html)
+1. [Linear Programming](jump.html)
+1. [Branch & Bound](branch_bound.html)
+"""
+
+# ╔═╡ e014d07e-a798-450b-b779-2cb4d027a011
+md"""
+## Miscellaneous (_work in progress_)
+"""
+
 # ╔═╡ 8f379769-4c9a-4152-aba9-88bc6fc4fae7
 md"""
-# Books and courses
+# Going further
 """
 
 # ╔═╡ 67cff2eb-1636-448c-b99f-a93c76571b73
@@ -93,7 +126,7 @@ Check out [Introduction to Computational Thinking](https://computationalthinking
 
 # ╔═╡ 5a361b3d-d3e3-4406-a949-f091af1ab566
 md"""
-## Other courses
+## Other resources
 
 - [Introducing Julia](https://en.wikibooks.org/wiki/Introducing_Julia) (WikiBooks)
 - [ThinkJulia: How to think like a computer scientist](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html) (Ben Lauwens)
@@ -112,35 +145,6 @@ md"""
 - [TheAlgorithms](https://github.com/TheAlgorithms/Julia) (GitHub community)
 """
 
-# ╔═╡ b293430c-8ebf-4c0e-9408-18c0bfdf8353
-md"""
-# Table of contents
-"""
-
-# ╔═╡ b8667519-5a04-48da-ae79-cb2efc51f56d
-md"""
-All the links below point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.
-"""
-
-# ╔═╡ 6160429a-6b98-4bfc-ab85-2f8109e99182
-md"""
-## General stuff
-
-1. [Basics of Julia](basics.html)
-1. [Developing packages](package.html)
-1. [Writing efficient code](https://gdalle.github.io/JuliaPerf-CERMICS)
-"""
-
-# ╔═╡ 813cd7f7-85e1-4cdf-bde3-af259d9aa429
-md"""
-## Optimization (_work in progress_)
-
-1. [Graph theory](graphs.html)
-1. [Polyhedra](polyhedra.html)
-1. [Linear Programming](jump.html)
-1. [Branch & Bound](branch_bound.html)
-"""
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -154,7 +158,7 @@ PlutoUI = "~0.7.32"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.0-rc3"
+julia_version = "1.8.0"
 manifest_format = "2.0"
 project_hash = "843496cd44fbdabc30a5724f73519a3ea6a74f55"
 
@@ -238,7 +242,7 @@ version = "0.6.3"
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "7.83.1+1"
+version = "7.84.0+0"
 
 [[deps.LibGit2]]
 deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
@@ -370,7 +374,7 @@ version = "5.1.1+0"
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.47.0+0"
+version = "1.48.0+0"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -381,20 +385,20 @@ version = "17.4.0+0"
 # ╔═╡ Cell order:
 # ╟─c35189d5-fbe8-4637-b004-2d15b7399af5
 # ╟─69f4feb4-a170-4a79-a316-8697021770c9
-# ╟─cbd96f05-da2b-44dc-b3d0-4cb2aa5a574c
 # ╟─2ffec8d3-6168-4261-8846-e8269125077d
-# ╟─a5430a82-913f-439b-966d-73bad7f17283
 # ╟─79c1ea6e-112c-47e2-a676-437f24298664
+# ╟─a5430a82-913f-439b-966d-73bad7f17283
 # ╟─cf6f6e8e-dc13-4473-9cdd-fa8604b6a9e2
 # ╟─0def1275-d89d-49c1-97bf-2181ff351e52
 # ╟─c6bfaf1e-61a6-4d48-a169-58359ac8229d
+# ╟─b293430c-8ebf-4c0e-9408-18c0bfdf8353
+# ╟─b8667519-5a04-48da-ae79-cb2efc51f56d
+# ╠═6160429a-6b98-4bfc-ab85-2f8109e99182
+# ╟─813cd7f7-85e1-4cdf-bde3-af259d9aa429
+# ╟─e014d07e-a798-450b-b779-2cb4d027a011
 # ╟─8f379769-4c9a-4152-aba9-88bc6fc4fae7
 # ╟─67cff2eb-1636-448c-b99f-a93c76571b73
 # ╟─5a361b3d-d3e3-4406-a949-f091af1ab566
 # ╟─a4be17de-7154-4788-be2b-5c17ce78b6a9
-# ╟─b293430c-8ebf-4c0e-9408-18c0bfdf8353
-# ╟─b8667519-5a04-48da-ae79-cb2efc51f56d
-# ╟─6160429a-6b98-4bfc-ab85-2f8109e99182
-# ╟─813cd7f7-85e1-4cdf-bde3-af259d9aa429
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
