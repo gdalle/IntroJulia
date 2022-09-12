@@ -109,6 +109,8 @@ md"""
 # ╔═╡ e014d07e-a798-450b-b779-2cb4d027a011
 md"""
 ## Miscellaneous (_work in progress_)
+
+1. [Pokémon](pokemon.html)
 """
 
 # ╔═╡ 8f379769-4c9a-4152-aba9-88bc6fc4fae7
@@ -158,7 +160,7 @@ PlutoUI = "~0.7.32"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.0"
+julia_version = "1.8.1"
 manifest_format = "2.0"
 project_hash = "843496cd44fbdabc30a5724f73519a3ea6a74f55"
 
@@ -393,7 +395,7 @@ version = "17.4.0+0"
 # ╟─c6bfaf1e-61a6-4d48-a169-58359ac8229d
 # ╟─b293430c-8ebf-4c0e-9408-18c0bfdf8353
 # ╟─b8667519-5a04-48da-ae79-cb2efc51f56d
-# ╠═6160429a-6b98-4bfc-ab85-2f8109e99182
+# ╟─6160429a-6b98-4bfc-ab85-2f8109e99182
 # ╟─813cd7f7-85e1-4cdf-bde3-af259d9aa429
 # ╟─e014d07e-a798-450b-b779-2cb4d027a011
 # ╟─8f379769-4c9a-4152-aba9-88bc6fc4fae7
