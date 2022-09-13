@@ -22,23 +22,20 @@ begin
 	using Colors
 	using FileIO
 	using Images
+	using LinearAlgebra
 	using Plots
 	using PlutoUI
 	using PlutoTeachingTools
 	using ProgressLogging
 end
 
-# ╔═╡ eee70c65-94b8-4f3d-a187-bbafb04b8eff
-md"""
-Show TOC $(@bind show_toc CheckBox(default=true))
-"""
-
-# ╔═╡ 1910d57c-853a-4f31-b3e6-0921d775ff8a
-if show_toc; TableOfContents(); end
-
 # ╔═╡ d20423a3-a6d8-4b7a-83c7-f1539fcc4d72
 md"""
-Homework 1, version 0.1: Fall 2022
+Homework 1 of the MIT Course [_Julia: solving real-world problems with computation_](https://github.com/mitmath/JuliaComputation)
+
+Release date: Thursday, Sep 15, 2022.
+
+**Due date: Thursday, Sep 22, 2022 (11:59pm EST)**
 
 Submission by: **Jazzy Doe** (jazz@mit.edu)
 """
@@ -51,22 +48,10 @@ md"""
 # Pokémon - _gotta dispatch 'em all_
 """
 
-# ╔═╡ 6d77e2b0-ad8c-4c96-9bc1-ca5576de639f
+# ╔═╡ eee70c65-94b8-4f3d-a187-bbafb04b8eff
 md"""
-HW1 release date: Thursday, Sep 15, 2022.
-
-**HW1 due date: Thursday, Sep 22, 2022 (11:59pm EST)**
+Show TOC $(@bind show_toc CheckBox(default=true))
 """
-
-# ╔═╡ 7c362af1-cc1a-47fc-b3a1-252a891849e5
-begin
-	chart_path = download("https://img.pokemondb.net/images/typechart.png")
-	eevee_path = download("https://archives.bulbagarden.net/media/upload/e/e2/133Eevee.png")
-	charmander_path = download("https://archives.bulbagarden.net/media/upload/7/73/004Charmander.png")
-	squirtle_path = download("https://archives.bulbagarden.net/media/upload/3/39/007Squirtle.png")
-	bulbasaur_path = download("https://archives.bulbagarden.net/media/upload/2/21/001Bulbasaur.png")
-	pikachu_path = download("https://archives.bulbagarden.net/media/upload/0/0d/025Pikachu.png")
-end
 
 # ╔═╡ 9f1c224c-561e-4071-a909-0c951b9e3542
 md"""
@@ -76,7 +61,7 @@ md"""
 # ╔═╡ 6ae05ccb-c386-4139-817c-85959a20a4de
 md"""
 The goal of this part is to build a simple model of Pokémon behavior.
-We will do this by exploiting two key features of Julia: types and dispatch. 
+We will do this by exploiting two key assets of Julia: types and dispatch. 
 """
 
 # ╔═╡ d0634f27-ba12-4c53-be66-6d2f7bf74808
@@ -116,28 +101,88 @@ end
 # ╔═╡ 72ac44a7-7c18-4d0e-85e4-9ca9cb5173a8
 md"""
 Finally, we create one iconic Pokémon from each of these types.
-This empty `struct` definition means that the concrete structures we define have no attributes.
+This empty `struct` definition means that the structures we define have no attributes.
 """
-
-# ╔═╡ d20b68c4-3091-4e49-8873-199672ed2695
-begin
-	(
-		load(eevee_path),
-		load(charmander_path),
-		load(squirtle_path),
-		load(bulbasaur_path),
-		load(pikachu_path)
-	)
-end
 
 # ╔═╡ 74a44465-7332-45b0-91c4-2ae5ed658160
 begin
-	struct Eevee <: Normal end
+	struct Snorlax <: Normal end
 	struct Charmander <: Fire end
 	struct Squirtle <: Water end
 	struct Bulbasaur <: Grass end
 	struct Pikachu <: Electric end
 end
+
+# ╔═╡ ed8a218f-287c-425b-a6b6-793be7ad1a7b
+md"""
+Eevee is a very special Pokémon, because it can evolve into members of nearly every family.
+"""
+
+# ╔═╡ 037d04d4-f5f2-4b77-80ed-b799c1ea9b77
+md"""
+> Task: Define new structures for Eevee (from the `Normal` family) and its evolutions Flareon, Vaporeon, Leafeon and Jolteon (respectively from the `Fire`, `Water`, `Grass` and `Electric` families).
+"""
+
+# ╔═╡ 87081f51-7c44-4365-b412-7b34ed2b3191
+begin
+	struct Eevee <: Normal end
+	struct Flareon <: Fire end
+	struct Vaporeon <: Water end
+	struct Leafeon <: Grass end
+	struct Jolteon <: Electric end
+end
+
+# ╔═╡ 1dbbf479-1707-4dd0-90c8-394690fbac91
+md"""
+## Interlude: multiple dispatch
+"""
+
+# ╔═╡ c4063845-c70a-47ef-a4f7-ef2b3ea0f0d8
+md"""
+Before going further, we explain and illustrate a key feature of Julia: _multiple dispatch_.
+In Julia, a _function_ is just a name, like `+` or `exp`.
+Each function may possess several implementations called _methods_.
+These methods are where the real magic happens, because adding two integers is very different from adding two floating point numbers or even matrices.
+The right method is _dispatched_ "just in time" based on the types of all function arguments (not just the first one).
+"""
+
+# ╔═╡ 3d748f13-ef9c-4899-99d3-16743f0e2f5a
+md"""
+Here is an example inspired by the notebook on [abstraction](https://mit-c25.netlify.app/class%20notebooks/1.%20abstraction) that you saw in the first class.
+Let's ask Julia which method is chosen for addition, depending on what we try to add.
+"""
+
+# ╔═╡ 730ae9dc-34bf-4472-ae32-36fe10c54175
+@which true + true  # add bools
+
+# ╔═╡ d0d2c56e-297d-4d35-afb7-bfd366815a95
+@which 1 + 1  # add integers
+
+# ╔═╡ 0eabf795-a9c5-4aa1-8282-e5e22b631c4d
+@which 1//1 + 1//1  # add rationals
+
+# ╔═╡ 57e16f0a-c0bc-4727-9315-701328989762
+@which 1.0 + 1.0  # add floating point numbers
+
+# ╔═╡ ab71225e-3d0e-4a11-a5de-6b1eea4048eb
+@which [1 0; 0 1] + [1 0; 0 1]  # add matrices
+
+# ╔═╡ ecebb7eb-000f-418d-bfb8-acb66b06c171
+@which 1 + 1.0
+
+# ╔═╡ 7b2dbb37-9523-4150-bf23-4803ef0f31f1
+md"""
+Since each case has its own custom implementation, which is essential for performance reasons, the number of methods for addition is actually mind-blowing!
+"""
+
+# ╔═╡ ad26c7d9-f457-4dc0-8a70-8bac4b3c3a10
+length(methods(+))
+
+# ╔═╡ b6ebf9ce-0a8f-4f67-b324-3aa4da967d46
+md"""
+Whenever several methods are compatible with the argument types, the most specific method wins.
+We can use this to our advantage by specifying default behavior for abstract types, and then being more specific when we need to be.
+"""
 
 # ╔═╡ d241fcec-3266-4175-abd5-7d26128dc923
 md"""
@@ -146,8 +191,8 @@ md"""
 
 # ╔═╡ 3eb3545e-d48a-41d7-ac31-b9b6d1b22af9
 md"""
-Here, we assume that the efficiency of a Pokémon attack is determined only by the respective families of the attacker and defender.
-Pokémon fans will notice that this is an oversimplification.
+Here, we assume that the effectiveness of a Pokémon attack is determined only by the respective families of the attacker and defender.
+True Pokémon fans will notice that this is an oversimplification.
 Good for them.
 """
 
@@ -158,31 +203,17 @@ begin
 	const SUPER_EFFECTIVE = 2.0
 end;
 
-# ╔═╡ c4063845-c70a-47ef-a4f7-ef2b3ea0f0d8
+# ╔═╡ 80c63240-d4e8-4a4b-b34c-a14b064a75a5
 md"""
-We now explain and illustrate a key feature of Julia: _multiple dispatch_.
-In Julia, a _function_ is just a name, like `+` or `exp`.
-Each function may possess several implementations called _methods_.
-These methods are where the real magic happens, because adding two integers is very different from adding two floating point numbers or even matrices.
-The right method is _dispatched_ "just in time" based on the types of all function arguments (not just the first one).
-Whenver several methods are compatible with the argument types, the most specific method wins.
-We can use this to our advantage by specifying default behavior for abstract types, and then being more specific when we need to be.
-"""
-
-# ╔═╡ 91a1d76e-a334-4cf5-bb9f-189aeb14444f
-load(chart_path)
-
-# ╔═╡ b6ebf9ce-0a8f-4f67-b324-3aa4da967d46
-md"""
-Our goal is to reproduce the upper left corner of the efficiency chart by defining methods for the `efficiency` function.
-Here are the patterns we suggest to use:
-- usually, an attack between two Pokémon is normally effective
-- usualy, an attack between two Pokémon of the same type is not very effective
+Our goal here is to reproduce the upper left corner of the chart by defining methods for the `attack` function.
+And luckily, we can save some work by identifying patterns:
+- in most cases, an attack between two Pokémon is normally effective
+- in most cases, an attack between two Pokémon of the same type is not very effective
 So let us start with very generic fallbacks.
 """
 
 # ╔═╡ 9370b300-25a9-4342-803d-c2f1ba0d2b90
-efficiency(att::Pokemon, def::Pokemon) = NORMAL_EFFECTIVE;
+attack(att::Pokemon, def::Pokemon) = NORMAL_EFFECTIVE;
 
 # ╔═╡ 595e20f1-150a-4224-aee5-607882486887
 md"""
@@ -190,7 +221,7 @@ There is a special syntax we can use when both arguments of a function must have
 """
 
 # ╔═╡ 136dbf04-77a0-4c14-868d-73a92a9028b5
-efficiency(att::P, def::P) where {P<:Pokemon} = NOT_VERY_EFFECTIVE;
+attack(att::P, def::P) where {P<:Pokemon} = NOT_VERY_EFFECTIVE;
 
 # ╔═╡ 390c7fe7-a27c-4f21-a8dc-c8cf19372857
 md"""
@@ -199,20 +230,25 @@ Now we add special cases that differ from these patterns.
 
 # ╔═╡ 5963a5b6-7939-49f5-9f5e-d1984afd8d79
 begin
-	efficiency(att::Normal, def::Normal) = NORMAL_EFFECTIVE
+	attack(att::Normal, def::Normal) = NORMAL_EFFECTIVE
 
-	efficiency(att::Fire, def::Water) = NOT_VERY_EFFECTIVE
-	efficiency(att::Fire, def::Grass) = SUPER_EFFECTIVE
+	attack(att::Fire, def::Water) = NOT_VERY_EFFECTIVE
+	attack(att::Fire, def::Grass) = SUPER_EFFECTIVE
 	
-	efficiency(att::Water, def::Fire) = SUPER_EFFECTIVE
-	efficiency(att::Water, def::Grass) = NOT_VERY_EFFECTIVE
+	attack(att::Water, def::Fire) = SUPER_EFFECTIVE
+	attack(att::Water, def::Grass) = NOT_VERY_EFFECTIVE
 	
-	efficiency(att::Electric, def::Water) = SUPER_EFFECTIVE
-	efficiency(att::Electric, def::Grass) = NOT_VERY_EFFECTIVE
+	attack(att::Electric, def::Water) = SUPER_EFFECTIVE
+	attack(att::Electric, def::Grass) = NOT_VERY_EFFECTIVE
 	
-	efficiency(att::Grass, def::Fire) = NOT_VERY_EFFECTIVE
-	efficiency(att::Grass, def::Water) = SUPER_EFFECTIVE
+	attack(att::Grass, def::Fire) = NOT_VERY_EFFECTIVE
+	attack(att::Grass, def::Water) = SUPER_EFFECTIVE
 end;
+
+# ╔═╡ 520f5b7e-d5dd-4954-93a3-39e63d5d2a1b
+md"""
+This is a bit tedious, but thanks to the patterns we identified, we only need to handle a few exceptions instead of copying the entire $5 \times 5$ effectiveness matrix.
+"""
 
 # ╔═╡ 7b003215-ce5d-4063-9eb0-c05affd1d15e
 md"""
@@ -222,11 +258,11 @@ md"""
 # ╔═╡ ffee9abf-d6ed-411e-bef7-15d52c084d3e
 md"""
 Until now, nothing extraordinary has happened.
-You might even wonder why we bother to use types, instead of just copying the chart above into a matrix.
-The answer fits in one word: _composability_.
+You might even think it is simpler to just copy the matrix and be done with it.
+The reason why we use types and dispatch fits in one word: _composability_.
 Imagine there is a package called `Pokemon.jl` that contains all of the stuff above.
 If Nintendo suddently introduces a new family of Pokémon, or a new fight mechanism, we will want to extend that package, instead of recoding everything from scratch.
-This is made very easy by multiple dispatch, because we're able to do the following:
+This is made very easy by multiple dispatch, because we are able to do the following:
 - Define new types that work well with existing methods
 - Define new methods that apply on existing types
 As underlined by Stefan Karpinski in this [JuliaCon 2019 talk](https://youtu.be/kc9HwsxE1OY), there are very few languages where both of these operations are possible.
@@ -241,12 +277,12 @@ md"""
 # ╔═╡ cf769229-9766-40d5-a8e0-1b7cb0b8b16e
 md"""
 In addition to his duties at MIT, Alan Edelman was recently appointed as CTO of Nintendo.
-As part of his ambitious reform plan for the Pokémon franchise, he wants to introduce the `Corgi` family, full of legendary creatures.
+As part of his ambitious reform for the Pokémon franchise, he plans to introduce the `Corgi` family, full of legendary creatures with untold abilities.
 """
 
 # ╔═╡ 3903ec25-8077-49e2-a711-2500defec7b5
 md"""
-> Task: Define an abstract type named `Corgi` and a concrete subtype named `Philip`, following the template given earlier.
+> Task: Define an abstract subtype of `Pokemon` named `Corgi`.
 """
 
 # ╔═╡ a4c0fff3-b4fe-4c48-8680-c12bbf4f68f3
@@ -254,31 +290,151 @@ abstract type Corgi <: Pokemon end
 
 # ╔═╡ 88c8da1c-8cd8-4dad-961e-edf035790286
 md"""
-Pokémon of type `Corgi` like to play in the garden or swim in the pool.
-As a result, they are strong against the `Grass` and `Water` families.
-However, they are also afraid of open flames and lightning.
-Therefore, they are weak against the `Fire` and `Electric` families.
+Pokemon of type `Corgi` have super effective attacks against every other family except `Normal`
 """
 
 # ╔═╡ fb577ace-d7d1-4ac9-ad47-57d28528c243
 md"""
-> Task: Extend the `fight` function by defining appropriate methods for the `Corgi` type.
-> Do you also need to define methods for the `Philip` subtype?
+> Task: Extend the fight mechanism by defining appropriate methods for attackers of type `Corgi`.
+"""
+
+# ╔═╡ a2fe0244-361f-4154-af76-a56bd7928880
+begin
+	attack(att::Corgi, def::Fire) = SUPER_EFFECTIVE
+	attack(att::Corgi, def::Water) = SUPER_EFFECTIVE
+	attack(att::Corgi, def::Grass) = SUPER_EFFECTIVE
+	attack(att::Corgi, def::Electric) = SUPER_EFFECTIVE
+end;
+
+# ╔═╡ ccc1dd94-a1db-4504-8d27-5fbf577cee30
+md"""
+Among the `Corgi` family, `Philip` is clearly the most powerful entity.
+Unlike the Pokémon we have encountered so far, `Philip` has a reserve of life points, which makes him more resilient against attacks.
+"""
+
+# ╔═╡ e2f9f8d1-0d83-415e-b459-4c6e36cc9ddf
+md"""
+> Task: Define a new structure for `Philip` with a single attribute named `life`, of type `Int`. Add a default constructor which sets `life` to be a random number between $1$ and $5$.
 """
 
 # ╔═╡ f899ed08-4315-4c17-8792-84ad0cae631b
-struct Philip <: Corgi end
+struct Philip <: Corgi
+	life::Int
+	Philip() = new(rand(1:5))
+end
+
+# ╔═╡ 28737ee7-6939-4830-95e3-fc08b6dcf1a4
+hint(md"Take a look at the manual sections on [composite types](https://docs.julialang.org/en/v1/manual/types/#Composite-Types) and [inner constructor methods](https://docs.julialang.org/en/v1/manual/constructors/#man-inner-constructor-methods)")
+
+# ╔═╡ eaea15b2-5918-4fc0-b44a-3cb0c085fa67
+md"""
+When an attack is launched against `Philip`, a random number is drawn between $1$ and `life`. If this number is equal to `life`, the attack is `SUPER_EFFECTIVE`, otherwise it is `NORMAL_EFFECTIVE`.
+"""
+
+# ╔═╡ 8fc13f81-3e49-4b98-8592-fb9f24eda900
+md"""
+> Task: Extend the fight mechanism by defining appropriate methods for defenders of type `Philip`.
+"""
+
+# ╔═╡ cf737824-4aa3-409b-a914-be606c9668a0
+function attack(pok::Pokemon, phil::Philip)
+	strength = rand(1:phil.life)
+	if strength == phil.life
+		return NORMAL_EFFECTIVE
+	else
+		return NORMAL_EFFECTIVE
+	end
+end;
 
 # ╔═╡ 023a75a3-a7a6-4e2d-911b-8a5c54d86e80
 md"""
-## Adding a fight mechanism
+## Adding a friendship mechanism
 """
+
+# ╔═╡ 87cdb6d3-cfa6-4564-8ea4-e2f202d89eca
+md"""
+Alan Edelman didn't stop at the introduction of the `Corgi` family.
+He also saw the true violence of the Pokémon universe, and said: "no more".
+Indeed, why would Pokémon need to fight all the time, when they can be friends?
+While attack effectiveness is defined at the level of families, friendship is defined at the level of individual Pokémon.
+"""
+
+# ╔═╡ d5ba5a13-9242-480c-94d7-e681e0ecdf72
+md"""
+By default, two different Pokémon are not friends, except when they are from the same family.
+"""
+
+# ╔═╡ 117ff067-08ae-4134-8d23-ef28d31a7b8f
+friends(pok1::Pokemon, pok2::Pokemon) = false;
+
+# ╔═╡ d2e88b85-1670-48c8-b4c6-36be84241c54
+friends(pok1::P, pok2::P) where {P<:Pokemon} = true;
+
+# ╔═╡ e65bfd90-83c6-4c93-9f7f-aa8d41c01531
+md"""
+Of course, `Charmander`, `Squirtle` and `Bulbasaur` are friends because they all came of age together.
+"""
+
+# ╔═╡ 172d0f37-5214-4e73-8635-8bfe85011f4a
+begin
+	friends(pok1::Charmander, pok2::Squirtle) = true
+	friends(pok1::Squirtle, pok2::Charmander) = true
+	
+	friends(pok1::Charmander, pok2::Bulbasaur) = true
+	friends(pok1::Bulbasaur, pok2::Charmander) = true
+
+	friends(pok1::Bulbasaur, pok2::Squirtle) = true
+	friends(pok1::Squirtle, pok2::Bulbasaur) = true
+end;
 
 # ╔═╡ 86d0af15-ccf4-4254-a686-a6ace39a7a74
 md"""
-!!! danger "Ideas?"
-	I don't have any.
+As a side note, this way of doing things might seem strange to people unfamiliar with Julia.
+After all, we could simply use an `if / else` statement.
 """
+
+# ╔═╡ 22633b0a-33c5-4b7d-98b0-42663adc1631
+function friends_naive(pok1::Pokemon, pok2::Pokemon)
+	if pok1 isa Charmander && pok2 isa Squirtle
+		return true
+	elseif pok1 isa Squirtle && pok2 isa Charmander
+		return true
+	elseif pok1 isa Charmander && pok2 isa Bulbasaur
+		return true
+	elseif pok1 isa Bulbasaur && pok2 isa Charmander
+		return true
+	elseif pok1 isa Bulbasaur && pok2 isa Squirtle
+		return true
+	elseif pok1 isa Squirtle && pok2 isa Bulbasaur
+		return true
+	else
+		return false
+	end
+end;
+
+# ╔═╡ 4885f35e-1875-4dca-8bad-f8ae94cb98b3
+md"""
+First, `friends_naive` is more tedious to write and read, beause everything has to be in the same place.
+Second, it is not easy to extend _a posteriori_.
+And third, this paradigm often leads to less efficient functions.
+Indeed, since multiple dispatch selects the appropriate method based on argument types, it can generate shorter machine code than the full `if / else` statement.
+This doesn't seem to hold here however, probably because the compiler is smart enough to optimize away the difference.
+"""
+
+# ╔═╡ c64086a9-b749-4a5d-8665-0085ae4fb64e
+md"""
+> Task: Extend the friendship mechanism to account for the fact that `Philip` is friends with everyone.
+"""
+
+# ╔═╡ 6daea6c1-6eb4-4117-8e11-63e9913792e3
+begin
+	friends(phil::Philip, pok::Pokemon) = true
+	friends(pok::Pokemon, phil::Philip) = true
+	friends(phil1::Philip, phil2::Philip) = true
+end;
+
+# ╔═╡ c491ca01-5a0b-4f91-825c-67f597aa788a
+hint(md"You might get an arror due to an ambiguous method. This means multiple dispatch has failed because there is no single most specific implementation. How do you fix this?")
 
 # ╔═╡ 916540e4-d354-436e-8c79-a8e2aff4f591
 md"""
@@ -287,7 +443,7 @@ md"""
 
 # ╔═╡ 9c41f013-38f4-41b4-a2c9-90a2f6f08356
 md"""
-Inspired by this [tweet](https://twitter.com/olafurw/status/1522273899441967104), we now simulate fights between Pokémon of different families, in order to see which family ends up on top.
+Inspired by this [tweet](https://twitter.com/olafurw/status/1522273899441967104), we now simulate fights between Pokémon, in order to see which family ends up on top.
 """
 
 # ╔═╡ f7b8330e-5897-4b71-a9aa-64838cf2a9bd
@@ -297,48 +453,67 @@ md"""
 
 # ╔═╡ f2ea1753-e3d8-42e0-a495-5fd22abeb944
 md"""
-> Task: Define a function `new_grid(pokemon_set, n, m)` that creates a matrix of Pokémon of size `n × m` and fills it with random picks from the set `pokemon_set`.
+> Task: Define a function `new_grid(pokemon_set; n, m)` that creates a matrix of Pokémon of size `n × m` and fills it with random picks from the set `pokemon_set`.
 """
 
 # ╔═╡ b66b0c70-fdd1-4d43-8adf-807f59055f8c
-function new_grid(pokemon_set, n::Int, m::Int)
-	grid = [rand(pokemon_set) for i = 1:n, j = 1:m]
+function new_grid(pokemon_set; n, m)
+	grid = Matrix{Pokemon}(undef, n, m)
+	for i in 1:n, j in 1:m
+		grid[i, j] = rand(pokemon_set)
+	end
+	return grid
 end
 
 # ╔═╡ d8058473-2ffa-4ae4-8699-435bdf7d6f08
 md"""
 The rules of the fight are simple.
-At each time step, a random Pokémon is chosen from the grid to be the attacker.
-This Pokémon then looks at its neighbors, picks the weakest one to be the defender, and attacks.
-- If the attack is `SUPER_EFFECTIVE`, the defender is replaced in the grid by a copy of the attacker.
-- Otherwise, nothing happens.
+At each time step, the following events occur in order:
+1. A random Pokémon is chosen from the grid to be the attacker.
+2. A random neighbor (among 8) is selected to be the defender.
+3. If the attack is `SUPER_EFFECTIVE`, the defender is replaced in the grid by a copy of the attacker.
 """
 
 # ╔═╡ ebddaba7-792a-4546-9739-df271df2a880
 md"""
-> Task: Define a function `step!(grid)` which applies one step of simulation to a grid.
+> Task: Define a function `step!(grid)` which applies one step of fight simulation to a matrix of Pokémon, modifying this matrix in the process.
 """
 
 # ╔═╡ 52121c38-fe60-4c52-8c43-40970fc8d69c
 function step!(grid::Matrix{<:Pokemon})
 	n, m = size(grid)
-	# Select random attacker
-	i1, j1 = rand(1:n), rand(1:m)
-	att = grid[i1, j1]
-	# Select weakest neighbor as defender
-	weakest_i2, weakest_j2 = (i1 - 1) % n + 1, (j1 - 1) % m + 1
-	best_efficiency = efficiency(att, grid[weakest_i2, weakest_j2])
-	for Δi in -1:1, Δj in -1:1
-		i2, j2 = (i1 + Δi) % n + 1, (j1 + Δj) % m + 1
-		if efficiency(att, grid[i2, j2]) > best_efficiency
-			weakest_i2, weakest_j2 = i2, j2
-			best_efficiency = efficiency(att, grid[weakest_i2, weakest_j2])
-		end
+	i, j = rand(1:n), rand(1:m)
+	att = grid[i, j]
+	neighbors = [
+		((i + Δi) % n + 1, (j + Δj) % m + 1)
+		for Δi in -1:1 for Δj in -1:1
+	]
+	i2, j2 = rand(neighbors)
+	def = grid[i2, j2]
+	if attack(att, def) == SUPER_EFFECTIVE
+		grid[i2, j2] = att
 	end
-	def = grid[weakest_i2, weakest_j2]
-	# Replace defender with attacker if attack is effective enough
-	if efficiency(att, def) == SUPER_EFFECTIVE
-		grid[weakest_i2, weakest_j2] = att
+end
+
+# ╔═╡ 8d558109-3d41-4ed1-b855-2d7ce7f29369
+md"""
+> Task: Implement a new function called `step_consider_friends!` where the attack doesn't happen if the attacker is friends with the defender.
+> What do you observe?
+"""
+
+# ╔═╡ 7f97374d-04d9-4241-b166-aa5a6e052c66
+function step_consider_friends!(grid::Matrix{<:Pokemon})
+	n, m = size(grid)
+	i, j = rand(1:n), rand(1:m)
+	att = grid[i, j]
+	neighbors = [
+		((i + Δi) % n + 1, (j + Δj) % m + 1)
+		for Δi in -1:1 for Δj in -1:1
+	]
+	i2, j2 = rand(neighbors)
+	def = grid[i2, j2]
+	if !friends(att, def) && attack(att, def) == SUPER_EFFECTIVE
+		grid[i2, j2] = att
 	end
 end
 
@@ -359,44 +534,275 @@ begin
 	get_color(::Water) = colorant"blue"
 	get_color(::Grass) = colorant"green"
 	get_color(::Electric) = colorant"yellow"
+	if (@isdefined Corgi) 
+		get_color(::Corgi) = colorant"purple"
+	end
 end;
 
-# ╔═╡ a0a6e0d5-88c4-4829-9cff-f1330bf297cd
+# ╔═╡ 629da440-d9b9-4115-b460-fd63ebb6d92b
 md"""
-> Task: Assign the color purple to the `Corgi` family.
+And we store the animation as a GIF.
 """
 
-# ╔═╡ 7b905bd4-8a20-499c-a2c6-17d98dafef03
-get_color(::Corgi) = colorant"purple";
+# ╔═╡ 012dd868-8815-4c3e-9adb-1ce854081bac
+function simulation(pokemon_set; n, m, T, consider_friends=false, dT=1000)
+	g = new_grid(pokemon_set; n=n, m=m)
+	anim = @animate for t in 1:(T ÷ dT)
+		for k in 1:dT
+			if consider_friends
+				step_consider_friends!(g)
+			else
+				step!(g)
+			end
+		end
+		plot(get_color.(g), title="Friends = $consider_friends / Time = $(t*dT)")
+	end
+	return gif(anim)
+end
 
-# ╔═╡ 47996e16-d3c9-4974-be4d-f315a4803082
+# ╔═╡ dd38f9f9-0da9-4039-b1bd-ed914d434c7f
 md"""
-We also define a custom display for a grid of Pokémon based on the colors of its elements.
+## Experiments
 """
 
 # ╔═╡ de109133-313f-4235-a885-eb8ca55cde67
-all_basic_pokemon = [Eevee(), Charmander(), Squirtle(), Bulbasaur(), Pikachu()]
+basic_pokemon = [Snorlax(), Charmander(), Squirtle(), Bulbasaur(), Pikachu()]
 
-# ╔═╡ f4e6f9e4-49ee-473f-90c5-5750c87775b8
-plot(get_color.(new_grid(all_basic_pokemon, 100, 100)))
+# ╔═╡ 876837a1-06b7-4b86-829d-4edeae166dc3
+eevees = [Eevee(), Flareon(), Vaporeon(), Leafeon(), Jolteon()]
 
 # ╔═╡ 176c6971-483f-408c-abc2-994546a5f57f
-T = 10000
+simulation(
+	vcat(basic_pokemon, eevees);
+	n=100, m=100, T=100_000
+)
 
-# ╔═╡ 8a6d23f1-d28a-499b-8021-e27b21044b01
+# ╔═╡ 97541230-5515-4b78-b211-2a01a2d9ed83
+simulation(
+	vcat(basic_pokemon, eevees, Philip());
+	n=100, m=100, T=100_000
+)
+
+# ╔═╡ e3478b55-7100-49c8-809f-4a8bf15071f3
+simulation(
+	vcat(basic_pokemon, eevees, Philip());
+	consider_friends=true, n=100, m=100, T=100_000
+)
+
+# ╔═╡ bd90221c-c590-4d36-bba4-6b0b2e4f2453
+md"""
+# D. Appendix
+"""
+
+# ╔═╡ 1910d57c-853a-4f31-b3e6-0921d775ff8a
+if show_toc; TableOfContents(); end
+
+# ╔═╡ d900e981-36d8-4a3c-a1bd-5809ee6e7c64
+chart_path = download("https://img.pokemondb.net/images/typechart.png")
+
+# ╔═╡ 91a1d76e-a334-4cf5-bb9f-189aeb14444f
+load(chart_path)
+
+# ╔═╡ 7c362af1-cc1a-47fc-b3a1-252a891849e5
 begin
-	g = new_grid(all_basic_pokemon, 100, 100)
-	@gif for t in 1:T
-		step!(g)
-		plot(get_color.(g), title="Time = $t")
-	end every 100
+	snorlax_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/143.png")
+	charmander_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/004.png")
+	squirtle_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/007.png")
+	bulbasaur_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/001.png")
+	pikachu_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/025.png")
+
+	eevee_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/133.png")
+	flareon_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/136.png")
+	vaporeon_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/134.png")
+	leafeon_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/470.png")
+	jolteon_path = download("https://assets.pokemon.com/assets/cms2/img/pokedex/full/135.png")
+end;
+
+# ╔═╡ d20b68c4-3091-4e49-8873-199672ed2695
+begin
+	(
+		load(snorlax_path),
+		load(charmander_path),
+		load(squirtle_path),
+		load(bulbasaur_path),
+		load(pikachu_path)
+	)
 end
 
-# ╔═╡ ffb2f27b-711f-430d-af2f-b6a051820504
-md"""
-> Task: Run the same simulation, but this time, add some `Philip` Pokémon to the mix.
-> What do you observe?
-"""
+# ╔═╡ fc1c3e85-b1af-4cbb-a8fe-597174bea4d4
+begin
+	(
+		load(eevee_path),
+		load(flareon_path),
+		load(vaporeon_path),
+		load(leafeon_path),
+		load(jolteon_path)
+	)
+end
+
+# ╔═╡ 66e2042d-aedc-41cb-91c0-b364e014f7f0
+check_eevee = if (
+	(@isdefined Eevee) &&
+	Eevee <: Normal &&
+	isconcretetype(Eevee) &&
+	isempty(fieldnames(Eevee))
+)
+	correct(md"`Eevee` is correctly defined")
+else
+	almost(md"You need to define `Eevee` correctly")
+end;
+
+# ╔═╡ f43cde45-9c12-430d-b75b-70a2c476db5b
+check_eevee
+
+# ╔═╡ 8b5e86e7-0f98-48b5-969d-e48daddf10cb
+check_flareon = if (
+	(@isdefined Flareon) &&
+	Flareon <: Fire &&
+	isconcretetype(Flareon) &&
+	isempty(fieldnames(Flareon))
+)
+	correct(md"`Flareon` is correctly defined")
+else
+	almost(md"You need to define `Flareon` correctly")
+end;
+
+# ╔═╡ ceee19ed-539e-4625-bb23-d4bad31c3661
+check_flareon
+
+# ╔═╡ 04c69dcc-534a-4c52-a8a3-5a65fb5f0191
+check_vaporeon = if (
+	(@isdefined Vaporeon) &&
+	Vaporeon <: Water &&
+	isconcretetype(Vaporeon) &&
+	isempty(fieldnames(Vaporeon))
+)
+	correct(md"`Vaporeon` is correctly defined")
+else
+	almost(md"You need to define `Vaporeon` correctly")
+end;
+
+# ╔═╡ 5fed229c-fb38-4e2d-921c-07f98d018107
+check_vaporeon
+
+# ╔═╡ 0e502851-fa10-4d2c-aaf3-e47ca4bf4bcf
+check_leafeon = if (
+	(@isdefined Leafeon) &&
+	Leafeon <: Grass &&
+	isconcretetype(Leafeon) &&
+	isempty(fieldnames(Leafeon))
+)
+	correct(md"`Leafeon` is correctly defined")
+else
+	almost(md"You need to define `Leafeon` correctly")
+end;
+
+# ╔═╡ db0d7557-4507-4568-b721-d092cf0150c7
+check_leafeon
+
+# ╔═╡ 42631084-34ec-4482-9e10-84ff85067b93
+check_jolteon = if (
+	(@isdefined Jolteon) &&
+	Jolteon <: Electric &&
+	isconcretetype(Jolteon) &&
+	isempty(fieldnames(Jolteon))
+)
+	correct(md"`Jolteon` is correctly defined")
+else
+	almost(md"You need to define `Jolteon` correctly")
+end;
+
+# ╔═╡ cf9ac320-3715-4373-b022-9839838fd024
+check_jolteon
+
+# ╔═╡ 82751f0f-87fd-4110-9e86-0d0b1ad5cd36
+check_corgi = if (
+	(@isdefined Corgi) &&
+	Corgi <: Pokemon &&
+	!isconcretetype(Corgi)
+)
+	correct(md"`Corgi` is correctly defined")
+else
+	almost(md"You need to define `Corgi` correctly")
+end;
+
+# ╔═╡ c3a05713-b023-4f8f-9eb2-98dc818de3ca
+check_corgi
+
+# ╔═╡ a3e88d8f-72dd-495a-b61b-a969cac7e55a
+check_attack_corgi = if (@isdefined Corgi)
+	struct DummyCorgi <: Corgi end
+	if (
+		attack(DummyCorgi(), Charmander()) == SUPER_EFFECTIVE &&
+		attack(DummyCorgi(), Squirtle()) == SUPER_EFFECTIVE &&
+		attack(DummyCorgi(), Bulbasaur()) == SUPER_EFFECTIVE &&
+		attack(DummyCorgi(), Pikachu()) == SUPER_EFFECTIVE
+	)
+		correct(md"`attack` is correctly defined for `Corgi` attackers")
+	else
+		almost(md"You need to define `attack` correctly for `Corgi` attackers")
+	end
+else
+	almost(md"You need to define `attack` correctly for `Corgi` attackers")
+end;
+
+# ╔═╡ 2d0b80cb-01b4-429c-beed-c2c0d6f8626e
+check_attack_corgi
+
+# ╔═╡ a25c0f95-7c94-449f-a6c2-8acc649d3307
+check_philip = if (
+	(@isdefined Corgi) &&
+	(@isdefined Philip) &&
+	Philip <: Corgi &&
+	isconcretetype(Philip) &&
+	fieldnames(Philip) == (:life,) &&
+	fieldtypes(Philip) == (Int,) &&
+	all(in(1:5), [Philip().life for k in 1:100])
+)
+	correct(md"`Philip` is correctly defined")
+else
+	almost(md"You need to define `Philip` correctly")
+end;
+
+# ╔═╡ 7df61a7e-b8d0-4024-8dce-239cf0d0edd8
+check_philip
+
+# ╔═╡ c2580e89-8ac3-474a-8bb3-9c7f67bac44c
+mean_defense_philip = SUPER_EFFECTIVE / 5 + 4 * NORMAL_EFFECTIVE / 5
+
+# ╔═╡ 3117a299-06af-47d4-8fb3-3ce394b71050
+check_defense_philip = if (
+	(@isdefined Philip) &&
+	(
+		80 * mean_defense_philip <=
+		sum(attack(Snorlax(), Philip()) for k = 1:100) <=
+		120 * mean_defense_philip
+	)
+)
+	correct(md"`attack` is correctly defined for `Philip` defenders")
+else
+	almost(md"You need to define `attack` correctly for `Philip` defenders")
+end;
+
+# ╔═╡ 4abde394-998e-4ff2-ad27-0f86a169d841
+check_defense_philip
+
+# ╔═╡ 90c54b0f-0813-4813-8b8c-913a904817dd
+check_friends_philip = if (
+	(@isdefined Philip) &&
+	friends(Philip(), Philip()) == true &&
+	friends(Philip(), Charmander()) == true &&
+	friends(Philip(), Squirtle()) == true &&
+	friends(Philip(), Bulbasaur()) == true &&
+	friends(Philip(), Pikachu()) == true
+)
+	correct(md"`friends` is correctly defined for `Philip` arguments")
+else
+	almost(md"You need to define `friends` correctly for `Philip` arguments")
+end;
+
+# ╔═╡ 5da5d4f3-a96c-4025-adf2-47978f441519
+check_friends_philip
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -404,6 +810,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -425,7 +832,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.1"
 manifest_format = "2.0"
-project_hash = "3a3c50ca01e2b24a873a6542eff3f29b9f1e02e9"
+project_hash = "207345753610d52bebdfff98df4e88f8b16c8a5f"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1920,14 +2327,10 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═fcafb864-249b-11ed-3b73-774e1742704a
-# ╟─eee70c65-94b8-4f3d-a187-bbafb04b8eff
-# ╠═1910d57c-853a-4f31-b3e6-0921d775ff8a
 # ╟─d20423a3-a6d8-4b7a-83c7-f1539fcc4d72
 # ╠═00992802-9ead-466b-8b01-bcaf0614b0c6
 # ╟─1896271c-e5bf-428c-bc3e-7780e71a065f
-# ╟─6d77e2b0-ad8c-4c96-9bc1-ca5576de639f
-# ╠═7c362af1-cc1a-47fc-b3a1-252a891849e5
+# ╟─eee70c65-94b8-4f3d-a187-bbafb04b8eff
 # ╟─9f1c224c-561e-4071-a909-0c951b9e3542
 # ╟─6ae05ccb-c386-4139-817c-85959a20a4de
 # ╟─d0634f27-ba12-4c53-be66-6d2f7bf74808
@@ -1937,30 +2340,74 @@ version = "1.4.1+0"
 # ╟─d931270d-1ceb-474f-b04e-0185595a4b5a
 # ╠═7dbd7cfd-5c52-4591-b6ba-eba7f3076a45
 # ╟─72ac44a7-7c18-4d0e-85e4-9ca9cb5173a8
-# ╠═d20b68c4-3091-4e49-8873-199672ed2695
 # ╠═74a44465-7332-45b0-91c4-2ae5ed658160
+# ╟─d20b68c4-3091-4e49-8873-199672ed2695
+# ╟─ed8a218f-287c-425b-a6b6-793be7ad1a7b
+# ╟─037d04d4-f5f2-4b77-80ed-b799c1ea9b77
+# ╟─fc1c3e85-b1af-4cbb-a8fe-597174bea4d4
+# ╠═87081f51-7c44-4365-b412-7b34ed2b3191
+# ╠═f43cde45-9c12-430d-b75b-70a2c476db5b
+# ╠═ceee19ed-539e-4625-bb23-d4bad31c3661
+# ╠═5fed229c-fb38-4e2d-921c-07f98d018107
+# ╠═db0d7557-4507-4568-b721-d092cf0150c7
+# ╠═cf9ac320-3715-4373-b022-9839838fd024
+# ╟─1dbbf479-1707-4dd0-90c8-394690fbac91
+# ╟─c4063845-c70a-47ef-a4f7-ef2b3ea0f0d8
+# ╟─3d748f13-ef9c-4899-99d3-16743f0e2f5a
+# ╠═730ae9dc-34bf-4472-ae32-36fe10c54175
+# ╠═d0d2c56e-297d-4d35-afb7-bfd366815a95
+# ╠═0eabf795-a9c5-4aa1-8282-e5e22b631c4d
+# ╠═57e16f0a-c0bc-4727-9315-701328989762
+# ╠═ab71225e-3d0e-4a11-a5de-6b1eea4048eb
+# ╠═ecebb7eb-000f-418d-bfb8-acb66b06c171
+# ╟─7b2dbb37-9523-4150-bf23-4803ef0f31f1
+# ╠═ad26c7d9-f457-4dc0-8a70-8bac4b3c3a10
+# ╟─b6ebf9ce-0a8f-4f67-b324-3aa4da967d46
 # ╟─d241fcec-3266-4175-abd5-7d26128dc923
 # ╟─3eb3545e-d48a-41d7-ac31-b9b6d1b22af9
 # ╠═58aed749-468e-477d-98c7-3a7a0c9ea7a0
-# ╟─c4063845-c70a-47ef-a4f7-ef2b3ea0f0d8
-# ╠═91a1d76e-a334-4cf5-bb9f-189aeb14444f
-# ╟─b6ebf9ce-0a8f-4f67-b324-3aa4da967d46
+# ╟─91a1d76e-a334-4cf5-bb9f-189aeb14444f
+# ╟─80c63240-d4e8-4a4b-b34c-a14b064a75a5
 # ╠═9370b300-25a9-4342-803d-c2f1ba0d2b90
 # ╟─595e20f1-150a-4224-aee5-607882486887
 # ╠═136dbf04-77a0-4c14-868d-73a92a9028b5
 # ╟─390c7fe7-a27c-4f21-a8dc-c8cf19372857
 # ╠═5963a5b6-7939-49f5-9f5e-d1984afd8d79
+# ╟─520f5b7e-d5dd-4954-93a3-39e63d5d2a1b
 # ╟─7b003215-ce5d-4063-9eb0-c05affd1d15e
 # ╟─ffee9abf-d6ed-411e-bef7-15d52c084d3e
 # ╟─2016d37b-ab63-4956-8fe7-de7eaadfb29f
 # ╟─cf769229-9766-40d5-a8e0-1b7cb0b8b16e
 # ╟─3903ec25-8077-49e2-a711-2500defec7b5
 # ╠═a4c0fff3-b4fe-4c48-8680-c12bbf4f68f3
+# ╠═c3a05713-b023-4f8f-9eb2-98dc818de3ca
 # ╟─88c8da1c-8cd8-4dad-961e-edf035790286
 # ╟─fb577ace-d7d1-4ac9-ad47-57d28528c243
+# ╠═a2fe0244-361f-4154-af76-a56bd7928880
+# ╠═2d0b80cb-01b4-429c-beed-c2c0d6f8626e
+# ╟─ccc1dd94-a1db-4504-8d27-5fbf577cee30
+# ╟─e2f9f8d1-0d83-415e-b459-4c6e36cc9ddf
 # ╠═f899ed08-4315-4c17-8792-84ad0cae631b
+# ╟─28737ee7-6939-4830-95e3-fc08b6dcf1a4
+# ╠═7df61a7e-b8d0-4024-8dce-239cf0d0edd8
+# ╟─eaea15b2-5918-4fc0-b44a-3cb0c085fa67
+# ╟─8fc13f81-3e49-4b98-8592-fb9f24eda900
+# ╠═cf737824-4aa3-409b-a914-be606c9668a0
+# ╠═4abde394-998e-4ff2-ad27-0f86a169d841
 # ╟─023a75a3-a7a6-4e2d-911b-8a5c54d86e80
+# ╟─87cdb6d3-cfa6-4564-8ea4-e2f202d89eca
+# ╟─d5ba5a13-9242-480c-94d7-e681e0ecdf72
+# ╠═117ff067-08ae-4134-8d23-ef28d31a7b8f
+# ╠═d2e88b85-1670-48c8-b4c6-36be84241c54
+# ╟─e65bfd90-83c6-4c93-9f7f-aa8d41c01531
+# ╠═172d0f37-5214-4e73-8635-8bfe85011f4a
 # ╟─86d0af15-ccf4-4254-a686-a6ace39a7a74
+# ╠═22633b0a-33c5-4b7d-98b0-42663adc1631
+# ╟─4885f35e-1875-4dca-8bad-f8ae94cb98b3
+# ╟─c64086a9-b749-4a5d-8665-0085ae4fb64e
+# ╠═6daea6c1-6eb4-4117-8e11-63e9913792e3
+# ╟─c491ca01-5a0b-4f91-825c-67f597aa788a
+# ╠═5da5d4f3-a96c-4025-adf2-47978f441519
 # ╟─916540e4-d354-436e-8c79-a8e2aff4f591
 # ╟─9c41f013-38f4-41b4-a2c9-90a2f6f08356
 # ╟─f7b8330e-5897-4b71-a9aa-64838cf2a9bd
@@ -1969,16 +2416,34 @@ version = "1.4.1+0"
 # ╟─d8058473-2ffa-4ae4-8699-435bdf7d6f08
 # ╟─ebddaba7-792a-4546-9739-df271df2a880
 # ╠═52121c38-fe60-4c52-8c43-40970fc8d69c
+# ╟─8d558109-3d41-4ed1-b855-2d7ce7f29369
+# ╠═7f97374d-04d9-4241-b166-aa5a6e052c66
 # ╟─4ebb1ab8-a763-4650-88c4-30dd4c22e95b
 # ╟─4463de07-315b-40f3-8361-c722a713a10f
 # ╠═3c8904ff-b602-4cb5-8874-6bc3fe99c713
-# ╟─a0a6e0d5-88c4-4829-9cff-f1330bf297cd
-# ╠═7b905bd4-8a20-499c-a2c6-17d98dafef03
-# ╟─47996e16-d3c9-4974-be4d-f315a4803082
+# ╟─629da440-d9b9-4115-b460-fd63ebb6d92b
+# ╠═012dd868-8815-4c3e-9adb-1ce854081bac
+# ╟─dd38f9f9-0da9-4039-b1bd-ed914d434c7f
 # ╠═de109133-313f-4235-a885-eb8ca55cde67
-# ╠═f4e6f9e4-49ee-473f-90c5-5750c87775b8
+# ╠═876837a1-06b7-4b86-829d-4edeae166dc3
 # ╠═176c6971-483f-408c-abc2-994546a5f57f
-# ╠═8a6d23f1-d28a-499b-8021-e27b21044b01
-# ╟─ffb2f27b-711f-430d-af2f-b6a051820504
+# ╠═97541230-5515-4b78-b211-2a01a2d9ed83
+# ╠═e3478b55-7100-49c8-809f-4a8bf15071f3
+# ╟─bd90221c-c590-4d36-bba4-6b0b2e4f2453
+# ╠═fcafb864-249b-11ed-3b73-774e1742704a
+# ╠═1910d57c-853a-4f31-b3e6-0921d775ff8a
+# ╠═d900e981-36d8-4a3c-a1bd-5809ee6e7c64
+# ╠═7c362af1-cc1a-47fc-b3a1-252a891849e5
+# ╠═66e2042d-aedc-41cb-91c0-b364e014f7f0
+# ╠═8b5e86e7-0f98-48b5-969d-e48daddf10cb
+# ╠═04c69dcc-534a-4c52-a8a3-5a65fb5f0191
+# ╠═0e502851-fa10-4d2c-aaf3-e47ca4bf4bcf
+# ╠═42631084-34ec-4482-9e10-84ff85067b93
+# ╠═82751f0f-87fd-4110-9e86-0d0b1ad5cd36
+# ╠═a3e88d8f-72dd-495a-b61b-a969cac7e55a
+# ╠═a25c0f95-7c94-449f-a6c2-8acc649d3307
+# ╠═c2580e89-8ac3-474a-8bb3-9c7f67bac44c
+# ╠═3117a299-06af-47d4-8fb3-3ce394b71050
+# ╠═90c54b0f-0813-4813-8b8c-913a904817dd
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
