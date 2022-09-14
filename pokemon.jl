@@ -2,7 +2,8 @@
 # v0.19.11
 
 #> [frontmatter]
-#> title = "HW1 - Pokémon"
+#> title = "HW1a - Pokémon"
+#> date = "2022-09-15"
 
 using Markdown
 using InteractiveUtils
@@ -21,7 +22,8 @@ end
 begin
 	using Colors
 	using FileIO
-	using Images
+	using ImageIO
+	using ImageShow
 	using LinearAlgebra
 	using Plots
 	using PlutoUI
@@ -31,7 +33,7 @@ end
 
 # ╔═╡ d20423a3-a6d8-4b7a-83c7-f1539fcc4d72
 md"""
-Homework 1 of the MIT Course [_Julia: solving real-world problems with computation_](https://github.com/mitmath/JuliaComputation)
+Homework 1a of the MIT Course [_Julia: solving real-world problems with computation_](https://github.com/mitmath/JuliaComputation)
 
 Release date: Thursday, Sep 15, 2022.
 
@@ -132,6 +134,35 @@ begin
 	struct Jolteon <: Electric end
 end
 
+# ╔═╡ d4619cdf-f902-4a8e-8e60-b8606aee40d2
+md"""
+Here are some examples of structure creation and use.
+"""
+
+# ╔═╡ 2e9ddef4-688c-4623-8b58-578e7931204b
+snorlax = Snorlax()
+
+# ╔═╡ 3a99de95-3312-47f7-b46e-545aa75b82bf
+pikachu = Pikachu()
+
+# ╔═╡ 9b143e5c-04b6-4306-87c6-fc818747c20d
+vaporeon = Vaporeon()
+
+# ╔═╡ cb4ee69a-c992-45ae-b7a2-0cbc318a090e
+snorlax isa Pokemon
+
+# ╔═╡ 9b6b6596-7680-4864-9395-10fbf69ec0ae
+pikachu isa Water
+
+# ╔═╡ c137d356-f552-4e3e-92b7-a9ffc0df0266
+vaporeon isa Water
+
+# ╔═╡ 9e2898c5-5c90-4fca-8c60-1fc31db81ead
+md"""
+And here are some automatic checks for your answers.
+Note that, depending on the task, they might not catch every possible mistake.
+"""
+
 # ╔═╡ 1dbbf479-1707-4dd0-90c8-394690fbac91
 md"""
 ## Interlude: multiple dispatch
@@ -168,7 +199,7 @@ Let's ask Julia which method is chosen for addition, depending on what we try to
 @which [1 0; 0 1] + [1 0; 0 1]  # add matrices
 
 # ╔═╡ ecebb7eb-000f-418d-bfb8-acb66b06c171
-@which 1 + 1.0
+@which 1 + 1.0  # add elements of different types by promoting them
 
 # ╔═╡ 7b2dbb37-9523-4150-bf23-4803ef0f31f1
 md"""
@@ -186,7 +217,7 @@ We can use this to our advantage by specifying default behavior for abstract typ
 
 # ╔═╡ d241fcec-3266-4175-abd5-7d26128dc923
 md"""
-## Fight mechanism
+## Attack mechanism
 """
 
 # ╔═╡ 3eb3545e-d48a-41d7-ac31-b9b6d1b22af9
@@ -205,11 +236,11 @@ end;
 
 # ╔═╡ 80c63240-d4e8-4a4b-b34c-a14b064a75a5
 md"""
-Our goal here is to reproduce the upper left corner of the chart by defining methods for the `attack` function.
+Our goal here is to compute the effectiveness values by defining methods for the `attack` function.
 And luckily, we can save some work by identifying patterns:
-- in most cases, an attack between two Pokémon is normally effective
-- in most cases, an attack between two Pokémon of the same type is not very effective
-So let us start with very generic fallbacks.
+- in most cases, an attack is normally effective
+- in most cases, an attack by a Pokémon on a Pokémon of the same family is not very effective
+So let us start there.
 """
 
 # ╔═╡ 9370b300-25a9-4342-803d-c2f1ba0d2b90
@@ -225,7 +256,7 @@ attack(att::P, def::P) where {P<:Pokemon} = NOT_VERY_EFFECTIVE;
 
 # ╔═╡ 390c7fe7-a27c-4f21-a8dc-c8cf19372857
 md"""
-Now we add special cases that differ from these patterns.
+Now we add special cases that deviate from these patterns.
 """
 
 # ╔═╡ 5963a5b6-7939-49f5-9f5e-d1984afd8d79
@@ -247,7 +278,12 @@ end;
 
 # ╔═╡ 520f5b7e-d5dd-4954-93a3-39e63d5d2a1b
 md"""
-This is a bit tedious, but thanks to the patterns we identified, we only need to handle a few exceptions instead of copying the entire $5 \times 5$ effectiveness matrix.
+This is a bit tedious, but thanks to the patterns we identified, we only need to handle a few exceptions instead of the full $25$ cases.
+"""
+
+# ╔═╡ 581e4013-692a-4a66-b210-b4db92112187
+md"""
+Now let's see how attacks work.
 """
 
 # ╔═╡ 7b003215-ce5d-4063-9eb0-c05affd1d15e
@@ -258,14 +294,16 @@ md"""
 # ╔═╡ ffee9abf-d6ed-411e-bef7-15d52c084d3e
 md"""
 Until now, nothing extraordinary has happened.
-You might even think it is simpler to just copy the matrix and be done with it.
+You might even think it is simpler to just store the effectiveness values into a matrix and be done with it.
 The reason why we use types and dispatch fits in one word: _composability_.
+
 Imagine there is a package called `Pokemon.jl` that contains all of the stuff above.
-If Nintendo suddently introduces a new family of Pokémon, or a new fight mechanism, we will want to extend that package, instead of recoding everything from scratch.
-This is made very easy by multiple dispatch, because we are able to do the following:
-- Define new types that work well with existing methods
-- Define new methods that apply on existing types
-As underlined by Stefan Karpinski in this [JuliaCon 2019 talk](https://youtu.be/kc9HwsxE1OY), there are very few languages where both of these operations are possible.
+Let's say that you wish to add your own family of Pokémon, or experiment with a new fight mechanism.
+You probably want to extend the existing package, instead of recoding everything from scratch.
+This is made very easy by multiple dispatch, because you can do the following:
+- Define new types _in your code_ that work well with existing methods _from a package_
+- Define new methods _in your code_ that apply to existing types _from a package_
+As underlined by Stefan Karpinski in his [JuliaCon 2019 talk](https://youtu.be/kc9HwsxE1OY), there are very few languages where both of these tasks are easy to achieve.
 Julia is one of them.
 """
 
@@ -276,8 +314,8 @@ md"""
 
 # ╔═╡ cf769229-9766-40d5-a8e0-1b7cb0b8b16e
 md"""
-In addition to his duties at MIT, Alan Edelman was recently appointed as CTO of Nintendo.
-As part of his ambitious reform for the Pokémon franchise, he plans to introduce the `Corgi` family, full of legendary creatures with untold abilities.
+Professor Edelman wants to play Pokémon using Julia.
+But to do that, he wants _you_ to implement the new `Corgi` family, full of legendary creatures with untold abilities.
 """
 
 # ╔═╡ 3903ec25-8077-49e2-a711-2500defec7b5
@@ -287,6 +325,12 @@ md"""
 
 # ╔═╡ a4c0fff3-b4fe-4c48-8680-c12bbf4f68f3
 abstract type Corgi <: Pokemon end
+
+# ╔═╡ 3d31d6ab-d466-4581-9ade-a8a541a03319
+md"""
+Note that, since this type is abstract, you cannot instantiate it directly.
+It only serves as a layer in the type hierarchy.
+"""
 
 # ╔═╡ 88c8da1c-8cd8-4dad-961e-edf035790286
 md"""
@@ -308,23 +352,40 @@ end;
 
 # ╔═╡ ccc1dd94-a1db-4504-8d27-5fbf577cee30
 md"""
-Among the `Corgi` family, `Philip` is clearly the most powerful entity.
-Unlike the Pokémon we have encountered so far, `Philip` has a reserve of life points, which makes him more resilient against attacks.
+Among the `Corgi` family, the one called `Philip` is by far the most powerful entity.
+Unlike the other Pokémon we have encountered, `Philip` has a reserve of life points, which makes him more resilient against attacks.
 """
 
 # ╔═╡ e2f9f8d1-0d83-415e-b459-4c6e36cc9ddf
 md"""
-> Task: Define a new structure for `Philip` with a single attribute named `life`, of type `Int`. Add a default constructor which sets `life` to be a random number between $1$ and $5$.
+> Task: Define a new structure for `Philip` with a single attribute named `life`, of type `Int`. Add an inner constructor which takes `life` as an argument, and another one which sets `life` to be a random number between $1$ and $5$.
 """
 
 # ╔═╡ f899ed08-4315-4c17-8792-84ad0cae631b
 struct Philip <: Corgi
 	life::Int
+	# Constructors
+	Philip(life) = new(life)
 	Philip() = new(rand(1:5))
 end
 
 # ╔═╡ 28737ee7-6939-4830-95e3-fc08b6dcf1a4
 hint(md"Take a look at the manual sections on [composite types](https://docs.julialang.org/en/v1/manual/types/#Composite-Types) and [inner constructor methods](https://docs.julialang.org/en/v1/manual/constructors/#man-inner-constructor-methods)")
+
+# ╔═╡ 24e23eb0-9341-4249-afe1-c6d94c57478e
+md"""
+Let's see what happens when we create a 'Philip'... or two!
+Remember, the constructor is random, so the following cells may return a different result if you run them repeatedly.
+"""
+
+# ╔═╡ f0705b81-3df4-4145-9de5-8a4d738f6398
+philip = Philip()
+
+# ╔═╡ f5604cbe-0348-475c-8e0f-43b7bb213b36
+other_philip = Philip(4)
+
+# ╔═╡ a4eedc3b-0808-42ec-88b0-d710497fcd68
+philip.life, other_philip.life
 
 # ╔═╡ eaea15b2-5918-4fc0-b44a-3cb0c085fa67
 md"""
@@ -340,11 +401,41 @@ md"""
 function attack(pok::Pokemon, phil::Philip)
 	strength = rand(1:phil.life)
 	if strength == phil.life
-		return NORMAL_EFFECTIVE
+		return SUPER_EFFECTIVE
 	else
 		return NORMAL_EFFECTIVE
 	end
 end;
+
+# ╔═╡ 5f605953-9216-41fc-b935-bb6c2ca5414e
+attack(pikachu, vaporeon)  # Electric on Water: super effective
+
+# ╔═╡ 35fe8041-58ba-419e-a9d2-f9fc97d13cce
+attack(vaporeon, pikachu)  # Water on Electric: normally effective
+
+# ╔═╡ eb29c4ee-2cd2-4c51-a1c3-954b5745b9a9
+attack(pikachu, pikachu)  # Electric on Electric: not very effective
+
+# ╔═╡ 79b384b1-8393-4c8c-84e4-6c1c729c53eb
+md"""
+Now let's test just how strong `Philip` is.
+Again, keep in mind that the following cells are non-deterministic.
+"""
+
+# ╔═╡ afdf5d1e-d19d-486e-ab4d-167d74975e5e
+attack(philip, snorlax)
+
+# ╔═╡ 996f35f9-8510-4cee-b923-1c11ef7244af
+attack(philip, pikachu)
+
+# ╔═╡ 3d800a03-06fc-46e4-b0d6-d123200fc26f
+attack(vaporeon, philip)
+
+# ╔═╡ d11432fc-cdee-4364-8159-49ce25d6c7e5
+attack(vaporeon, other_philip)
+
+# ╔═╡ d73978e5-ec24-4d71-82ca-184c76f00b74
+attack(philip, other_philip)
 
 # ╔═╡ 023a75a3-a7a6-4e2d-911b-8a5c54d86e80
 md"""
@@ -353,8 +444,7 @@ md"""
 
 # ╔═╡ 87cdb6d3-cfa6-4564-8ea4-e2f202d89eca
 md"""
-Alan Edelman didn't stop at the introduction of the `Corgi` family.
-He also saw the true violence of the Pokémon universe, and said: "no more".
+Professor Edelman won't stop at the introduction of the `Corgi` family, for he has seen the true violence of the Pokémon universe.
 Indeed, why would Pokémon need to fight all the time, when they can be friends?
 While attack effectiveness is defined at the level of families, friendship is defined at the level of individual Pokémon.
 """
@@ -367,12 +457,9 @@ By default, two different Pokémon are not friends, except when they are from th
 # ╔═╡ 117ff067-08ae-4134-8d23-ef28d31a7b8f
 friends(pok1::Pokemon, pok2::Pokemon) = false;
 
-# ╔═╡ d2e88b85-1670-48c8-b4c6-36be84241c54
-friends(pok1::P, pok2::P) where {P<:Pokemon} = true;
-
 # ╔═╡ e65bfd90-83c6-4c93-9f7f-aa8d41c01531
 md"""
-Of course, `Charmander`, `Squirtle` and `Bulbasaur` are friends because they all came of age together.
+But `Charmander`, `Squirtle` and `Bulbasaur` are friends because they all came of age together.
 """
 
 # ╔═╡ 172d0f37-5214-4e73-8635-8bfe85011f4a
@@ -428,13 +515,30 @@ md"""
 
 # ╔═╡ 6daea6c1-6eb4-4117-8e11-63e9913792e3
 begin
-	friends(phil::Philip, pok::Pokemon) = true
-	friends(pok::Pokemon, phil::Philip) = true
-	friends(phil1::Philip, phil2::Philip) = true
+	friends(pok1::Philip, pok2::Pokemon) = true
+	friends(pok1::Pokemon, pok2::Philip) = true
+	friends(pok1::Philip, pok2::Philip) = true
 end;
 
 # ╔═╡ c491ca01-5a0b-4f91-825c-67f597aa788a
 hint(md"You might get an arror due to an ambiguous method. This means multiple dispatch has failed because there is no single most specific implementation. How do you fix this?")
+
+# ╔═╡ d96068be-4ac9-4ff9-ae3e-4807df555a42
+md"""
+Let us check that everything works as expected.
+"""
+
+# ╔═╡ 2eb828db-1008-4551-819d-60ec0aa8eb7a
+friends(snorlax, snorlax)
+
+# ╔═╡ a637f11c-bd0a-4a87-a1b9-52fd43eb9fcc
+friends(pikachu, philip)
+
+# ╔═╡ c619533d-6e4c-4aae-b3a7-099f578f7b7d
+friends(philip, vaporeon)
+
+# ╔═╡ 076c200b-d1cf-4c17-91d3-84d447271560
+friends(philip, philip)
 
 # ╔═╡ 916540e4-d354-436e-8c79-a8e2aff4f591
 md"""
@@ -445,6 +549,23 @@ md"""
 md"""
 Inspired by this [tweet](https://twitter.com/olafurw/status/1522273899441967104), we now simulate fights between Pokémon, in order to see which family ends up on top.
 """
+
+# ╔═╡ e5bf5d32-2597-42d1-b9a6-eba666fe48d5
+md"""
+To visualize the simulation results, we assign a color to each Pokémon family.
+"""
+
+# ╔═╡ f911d885-cc82-4eff-bac2-310e49923c63
+begin
+	get_color(::Normal) = colorant"gray"
+	get_color(::Fire) = colorant"red"
+	get_color(::Water) = colorant"blue"
+	get_color(::Grass) = colorant"green"
+	get_color(::Electric) = colorant"yellow"
+	if (@isdefined Corgi) 
+		get_color(::Corgi) = colorant"purple"
+	end
+end;
 
 # ╔═╡ f7b8330e-5897-4b71-a9aa-64838cf2a9bd
 md"""
@@ -465,14 +586,29 @@ function new_grid(pokemon_set; n, m)
 	return grid
 end
 
+# ╔═╡ e227d7f2-ddb7-415e-9b9e-e0efd8945ca0
+begin
+	g1 = new_grid([Pikachu(), Charmander(), Squirtle()]; n=5, m=8)
+	get_color.(g1)
+end
+
+# ╔═╡ 325afb8b-3e26-4e52-a493-3b06bd34f739
+md"""
+!!! danger "TODO"
+	Add automatic check.
+"""
+
 # ╔═╡ d8058473-2ffa-4ae4-8699-435bdf7d6f08
 md"""
 The rules of the fight are simple.
 At each time step, the following events occur in order:
 1. A random Pokémon is chosen from the grid to be the attacker.
 2. A random neighbor (among 8) is selected to be the defender.
-3. If the attack is `SUPER_EFFECTIVE`, the defender is replaced in the grid by a copy of the attacker.
+3. If the attack is super effective, the defender is replaced in the grid by a copy of the attacker.
 """
+
+# ╔═╡ 04de7b1e-ea7c-438d-b16a-8e758bb40a70
+T_test = 10
 
 # ╔═╡ ebddaba7-792a-4546-9739-df271df2a880
 md"""
@@ -493,6 +629,15 @@ function step!(grid::Matrix{<:Pokemon})
 	if attack(att, def) == SUPER_EFFECTIVE
 		grid[i2, j2] = att
 	end
+end
+
+# ╔═╡ 4ea66307-dbfc-45d2-894c-fbd89f1957ce
+begin
+	g2 = copy(g1)
+	for _ in 1:T_test
+		step!(g2)
+	end
+	get_color.(g1), get_color.(g2)
 end
 
 # ╔═╡ 8d558109-3d41-4ed1-b855-2d7ce7f29369
@@ -517,31 +662,18 @@ function step_consider_friends!(grid::Matrix{<:Pokemon})
 	end
 end
 
-# ╔═╡ 4ebb1ab8-a763-4650-88c4-30dd4c22e95b
-md"""
-## Visualization
-"""
-
-# ╔═╡ 4463de07-315b-40f3-8361-c722a713a10f
-md"""
-To visualize the simulation results, we assign a color to each Pokémon family.
-"""
-
-# ╔═╡ 3c8904ff-b602-4cb5-8874-6bc3fe99c713
+# ╔═╡ 2b34aa16-107c-4e17-88bb-6dfc6e2b4881
 begin
-	get_color(::Normal) = colorant"gray"
-	get_color(::Fire) = colorant"red"
-	get_color(::Water) = colorant"blue"
-	get_color(::Grass) = colorant"green"
-	get_color(::Electric) = colorant"yellow"
-	if (@isdefined Corgi) 
-		get_color(::Corgi) = colorant"purple"
+	g3 = copy(g1)
+	for _ in 1:T_test
+		step_consider_friends!(g3)
 	end
-end;
+	get_color.(g1), get_color.(g3)
+end
 
-# ╔═╡ 629da440-d9b9-4115-b460-fd63ebb6d92b
+# ╔═╡ 51103ee4-b68b-48cf-addc-8905dda40747
 md"""
-And we store the animation as a GIF.
+Here is a function that runs a full simulation on $T$ steps and displays the result as a GIF.
 """
 
 # ╔═╡ 012dd868-8815-4c3e-9adb-1ce854081bac
@@ -555,7 +687,7 @@ function simulation(pokemon_set; n, m, T, consider_friends=false, dT=1000)
 				step!(g)
 			end
 		end
-		plot(get_color.(g), title="Friends = $consider_friends / Time = $(t*dT)")
+		plot(get_color.(g), title="Time = $(t*dT)")
 	end
 	return gif(anim)
 end
@@ -571,23 +703,33 @@ basic_pokemon = [Snorlax(), Charmander(), Squirtle(), Bulbasaur(), Pikachu()]
 # ╔═╡ 876837a1-06b7-4b86-829d-4edeae166dc3
 eevees = [Eevee(), Flareon(), Vaporeon(), Leafeon(), Jolteon()]
 
+# ╔═╡ fb8696b8-4d1b-49cf-8e25-703287d2b3f1
+all_pokemon = vcat(basic_pokemon, eevees, Philip(5))
+
 # ╔═╡ 176c6971-483f-408c-abc2-994546a5f57f
 simulation(
-	vcat(basic_pokemon, eevees);
+	basic_pokemon;
 	n=100, m=100, T=100_000
 )
 
 # ╔═╡ 97541230-5515-4b78-b211-2a01a2d9ed83
 simulation(
-	vcat(basic_pokemon, eevees, Philip());
+	all_pokemon;
 	n=100, m=100, T=100_000
 )
 
 # ╔═╡ e3478b55-7100-49c8-809f-4a8bf15071f3
 simulation(
-	vcat(basic_pokemon, eevees, Philip());
+	all_pokemon;
 	consider_friends=true, n=100, m=100, T=100_000
 )
+
+# ╔═╡ d4324265-e4af-4f00-ab00-d65976d8d583
+md"""
+> Task: Play around with the previous simulations.
+> Increase the duration, change the grid size, the set of Pokémon, the life of the `Philip` you include.
+> Comment on what you observe.
+"""
 
 # ╔═╡ bd90221c-c590-4d36-bba4-6b0b2e4f2453
 md"""
@@ -600,8 +742,8 @@ if show_toc; TableOfContents(); end
 # ╔═╡ d900e981-36d8-4a3c-a1bd-5809ee6e7c64
 chart_path = download("https://img.pokemondb.net/images/typechart.png")
 
-# ╔═╡ 91a1d76e-a334-4cf5-bb9f-189aeb14444f
-load(chart_path)
+# ╔═╡ 6893ced3-012f-4dc2-8e1c-2a292bfe067e
+load(chart_path)[170:392, 52:305]
 
 # ╔═╡ 7c362af1-cc1a-47fc-b3a1-252a891849e5
 begin
@@ -767,17 +909,10 @@ end;
 # ╔═╡ 7df61a7e-b8d0-4024-8dce-239cf0d0edd8
 check_philip
 
-# ╔═╡ c2580e89-8ac3-474a-8bb3-9c7f67bac44c
-mean_defense_philip = SUPER_EFFECTIVE / 5 + 4 * NORMAL_EFFECTIVE / 5
-
 # ╔═╡ 3117a299-06af-47d4-8fb3-3ce394b71050
 check_defense_philip = if (
 	(@isdefined Philip) &&
-	(
-		80 * mean_defense_philip <=
-		sum(attack(Snorlax(), Philip()) for k = 1:100) <=
-		120 * mean_defense_philip
-	)
+	sort(unique(attack(Snorlax(), Philip()) for _ in 1:1000)) == [NORMAL_EFFECTIVE, SUPER_EFFECTIVE]
 )
 	correct(md"`attack` is correctly defined for `Philip` defenders")
 else
@@ -809,7 +944,8 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
+ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
@@ -819,7 +955,8 @@ ProgressLogging = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
 [compat]
 Colors = "~0.12.8"
 FileIO = "~1.15.0"
-Images = "~0.25.2"
+ImageIO = "~0.6.6"
+ImageShow = "~0.3.6"
 Plots = "~1.32.1"
 PlutoTeachingTools = "~0.1.7"
 PlutoUI = "~0.7.39"
@@ -832,7 +969,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.1"
 manifest_format = "2.0"
-project_hash = "207345753610d52bebdfff98df4e88f8b16c8a5f"
+project_hash = "b9e5a47909e0d8eb05069a1d89f429b1be468d51"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -856,26 +993,8 @@ version = "3.4.0"
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.1"
 
-[[deps.ArnoldiMethod]]
-deps = ["LinearAlgebra", "Random", "StaticArrays"]
-git-tree-sha1 = "62e51b39331de8911e4a7ff6f5aaf38a5f4cc0ae"
-uuid = "ec485272-7323-5ecc-a04f-4719b315124d"
-version = "0.2.0"
-
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
-
-[[deps.AxisAlgorithms]]
-deps = ["LinearAlgebra", "Random", "SparseArrays", "WoodburyMatrices"]
-git-tree-sha1 = "66771c8d21c8ff5e3a93379480a2307ac36863f7"
-uuid = "13072b0f-2c55-5437-9ae7-d433b7a33950"
-version = "1.0.1"
-
-[[deps.AxisArrays]]
-deps = ["Dates", "IntervalSets", "IterTools", "RangeArrays"]
-git-tree-sha1 = "1dd4d9f5beebac0c03446918741b1a03dc5e5788"
-uuid = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
-version = "0.4.6"
 
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -897,18 +1016,6 @@ git-tree-sha1 = "4b859a208b2397a7a623a03449e4636bdb17bcf2"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.16.1+1"
 
-[[deps.Calculus]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
-uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
-version = "0.5.1"
-
-[[deps.CatIndices]]
-deps = ["CustomUnitRanges", "OffsetArrays"]
-git-tree-sha1 = "a0f80a09780eed9b1d106a1bf62041c2efc995bc"
-uuid = "aafaddc9-749c-510e-ac4f-586e18779b91"
-version = "0.2.2"
-
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
 git-tree-sha1 = "80ca332f6dcb2508adba68f22f551adb2d00a624"
@@ -920,12 +1027,6 @@ deps = ["ChainRulesCore", "LinearAlgebra", "Test"]
 git-tree-sha1 = "38f7a08f19d8810338d4f5085211c7dfa5d5bdd8"
 uuid = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
 version = "0.1.4"
-
-[[deps.Clustering]]
-deps = ["Distances", "LinearAlgebra", "NearestNeighbors", "Printf", "SparseArrays", "Statistics", "StatsBase"]
-git-tree-sha1 = "75479b7df4167267d75294d14b58244695beb2ac"
-uuid = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
-version = "0.14.2"
 
 [[deps.CodeTracking]]
 deps = ["InteractiveUtils", "UUIDs"]
@@ -974,26 +1075,10 @@ deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 version = "0.5.2+0"
 
-[[deps.ComputationalResources]]
-git-tree-sha1 = "52cb3ec90e8a8bea0e62e275ba577ad0f74821f7"
-uuid = "ed09eef8-17a6-5b46-8889-db040fac31e3"
-version = "0.3.2"
-
 [[deps.Contour]]
 git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.2"
-
-[[deps.CoordinateTransformations]]
-deps = ["LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "681ea870b918e7cff7111da58791d7f718067a19"
-uuid = "150eb455-5306-5404-9cee-2592286d6298"
-version = "0.6.2"
-
-[[deps.CustomUnitRanges]]
-git-tree-sha1 = "1a3f97f907e6dd8983b744d2642651bb162a3f7a"
-uuid = "dc8bdbbb-1ca9-579f-8c36-e416f6a65cce"
-version = "1.0.2"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "fb5f5316dd3fd4c5e7c30a24d50643b73e37cd40"
@@ -1019,12 +1104,6 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 deps = ["Mmap"]
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
-[[deps.Distances]]
-deps = ["LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI"]
-git-tree-sha1 = "3258d0659f812acde79e8a74b11f17ac06d0ca04"
-uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
-version = "0.10.7"
-
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
@@ -1039,12 +1118,6 @@ version = "0.9.1"
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
-
-[[deps.DualNumbers]]
-deps = ["Calculus", "NaNMath", "SpecialFunctions"]
-git-tree-sha1 = "5837a837389fccf076445fce071c8ddaea35a566"
-uuid = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
-version = "0.6.8"
 
 [[deps.EarCut_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1074,24 +1147,6 @@ deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers",
 git-tree-sha1 = "ccd479984c7838684b3ac204b716c89955c76623"
 uuid = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 version = "4.4.2+0"
-
-[[deps.FFTViews]]
-deps = ["CustomUnitRanges", "FFTW"]
-git-tree-sha1 = "cbdf14d1e8c7c8aacbe8b19862e0179fd08321c2"
-uuid = "4f61f5a4-77b1-5117-aa51-3ab5ef4ef0cd"
-version = "0.3.2"
-
-[[deps.FFTW]]
-deps = ["AbstractFFTs", "FFTW_jll", "LinearAlgebra", "MKL_jll", "Preferences", "Reexport"]
-git-tree-sha1 = "90630efff0894f8142308e334473eba54c433549"
-uuid = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-version = "1.5.0"
-
-[[deps.FFTW_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "c6033cc3892d0ef5bb9cd29b7f2f0331ea5184ea"
-uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
-version = "3.3.10+0"
 
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
@@ -1186,12 +1241,6 @@ git-tree-sha1 = "344bf40dcab1073aca04aa0df4fb092f920e4011"
 uuid = "3b182d85-2403-5c21-9c21-1e1f0cc25472"
 version = "1.3.14+0"
 
-[[deps.Graphs]]
-deps = ["ArnoldiMethod", "Compat", "DataStructures", "Distributed", "Inflate", "LinearAlgebra", "Random", "SharedArrays", "SimpleTraits", "SparseArrays", "Statistics"]
-git-tree-sha1 = "a6d30bdc378d340912f48abf01281aab68c0dec8"
-uuid = "86223c79-3864-5bf0-83f7-82e725a168b6"
-version = "1.7.2"
-
 [[deps.Grisu]]
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
@@ -1227,23 +1276,11 @@ git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
 version = "0.2.2"
 
-[[deps.ImageAxes]]
-deps = ["AxisArrays", "ImageBase", "ImageCore", "Reexport", "SimpleTraits"]
-git-tree-sha1 = "c54b581a83008dc7f292e205f4c409ab5caa0f04"
-uuid = "2803e5a7-5153-5ecf-9a86-9b4c37f5f5ac"
-version = "0.6.10"
-
 [[deps.ImageBase]]
 deps = ["ImageCore", "Reexport"]
 git-tree-sha1 = "b51bb8cae22c66d0f6357e3bcb6363145ef20835"
 uuid = "c817782e-172a-44cc-b673-b171935fbb9e"
 version = "0.1.5"
-
-[[deps.ImageContrastAdjustment]]
-deps = ["ImageCore", "ImageTransformations", "Parameters"]
-git-tree-sha1 = "0d75cafa80cf22026cea21a8e6cf965295003edc"
-uuid = "f332f351-ec65-5f6a-b3d1-319c6670881a"
-version = "0.3.10"
 
 [[deps.ImageCore]]
 deps = ["AbstractFFTs", "ColorVectorSpace", "Colors", "FixedPointNumbers", "Graphics", "MappedArrays", "MosaicViews", "OffsetArrays", "PaddedViews", "Reexport"]
@@ -1251,77 +1288,17 @@ git-tree-sha1 = "acf614720ef026d38400b3817614c45882d75500"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 version = "0.9.4"
 
-[[deps.ImageDistances]]
-deps = ["Distances", "ImageCore", "ImageMorphology", "LinearAlgebra", "Statistics"]
-git-tree-sha1 = "b1798a4a6b9aafb530f8f0c4a7b2eb5501e2f2a3"
-uuid = "51556ac3-7006-55f5-8cb3-34580c88182d"
-version = "0.2.16"
-
-[[deps.ImageFiltering]]
-deps = ["CatIndices", "ComputationalResources", "DataStructures", "FFTViews", "FFTW", "ImageBase", "ImageCore", "LinearAlgebra", "OffsetArrays", "Reexport", "SparseArrays", "StaticArrays", "Statistics", "TiledIteration"]
-git-tree-sha1 = "15bd05c1c0d5dbb32a9a3d7e0ad2d50dd6167189"
-uuid = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
-version = "0.7.1"
-
 [[deps.ImageIO]]
 deps = ["FileIO", "IndirectArrays", "JpegTurbo", "LazyModules", "Netpbm", "OpenEXR", "PNGFiles", "QOI", "Sixel", "TiffImages", "UUIDs"]
 git-tree-sha1 = "342f789fd041a55166764c351da1710db97ce0e0"
 uuid = "82e4d734-157c-48bb-816b-45c225c6df19"
 version = "0.6.6"
 
-[[deps.ImageMagick]]
-deps = ["FileIO", "ImageCore", "ImageMagick_jll", "InteractiveUtils"]
-git-tree-sha1 = "ca8d917903e7a1126b6583a097c5cb7a0bedeac1"
-uuid = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
-version = "1.2.2"
-
-[[deps.ImageMagick_jll]]
-deps = ["JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pkg", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "1c0a2295cca535fabaf2029062912591e9b61987"
-uuid = "c73af94c-d91f-53ed-93a7-00f77d67a9d7"
-version = "6.9.10-12+3"
-
-[[deps.ImageMetadata]]
-deps = ["AxisArrays", "ImageAxes", "ImageBase", "ImageCore"]
-git-tree-sha1 = "36cbaebed194b292590cba2593da27b34763804a"
-uuid = "bc367c6b-8a6b-528e-b4bd-a4b897500b49"
-version = "0.9.8"
-
-[[deps.ImageMorphology]]
-deps = ["ImageCore", "LinearAlgebra", "Requires", "TiledIteration"]
-git-tree-sha1 = "e7c68ab3df4a75511ba33fc5d8d9098007b579a8"
-uuid = "787d08f9-d448-5407-9aad-5290dd7ab264"
-version = "0.3.2"
-
-[[deps.ImageQualityIndexes]]
-deps = ["ImageContrastAdjustment", "ImageCore", "ImageDistances", "ImageFiltering", "LazyModules", "OffsetArrays", "Statistics"]
-git-tree-sha1 = "0c703732335a75e683aec7fdfc6d5d1ebd7c596f"
-uuid = "2996bd0c-7a13-11e9-2da2-2f5ce47296a9"
-version = "0.3.3"
-
-[[deps.ImageSegmentation]]
-deps = ["Clustering", "DataStructures", "Distances", "Graphs", "ImageCore", "ImageFiltering", "ImageMorphology", "LinearAlgebra", "MetaGraphs", "RegionTrees", "SimpleWeightedGraphs", "StaticArrays", "Statistics"]
-git-tree-sha1 = "36832067ea220818d105d718527d6ed02385bf22"
-uuid = "80713f31-8817-5129-9cf8-209ff8fb23e1"
-version = "1.7.0"
-
 [[deps.ImageShow]]
 deps = ["Base64", "FileIO", "ImageBase", "ImageCore", "OffsetArrays", "StackViews"]
 git-tree-sha1 = "b563cf9ae75a635592fc73d3eb78b86220e55bd8"
 uuid = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
 version = "0.3.6"
-
-[[deps.ImageTransformations]]
-deps = ["AxisAlgorithms", "ColorVectorSpace", "CoordinateTransformations", "ImageBase", "ImageCore", "Interpolations", "OffsetArrays", "Rotations", "StaticArrays"]
-git-tree-sha1 = "8717482f4a2108c9358e5c3ca903d3a6113badc9"
-uuid = "02fcd773-0e25-5acc-982a-7f6622650795"
-version = "0.9.5"
-
-[[deps.Images]]
-deps = ["Base64", "FileIO", "Graphics", "ImageAxes", "ImageBase", "ImageContrastAdjustment", "ImageCore", "ImageDistances", "ImageFiltering", "ImageIO", "ImageMagick", "ImageMetadata", "ImageMorphology", "ImageQualityIndexes", "ImageSegmentation", "ImageShow", "ImageTransformations", "IndirectArrays", "IntegralArrays", "Random", "Reexport", "SparseArrays", "StaticArrays", "Statistics", "StatsBase", "TiledIteration"]
-git-tree-sha1 = "03d1301b7ec885b266c0f816f338368c6c0b81bd"
-uuid = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
-version = "0.25.2"
 
 [[deps.Imath_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1344,33 +1321,9 @@ git-tree-sha1 = "f550e6e32074c939295eb5ea6de31849ac2c9625"
 uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
 version = "0.5.1"
 
-[[deps.IntegralArrays]]
-deps = ["ColorTypes", "FixedPointNumbers", "IntervalSets"]
-git-tree-sha1 = "be8e690c3973443bec584db3346ddc904d4884eb"
-uuid = "1d092043-8f09-5a30-832f-7509e371ab51"
-version = "0.1.5"
-
-[[deps.IntelOpenMP_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "d979e54b71da82f3a65b62553da4fc3d18c9004c"
-uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2018.0.3+2"
-
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
-
-[[deps.Interpolations]]
-deps = ["Adapt", "AxisAlgorithms", "ChainRulesCore", "LinearAlgebra", "OffsetArrays", "Random", "Ratios", "Requires", "SharedArrays", "SparseArrays", "StaticArrays", "WoodburyMatrices"]
-git-tree-sha1 = "64f138f9453a018c8f3562e7bae54edc059af249"
-uuid = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
-version = "0.14.4"
-
-[[deps.IntervalSets]]
-deps = ["Dates", "Random", "Statistics"]
-git-tree-sha1 = "076bb0da51a8c8d1229936a1af7bdfacd65037e1"
-uuid = "8197267c-284f-5f27-9208-e0e47529a953"
-version = "0.7.2"
 
 [[deps.InverseFunctions]]
 deps = ["Test"]
@@ -1392,12 +1345,6 @@ version = "1.4.0"
 git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
 uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
-
-[[deps.JLD2]]
-deps = ["FileIO", "MacroTools", "Mmap", "OrderedCollections", "Pkg", "Printf", "Reexport", "TranscodingStreams", "UUIDs"]
-git-tree-sha1 = "81b9477b49402b47fbe7f7ae0b252077f53e4a08"
-uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
-version = "0.4.22"
 
 [[deps.JLLWrappers]]
 deps = ["Preferences"]
@@ -1457,10 +1404,6 @@ deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdow
 git-tree-sha1 = "1a43be956d433b5d0321197150c2f94e16c0aaa0"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 version = "0.15.16"
-
-[[deps.LazyArtifacts]]
-deps = ["Artifacts", "Pkg"]
-uuid = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
 
 [[deps.LazyModules]]
 git-tree-sha1 = "a560dd966b386ac9ae60bdd3a3d3a326062d3c3e"
@@ -1562,12 +1505,6 @@ git-tree-sha1 = "dedbebe234e06e1ddad435f5c6f4b85cd8ce55f7"
 uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
 version = "2.2.2"
 
-[[deps.MKL_jll]]
-deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "Pkg"]
-git-tree-sha1 = "41d162ae9c868218b1f3fe78cba878aa348c2d26"
-uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2022.1.0+0"
-
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
 git-tree-sha1 = "3d3e902b31198a27340d0bf00d6ac452866021cf"
@@ -1599,12 +1536,6 @@ git-tree-sha1 = "e498ddeee6f9fdb4551ce855a46f54dbd900245f"
 uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 version = "0.3.1"
 
-[[deps.MetaGraphs]]
-deps = ["Graphs", "JLD2", "Random"]
-git-tree-sha1 = "2af69ff3c024d13bde52b34a2a7d6887d4e7b438"
-uuid = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
-version = "0.7.1"
-
 [[deps.Missings]]
 deps = ["DataAPI"]
 git-tree-sha1 = "bf210ce90b6c9eed32d25dbcae1ebc565df2687f"
@@ -1629,12 +1560,6 @@ deps = ["OpenLibm_jll"]
 git-tree-sha1 = "a7c3d1da1189a1c2fe843a3bfa04d18d20eb3211"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.0.1"
-
-[[deps.NearestNeighbors]]
-deps = ["Distances", "StaticArrays"]
-git-tree-sha1 = "0e353ed734b1747fc20cd4cba0edd9ac027eff6a"
-uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
-version = "0.4.11"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore"]
@@ -1720,12 +1645,6 @@ deps = ["OffsetArrays"]
 git-tree-sha1 = "03a7a85b76381a3d04c7a1656039197e70eda03d"
 uuid = "5432bcbf-9aad-5242-b902-cca2824c8663"
 version = "0.5.11"
-
-[[deps.Parameters]]
-deps = ["OrderedCollections", "UnPack"]
-git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
-uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
-version = "0.12.3"
 
 [[deps.Parsers]]
 deps = ["Dates"]
@@ -1826,12 +1745,6 @@ git-tree-sha1 = "c6c0f690d0cc7caddb74cef7aa847b824a16b256"
 uuid = "ea2cea3b-5b76-57ae-a6ef-0a8af62496e1"
 version = "5.15.3+1"
 
-[[deps.Quaternions]]
-deps = ["DualNumbers", "LinearAlgebra", "Random"]
-git-tree-sha1 = "b327e4db3f2202a4efafe7569fcbe409106a1f75"
-uuid = "94ee1d12-ae83-5a48-8b1c-48b8ff168ae0"
-version = "0.5.6"
-
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
@@ -1839,17 +1752,6 @@ uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 [[deps.Random]]
 deps = ["SHA", "Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-
-[[deps.RangeArrays]]
-git-tree-sha1 = "b9039e93773ddcfc828f12aadf7115b4b4d225f5"
-uuid = "b3c3ace0-ae52-54e7-9d0b-2c1406fd6b9d"
-version = "0.3.2"
-
-[[deps.Ratios]]
-deps = ["Requires"]
-git-tree-sha1 = "dc84268fe0e3335a62e315a3a7cf2afa7178a734"
-uuid = "c84ed2f1-dad5-54f0-aa8e-dbefe2724439"
-version = "0.4.3"
 
 [[deps.RecipesBase]]
 git-tree-sha1 = "6bf3f380ff52ce0832ddd3a2a7b9538ed1bcca7d"
@@ -1866,12 +1768,6 @@ version = "0.6.3"
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
-
-[[deps.RegionTrees]]
-deps = ["IterTools", "LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "4618ed0da7a251c7f92e869ae1a19c74a7d2a7f9"
-uuid = "dee08c22-ab7f-5625-9660-a9af2021b33f"
-version = "0.3.2"
 
 [[deps.RelocatableFolders]]
 deps = ["SHA", "Scratch"]
@@ -1891,12 +1787,6 @@ git-tree-sha1 = "dad726963ecea2d8a81e26286f625aee09a91b7c"
 uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
 version = "3.4.0"
 
-[[deps.Rotations]]
-deps = ["LinearAlgebra", "Quaternions", "Random", "StaticArrays", "Statistics"]
-git-tree-sha1 = "3177100077c68060d63dd71aec209373c3ec339b"
-uuid = "6038ab10-8711-5258-84ad-4b1120ba62dc"
-version = "1.3.1"
-
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
@@ -1910,10 +1800,6 @@ version = "1.1.1"
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
-[[deps.SharedArrays]]
-deps = ["Distributed", "Mmap", "Random", "Serialization"]
-uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
-
 [[deps.Showoff]]
 deps = ["Dates", "Grisu"]
 git-tree-sha1 = "91eddf657aca81df9ae6ceb20b959ae5653ad1de"
@@ -1924,18 +1810,6 @@ version = "1.0.3"
 git-tree-sha1 = "874e8867b33a00e784c8a7e4b60afe9e037b74e1"
 uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
 version = "1.1.0"
-
-[[deps.SimpleTraits]]
-deps = ["InteractiveUtils", "MacroTools"]
-git-tree-sha1 = "5d7e3f4e11935503d3ecaf7186eac40602e7d231"
-uuid = "699a6c99-e7fa-54fc-8d76-47d257e15c1d"
-version = "0.9.4"
-
-[[deps.SimpleWeightedGraphs]]
-deps = ["Graphs", "LinearAlgebra", "Markdown", "SparseArrays", "Test"]
-git-tree-sha1 = "a6f404cc44d3d3b28c793ec0eb59af709d827e4e"
-uuid = "47aef6b3-ad0c-573a-a1e2-d07658019622"
-version = "1.2.1"
 
 [[deps.Sixel]]
 deps = ["Dates", "FileIO", "ImageCore", "IndirectArrays", "OffsetArrays", "REPL", "libsixel_jll"]
@@ -2044,12 +1918,6 @@ git-tree-sha1 = "70e6d2da9210371c927176cb7a56d41ef1260db7"
 uuid = "731e570b-9d59-4bfa-96dc-6df516fadf69"
 version = "0.6.1"
 
-[[deps.TiledIteration]]
-deps = ["OffsetArrays"]
-git-tree-sha1 = "5683455224ba92ef59db72d10690690f4a8dc297"
-uuid = "06e1c1a7-607b-532d-9fad-de7d9aa2abac"
-version = "0.3.1"
-
 [[deps.TranscodingStreams]]
 deps = ["Random", "Test"]
 git-tree-sha1 = "ed5d390c7addb70e90fd1eb783dcb9897922cbfa"
@@ -2069,11 +1937,6 @@ version = "1.4.0"
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
 uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
-
-[[deps.UnPack]]
-git-tree-sha1 = "387c1f73762231e86e0c9c5443ce3b4a0a9a0c2b"
-uuid = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
-version = "1.0.2"
 
 [[deps.Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
@@ -2100,12 +1963,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "4528479aa01ee1b3b4cd0e6faef0e04cf16466da"
 uuid = "2381bf8a-dfd0-557d-9999-79630e7b1b91"
 version = "1.25.0+0"
-
-[[deps.WoodburyMatrices]]
-deps = ["LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "de67fa59e33ad156a590055375a30b23c40299d3"
-uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
-version = "0.5.5"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "Zlib_jll"]
@@ -2286,10 +2143,10 @@ uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
 version = "1.6.38+0"
 
 [[deps.libsixel_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "78736dab31ae7a53540a6b752efc61f77b304c5b"
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Pkg", "libpng_jll"]
+git-tree-sha1 = "d4f63314c8aa1e48cd22aa0c17ed76cd1ae48c3c"
 uuid = "075b6546-f08a-558a-be8f-8157d0f608a5"
-version = "1.8.6+1"
+version = "1.10.3+0"
 
 [[deps.libvorbis_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Ogg_jll", "Pkg"]
@@ -2330,6 +2187,7 @@ version = "1.4.1+0"
 # ╟─d20423a3-a6d8-4b7a-83c7-f1539fcc4d72
 # ╠═00992802-9ead-466b-8b01-bcaf0614b0c6
 # ╟─1896271c-e5bf-428c-bc3e-7780e71a065f
+# ╠═fcafb864-249b-11ed-3b73-774e1742704a
 # ╟─eee70c65-94b8-4f3d-a187-bbafb04b8eff
 # ╟─9f1c224c-561e-4071-a909-0c951b9e3542
 # ╟─6ae05ccb-c386-4139-817c-85959a20a4de
@@ -2346,6 +2204,14 @@ version = "1.4.1+0"
 # ╟─037d04d4-f5f2-4b77-80ed-b799c1ea9b77
 # ╟─fc1c3e85-b1af-4cbb-a8fe-597174bea4d4
 # ╠═87081f51-7c44-4365-b412-7b34ed2b3191
+# ╟─d4619cdf-f902-4a8e-8e60-b8606aee40d2
+# ╠═2e9ddef4-688c-4623-8b58-578e7931204b
+# ╠═3a99de95-3312-47f7-b46e-545aa75b82bf
+# ╠═9b143e5c-04b6-4306-87c6-fc818747c20d
+# ╠═cb4ee69a-c992-45ae-b7a2-0cbc318a090e
+# ╠═9b6b6596-7680-4864-9395-10fbf69ec0ae
+# ╠═c137d356-f552-4e3e-92b7-a9ffc0df0266
+# ╟─9e2898c5-5c90-4fca-8c60-1fc31db81ead
 # ╠═f43cde45-9c12-430d-b75b-70a2c476db5b
 # ╠═ceee19ed-539e-4625-bb23-d4bad31c3661
 # ╠═5fed229c-fb38-4e2d-921c-07f98d018107
@@ -2366,7 +2232,7 @@ version = "1.4.1+0"
 # ╟─d241fcec-3266-4175-abd5-7d26128dc923
 # ╟─3eb3545e-d48a-41d7-ac31-b9b6d1b22af9
 # ╠═58aed749-468e-477d-98c7-3a7a0c9ea7a0
-# ╟─91a1d76e-a334-4cf5-bb9f-189aeb14444f
+# ╟─6893ced3-012f-4dc2-8e1c-2a292bfe067e
 # ╟─80c63240-d4e8-4a4b-b34c-a14b064a75a5
 # ╠═9370b300-25a9-4342-803d-c2f1ba0d2b90
 # ╟─595e20f1-150a-4224-aee5-607882486887
@@ -2374,12 +2240,17 @@ version = "1.4.1+0"
 # ╟─390c7fe7-a27c-4f21-a8dc-c8cf19372857
 # ╠═5963a5b6-7939-49f5-9f5e-d1984afd8d79
 # ╟─520f5b7e-d5dd-4954-93a3-39e63d5d2a1b
+# ╟─581e4013-692a-4a66-b210-b4db92112187
+# ╠═5f605953-9216-41fc-b935-bb6c2ca5414e
+# ╠═35fe8041-58ba-419e-a9d2-f9fc97d13cce
+# ╠═eb29c4ee-2cd2-4c51-a1c3-954b5745b9a9
 # ╟─7b003215-ce5d-4063-9eb0-c05affd1d15e
 # ╟─ffee9abf-d6ed-411e-bef7-15d52c084d3e
 # ╟─2016d37b-ab63-4956-8fe7-de7eaadfb29f
 # ╟─cf769229-9766-40d5-a8e0-1b7cb0b8b16e
 # ╟─3903ec25-8077-49e2-a711-2500defec7b5
 # ╠═a4c0fff3-b4fe-4c48-8680-c12bbf4f68f3
+# ╟─3d31d6ab-d466-4581-9ade-a8a541a03319
 # ╠═c3a05713-b023-4f8f-9eb2-98dc818de3ca
 # ╟─88c8da1c-8cd8-4dad-961e-edf035790286
 # ╟─fb577ace-d7d1-4ac9-ad47-57d28528c243
@@ -2389,16 +2260,25 @@ version = "1.4.1+0"
 # ╟─e2f9f8d1-0d83-415e-b459-4c6e36cc9ddf
 # ╠═f899ed08-4315-4c17-8792-84ad0cae631b
 # ╟─28737ee7-6939-4830-95e3-fc08b6dcf1a4
+# ╟─24e23eb0-9341-4249-afe1-c6d94c57478e
+# ╠═f0705b81-3df4-4145-9de5-8a4d738f6398
+# ╠═f5604cbe-0348-475c-8e0f-43b7bb213b36
+# ╠═a4eedc3b-0808-42ec-88b0-d710497fcd68
 # ╠═7df61a7e-b8d0-4024-8dce-239cf0d0edd8
 # ╟─eaea15b2-5918-4fc0-b44a-3cb0c085fa67
 # ╟─8fc13f81-3e49-4b98-8592-fb9f24eda900
 # ╠═cf737824-4aa3-409b-a914-be606c9668a0
+# ╟─79b384b1-8393-4c8c-84e4-6c1c729c53eb
+# ╠═afdf5d1e-d19d-486e-ab4d-167d74975e5e
+# ╠═996f35f9-8510-4cee-b923-1c11ef7244af
+# ╠═3d800a03-06fc-46e4-b0d6-d123200fc26f
+# ╠═d11432fc-cdee-4364-8159-49ce25d6c7e5
+# ╠═d73978e5-ec24-4d71-82ca-184c76f00b74
 # ╠═4abde394-998e-4ff2-ad27-0f86a169d841
 # ╟─023a75a3-a7a6-4e2d-911b-8a5c54d86e80
 # ╟─87cdb6d3-cfa6-4564-8ea4-e2f202d89eca
 # ╟─d5ba5a13-9242-480c-94d7-e681e0ecdf72
 # ╠═117ff067-08ae-4134-8d23-ef28d31a7b8f
-# ╠═d2e88b85-1670-48c8-b4c6-36be84241c54
 # ╟─e65bfd90-83c6-4c93-9f7f-aa8d41c01531
 # ╠═172d0f37-5214-4e73-8635-8bfe85011f4a
 # ╟─86d0af15-ccf4-4254-a686-a6ace39a7a74
@@ -2407,30 +2287,40 @@ version = "1.4.1+0"
 # ╟─c64086a9-b749-4a5d-8665-0085ae4fb64e
 # ╠═6daea6c1-6eb4-4117-8e11-63e9913792e3
 # ╟─c491ca01-5a0b-4f91-825c-67f597aa788a
+# ╟─d96068be-4ac9-4ff9-ae3e-4807df555a42
+# ╠═2eb828db-1008-4551-819d-60ec0aa8eb7a
+# ╠═a637f11c-bd0a-4a87-a1b9-52fd43eb9fcc
+# ╠═c619533d-6e4c-4aae-b3a7-099f578f7b7d
+# ╠═076c200b-d1cf-4c17-91d3-84d447271560
 # ╠═5da5d4f3-a96c-4025-adf2-47978f441519
 # ╟─916540e4-d354-436e-8c79-a8e2aff4f591
 # ╟─9c41f013-38f4-41b4-a2c9-90a2f6f08356
+# ╟─e5bf5d32-2597-42d1-b9a6-eba666fe48d5
+# ╠═f911d885-cc82-4eff-bac2-310e49923c63
 # ╟─f7b8330e-5897-4b71-a9aa-64838cf2a9bd
 # ╟─f2ea1753-e3d8-42e0-a495-5fd22abeb944
 # ╠═b66b0c70-fdd1-4d43-8adf-807f59055f8c
+# ╠═e227d7f2-ddb7-415e-9b9e-e0efd8945ca0
+# ╟─325afb8b-3e26-4e52-a493-3b06bd34f739
 # ╟─d8058473-2ffa-4ae4-8699-435bdf7d6f08
+# ╠═04de7b1e-ea7c-438d-b16a-8e758bb40a70
 # ╟─ebddaba7-792a-4546-9739-df271df2a880
 # ╠═52121c38-fe60-4c52-8c43-40970fc8d69c
+# ╠═4ea66307-dbfc-45d2-894c-fbd89f1957ce
 # ╟─8d558109-3d41-4ed1-b855-2d7ce7f29369
 # ╠═7f97374d-04d9-4241-b166-aa5a6e052c66
-# ╟─4ebb1ab8-a763-4650-88c4-30dd4c22e95b
-# ╟─4463de07-315b-40f3-8361-c722a713a10f
-# ╠═3c8904ff-b602-4cb5-8874-6bc3fe99c713
-# ╟─629da440-d9b9-4115-b460-fd63ebb6d92b
+# ╠═2b34aa16-107c-4e17-88bb-6dfc6e2b4881
+# ╟─51103ee4-b68b-48cf-addc-8905dda40747
 # ╠═012dd868-8815-4c3e-9adb-1ce854081bac
 # ╟─dd38f9f9-0da9-4039-b1bd-ed914d434c7f
 # ╠═de109133-313f-4235-a885-eb8ca55cde67
 # ╠═876837a1-06b7-4b86-829d-4edeae166dc3
+# ╠═fb8696b8-4d1b-49cf-8e25-703287d2b3f1
 # ╠═176c6971-483f-408c-abc2-994546a5f57f
 # ╠═97541230-5515-4b78-b211-2a01a2d9ed83
 # ╠═e3478b55-7100-49c8-809f-4a8bf15071f3
+# ╟─d4324265-e4af-4f00-ab00-d65976d8d583
 # ╟─bd90221c-c590-4d36-bba4-6b0b2e4f2453
-# ╠═fcafb864-249b-11ed-3b73-774e1742704a
 # ╠═1910d57c-853a-4f31-b3e6-0921d775ff8a
 # ╠═d900e981-36d8-4a3c-a1bd-5809ee6e7c64
 # ╠═7c362af1-cc1a-47fc-b3a1-252a891849e5
@@ -2442,7 +2332,6 @@ version = "1.4.1+0"
 # ╠═82751f0f-87fd-4110-9e86-0d0b1ad5cd36
 # ╠═a3e88d8f-72dd-495a-b61b-a969cac7e55a
 # ╠═a25c0f95-7c94-449f-a6c2-8acc649d3307
-# ╠═c2580e89-8ac3-474a-8bb3-9c7f67bac44c
 # ╠═3117a299-06af-47d4-8fb3-3ce394b71050
 # ╠═90c54b0f-0813-4813-8b8c-913a904817dd
 # ╟─00000000-0000-0000-0000-000000000001
