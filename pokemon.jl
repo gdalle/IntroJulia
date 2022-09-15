@@ -24,11 +24,9 @@ begin
 	using FileIO
 	using ImageIO
 	using ImageShow
-	using LinearAlgebra
 	using Plots
 	using PlutoUI
 	using PlutoTeachingTools
-	using ProgressLogging
 end
 
 # ╔═╡ d20423a3-a6d8-4b7a-83c7-f1539fcc4d72
@@ -63,7 +61,10 @@ md"""
 # ╔═╡ 6ae05ccb-c386-4139-817c-85959a20a4de
 md"""
 The goal of this part is to build a simple model of Pokémon behavior.
-We will do this by exploiting two key assets of Julia: types and dispatch. 
+We will do this by exploiting two key assets of Julia: types and dispatch.
+
+In terms of Julia syntax, we tried to make the following exercises self-contained.
+Still, it may be a good idea to check out the language documentation on [types](https://docs.julialang.org/en/v1/manual/types/) and [methods](https://docs.julialang.org/en/v1/manual/methods/) in case you are stuck.
 """
 
 # ╔═╡ d0634f27-ba12-4c53-be66-6d2f7bf74808
@@ -184,7 +185,7 @@ Let's ask Julia which method is chosen for addition, depending on what we try to
 """
 
 # ╔═╡ 730ae9dc-34bf-4472-ae32-36fe10c54175
-@which true + true  # add bools
+@which true + true  # add booleans
 
 # ╔═╡ d0d2c56e-297d-4d35-afb7-bfd366815a95
 @which 1 + 1  # add integers
@@ -199,7 +200,7 @@ Let's ask Julia which method is chosen for addition, depending on what we try to
 @which [1 0; 0 1] + [1 0; 0 1]  # add matrices
 
 # ╔═╡ ecebb7eb-000f-418d-bfb8-acb66b06c171
-@which 1 + 1.0  # add elements of different types by promoting them
+@which 1 + 1.0  # add elements of different types by promoting them to a common type
 
 # ╔═╡ 7b2dbb37-9523-4150-bf23-4803ef0f31f1
 md"""
@@ -239,7 +240,7 @@ md"""
 Our goal here is to compute the effectiveness values by defining methods for the `attack` function.
 And luckily, we can save some work by identifying patterns:
 - in most cases, an attack is normally effective
-- in most cases, an attack by a Pokémon on a Pokémon of the same family is not very effective
+- in most cases, an attack within the same family is not very effective
 So let us start there.
 """
 
@@ -370,12 +371,12 @@ struct Philip <: Corgi
 end
 
 # ╔═╡ 28737ee7-6939-4830-95e3-fc08b6dcf1a4
-hint(md"Take a look at the manual sections on [composite types](https://docs.julialang.org/en/v1/manual/types/#Composite-Types) and [inner constructor methods](https://docs.julialang.org/en/v1/manual/constructors/#man-inner-constructor-methods)")
+hint(md"Take a look at the documentation on [composite types](https://docs.julialang.org/en/v1/manual/types/#Composite-Types) and [inner constructor methods](https://docs.julialang.org/en/v1/manual/constructors/#man-inner-constructor-methods)")
 
 # ╔═╡ 24e23eb0-9341-4249-afe1-c6d94c57478e
 md"""
-Let's see what happens when we create a 'Philip'... or two!
-Remember, the constructor is random, so the following cells may return a different result if you run them repeatedly.
+Let's see what happens when we create a `Philip`... or two!
+Remember, the constructor with no argument is random, so the following cells may return a different result if you run them repeatedly.
 """
 
 # ╔═╡ f0705b81-3df4-4145-9de5-8a4d738f6398
@@ -407,14 +408,14 @@ function attack(pok::Pokemon, phil::Philip)
 	end
 end;
 
+# ╔═╡ eb29c4ee-2cd2-4c51-a1c3-954b5745b9a9
+attack(pikachu, pikachu)  # Electric on Electric: not very effective
+
 # ╔═╡ 5f605953-9216-41fc-b935-bb6c2ca5414e
 attack(pikachu, vaporeon)  # Electric on Water: super effective
 
 # ╔═╡ 35fe8041-58ba-419e-a9d2-f9fc97d13cce
 attack(vaporeon, pikachu)  # Water on Electric: normally effective
-
-# ╔═╡ eb29c4ee-2cd2-4c51-a1c3-954b5745b9a9
-attack(pikachu, pikachu)  # Electric on Electric: not very effective
 
 # ╔═╡ 79b384b1-8393-4c8c-84e4-6c1c729c53eb
 md"""
@@ -444,14 +445,15 @@ md"""
 
 # ╔═╡ 87cdb6d3-cfa6-4564-8ea4-e2f202d89eca
 md"""
-Professor Edelman won't stop at the introduction of the `Corgi` family, for he has seen the true violence of the Pokémon universe.
-Indeed, why would Pokémon need to fight all the time, when they can be friends?
-While attack effectiveness is defined at the level of families, friendship is defined at the level of individual Pokémon.
+Professor Edelman won't stop at the introduction of the `Corgi` family.
+Indeed, he has seen the true violence of the Pokémon universe, and he has said: "no more".
+Why would Pokémon need to fight all the time, when they can be friends?
+While attack effectiveness is defined at the level of families, friendship is naturally defined at the level of individual Pokémon.
 """
 
 # ╔═╡ d5ba5a13-9242-480c-94d7-e681e0ecdf72
 md"""
-By default, two different Pokémon are not friends, except when they are from the same family.
+By default, two arbitrary Pokémon are not friends.
 """
 
 # ╔═╡ 117ff067-08ae-4134-8d23-ef28d31a7b8f
@@ -562,9 +564,7 @@ begin
 	get_color(::Water) = colorant"blue"
 	get_color(::Grass) = colorant"green"
 	get_color(::Electric) = colorant"yellow"
-	if (@isdefined Corgi) 
-		get_color(::Corgi) = colorant"purple"
-	end
+	get_color(::Corgi) = colorant"purple"
 end;
 
 # ╔═╡ f7b8330e-5897-4b71-a9aa-64838cf2a9bd
@@ -591,12 +591,6 @@ begin
 	g1 = new_grid([Pikachu(), Charmander(), Squirtle()]; n=5, m=8)
 	get_color.(g1)
 end
-
-# ╔═╡ 325afb8b-3e26-4e52-a493-3b06bd34f739
-md"""
-!!! danger "TODO"
-	Add automatic check.
-"""
 
 # ╔═╡ d8058473-2ffa-4ae4-8699-435bdf7d6f08
 md"""
@@ -731,6 +725,9 @@ md"""
 > Comment on what you observe.
 """
 
+# ╔═╡ 8e96478a-4dd4-4eab-bda3-e19e60adf332
+
+
 # ╔═╡ bd90221c-c590-4d36-bba4-6b0b2e4f2453
 md"""
 # D. Appendix
@@ -809,9 +806,6 @@ else
 	almost(md"You need to define `Flareon` correctly")
 end;
 
-# ╔═╡ ceee19ed-539e-4625-bb23-d4bad31c3661
-check_flareon
-
 # ╔═╡ 04c69dcc-534a-4c52-a8a3-5a65fb5f0191
 check_vaporeon = if (
 	(@isdefined Vaporeon) &&
@@ -824,8 +818,8 @@ else
 	almost(md"You need to define `Vaporeon` correctly")
 end;
 
-# ╔═╡ 5fed229c-fb38-4e2d-921c-07f98d018107
-check_vaporeon
+# ╔═╡ ed80972f-648a-4975-b414-2e644565dccb
+TwoColumn(check_flareon, check_vaporeon)
 
 # ╔═╡ 0e502851-fa10-4d2c-aaf3-e47ca4bf4bcf
 check_leafeon = if (
@@ -839,9 +833,6 @@ else
 	almost(md"You need to define `Leafeon` correctly")
 end;
 
-# ╔═╡ db0d7557-4507-4568-b721-d092cf0150c7
-check_leafeon
-
 # ╔═╡ 42631084-34ec-4482-9e10-84ff85067b93
 check_jolteon = if (
 	(@isdefined Jolteon) &&
@@ -854,8 +845,8 @@ else
 	almost(md"You need to define `Jolteon` correctly")
 end;
 
-# ╔═╡ cf9ac320-3715-4373-b022-9839838fd024
-check_jolteon
+# ╔═╡ a33536e5-f9de-41d1-bd17-0a8dd8d577dc
+TwoColumn(check_leafeon, check_jolteon)
 
 # ╔═╡ 82751f0f-87fd-4110-9e86-0d0b1ad5cd36
 check_corgi = if (
@@ -875,6 +866,7 @@ check_corgi
 check_attack_corgi = if (@isdefined Corgi)
 	struct DummyCorgi <: Corgi end
 	if (
+		attack(DummyCorgi(), Snorlax()) == NORMAL_EFFECTIVE &&
 		attack(DummyCorgi(), Charmander()) == SUPER_EFFECTIVE &&
 		attack(DummyCorgi(), Squirtle()) == SUPER_EFFECTIVE &&
 		attack(DummyCorgi(), Bulbasaur()) == SUPER_EFFECTIVE &&
@@ -912,7 +904,7 @@ check_philip
 # ╔═╡ 3117a299-06af-47d4-8fb3-3ce394b71050
 check_defense_philip = if (
 	(@isdefined Philip) &&
-	sort(unique(attack(Snorlax(), Philip()) for _ in 1:1000)) == [NORMAL_EFFECTIVE, SUPER_EFFECTIVE]
+	Set(attack(Snorlax(), Philip()) for _ in 1:1000) == Set([NORMAL_EFFECTIVE, SUPER_EFFECTIVE])
 )
 	correct(md"`attack` is correctly defined for `Philip` defenders")
 else
@@ -939,6 +931,29 @@ end;
 # ╔═╡ 5da5d4f3-a96c-4025-adf2-47978f441519
 check_friends_philip
 
+# ╔═╡ 2b8f9fce-639a-432c-986e-956297743f14
+check_new_grid = begin
+	my_pokemon_set = [Snorlax()]
+	my_grid = new_grid(my_pokemon_set; n=20, m=50)
+	if my_grid isa Matrix{<:Pokemon}
+		if size(my_grid) == (20, 50)
+			contents = Set(my_grid)
+			if Set(my_grid) == Set(my_pokemon_set)
+				correct(md"`new_grid` is correctly defined.")
+			else
+				almost(md"Make sure that `new_grid` chooses random elements from the input `pokemon_set`.")
+			end
+		else
+			almost(md"Make sure that `new_grid` returns a matrix of size `n × m`.")
+		end
+	else
+		almost(md"Make sure that `new_grid` returns a `Matrix{<:Pokemon}`, i.e. a 2-dimensional array.")
+	end
+end;
+
+# ╔═╡ 72f838ef-ecbd-412e-9ea6-88fc48fe8da6
+check_new_grid
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -946,11 +961,9 @@ Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
-LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-ProgressLogging = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
 
 [compat]
 Colors = "~0.12.8"
@@ -960,7 +973,6 @@ ImageShow = "~0.3.6"
 Plots = "~1.32.1"
 PlutoTeachingTools = "~0.1.7"
 PlutoUI = "~0.7.39"
-ProgressLogging = "~0.1.4"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -969,7 +981,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.1"
 manifest_format = "2.0"
-project_hash = "b9e5a47909e0d8eb05069a1d89f429b1be468d51"
+project_hash = "8a8171ae13d8c5a889e267b5e0b17f763675975a"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1721,12 +1733,6 @@ version = "1.3.0"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
-[[deps.ProgressLogging]]
-deps = ["Logging", "SHA", "UUIDs"]
-git-tree-sha1 = "80d919dee55b9c50e8d9e2da5eeafff3fe58b539"
-uuid = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
-version = "0.1.4"
-
 [[deps.ProgressMeter]]
 deps = ["Distributed", "Printf"]
 git-tree-sha1 = "d7a7aef8f8f2d537104f170139553b14dfe39fe9"
@@ -2213,10 +2219,8 @@ version = "1.4.1+0"
 # ╠═c137d356-f552-4e3e-92b7-a9ffc0df0266
 # ╟─9e2898c5-5c90-4fca-8c60-1fc31db81ead
 # ╠═f43cde45-9c12-430d-b75b-70a2c476db5b
-# ╠═ceee19ed-539e-4625-bb23-d4bad31c3661
-# ╠═5fed229c-fb38-4e2d-921c-07f98d018107
-# ╠═db0d7557-4507-4568-b721-d092cf0150c7
-# ╠═cf9ac320-3715-4373-b022-9839838fd024
+# ╠═ed80972f-648a-4975-b414-2e644565dccb
+# ╠═a33536e5-f9de-41d1-bd17-0a8dd8d577dc
 # ╟─1dbbf479-1707-4dd0-90c8-394690fbac91
 # ╟─c4063845-c70a-47ef-a4f7-ef2b3ea0f0d8
 # ╟─3d748f13-ef9c-4899-99d3-16743f0e2f5a
@@ -2241,9 +2245,9 @@ version = "1.4.1+0"
 # ╠═5963a5b6-7939-49f5-9f5e-d1984afd8d79
 # ╟─520f5b7e-d5dd-4954-93a3-39e63d5d2a1b
 # ╟─581e4013-692a-4a66-b210-b4db92112187
+# ╠═eb29c4ee-2cd2-4c51-a1c3-954b5745b9a9
 # ╠═5f605953-9216-41fc-b935-bb6c2ca5414e
 # ╠═35fe8041-58ba-419e-a9d2-f9fc97d13cce
-# ╠═eb29c4ee-2cd2-4c51-a1c3-954b5745b9a9
 # ╟─7b003215-ce5d-4063-9eb0-c05affd1d15e
 # ╟─ffee9abf-d6ed-411e-bef7-15d52c084d3e
 # ╟─2016d37b-ab63-4956-8fe7-de7eaadfb29f
@@ -2301,7 +2305,7 @@ version = "1.4.1+0"
 # ╟─f2ea1753-e3d8-42e0-a495-5fd22abeb944
 # ╠═b66b0c70-fdd1-4d43-8adf-807f59055f8c
 # ╠═e227d7f2-ddb7-415e-9b9e-e0efd8945ca0
-# ╟─325afb8b-3e26-4e52-a493-3b06bd34f739
+# ╠═72f838ef-ecbd-412e-9ea6-88fc48fe8da6
 # ╟─d8058473-2ffa-4ae4-8699-435bdf7d6f08
 # ╠═04de7b1e-ea7c-438d-b16a-8e758bb40a70
 # ╟─ebddaba7-792a-4546-9739-df271df2a880
@@ -2320,6 +2324,7 @@ version = "1.4.1+0"
 # ╠═97541230-5515-4b78-b211-2a01a2d9ed83
 # ╠═e3478b55-7100-49c8-809f-4a8bf15071f3
 # ╟─d4324265-e4af-4f00-ab00-d65976d8d583
+# ╠═8e96478a-4dd4-4eab-bda3-e19e60adf332
 # ╟─bd90221c-c590-4d36-bba4-6b0b2e4f2453
 # ╠═1910d57c-853a-4f31-b3e6-0921d775ff8a
 # ╠═d900e981-36d8-4a3c-a1bd-5809ee6e7c64
@@ -2334,5 +2339,6 @@ version = "1.4.1+0"
 # ╠═a25c0f95-7c94-449f-a6c2-8acc649d3307
 # ╠═3117a299-06af-47d4-8fb3-3ce394b71050
 # ╠═90c54b0f-0813-4813-8b8c-913a904817dd
+# ╠═2b8f9fce-639a-432c-986e-956297743f14
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
