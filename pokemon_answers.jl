@@ -33,11 +33,11 @@ end
 md"""
 Homework 1a of the MIT Course [_Julia: solving real-world problems with computation_](https://github.com/mitmath/JuliaComputation)
 
-Release date: Thursday, Sep 15, 2022 (version 1)
+Release date: Thursday, Sep 15, 2022.
 
 **Due date: Thursday, Sep 22, 2022 (11:59pm EST)**
 
-Submission by: Jazzy Doe (jazz@mit.edu)
+Submission by: **Jazzy Doe** (jazz@mit.edu)
 """
 
 # ╔═╡ 00992802-9ead-466b-8b01-bcaf0614b0c6
@@ -127,7 +127,13 @@ md"""
 """
 
 # ╔═╡ 87081f51-7c44-4365-b412-7b34ed2b3191
-
+begin
+	struct Eevee <: Normal end
+	struct Flareon <: Fire end
+	struct Vaporeon <: Water end
+	struct Leafeon <: Grass end
+	struct Jolteon <: Electric end
+end
 
 # ╔═╡ d4619cdf-f902-4a8e-8e60-b8606aee40d2
 md"""
@@ -281,15 +287,6 @@ md"""
 Now let's see how attacks work.
 """
 
-# ╔═╡ eb29c4ee-2cd2-4c51-a1c3-954b5745b9a9
-attack(pikachu, pikachu)  # Electric on Electric: not very effective
-
-# ╔═╡ 5f605953-9216-41fc-b935-bb6c2ca5414e
-attack(pikachu, vaporeon)  # Electric on Water: super effective
-
-# ╔═╡ 35fe8041-58ba-419e-a9d2-f9fc97d13cce
-attack(vaporeon, pikachu)  # Water on Electric: normally effective
-
 # ╔═╡ 7b003215-ce5d-4063-9eb0-c05affd1d15e
 md"""
 # B. Extending Pokémon behavior
@@ -328,7 +325,7 @@ md"""
 """
 
 # ╔═╡ a4c0fff3-b4fe-4c48-8680-c12bbf4f68f3
-
+abstract type Corgi <: Pokemon end
 
 # ╔═╡ 3d31d6ab-d466-4581-9ade-a8a541a03319
 md"""
@@ -347,7 +344,12 @@ md"""
 """
 
 # ╔═╡ a2fe0244-361f-4154-af76-a56bd7928880
-
+begin
+	attack(att::Corgi, def::Fire) = SUPER_EFFECTIVE
+	attack(att::Corgi, def::Water) = SUPER_EFFECTIVE
+	attack(att::Corgi, def::Grass) = SUPER_EFFECTIVE
+	attack(att::Corgi, def::Electric) = SUPER_EFFECTIVE
+end;
 
 # ╔═╡ ccc1dd94-a1db-4504-8d27-5fbf577cee30
 md"""
@@ -361,7 +363,12 @@ md"""
 """
 
 # ╔═╡ f899ed08-4315-4c17-8792-84ad0cae631b
-
+struct Philip <: Corgi
+	life::Int
+	# Constructors
+	Philip(life) = new(life)
+	Philip() = new(rand(1:5))
+end
 
 # ╔═╡ 28737ee7-6939-4830-95e3-fc08b6dcf1a4
 hint(md"Take a look at the documentation on [composite types](https://docs.julialang.org/en/v1/manual/types/#Composite-Types) and [inner constructor methods](https://docs.julialang.org/en/v1/manual/constructors/#man-inner-constructor-methods)")
@@ -392,7 +399,23 @@ md"""
 """
 
 # ╔═╡ cf737824-4aa3-409b-a914-be606c9668a0
+function attack(pok::Pokemon, phil::Philip)
+	strength = rand(1:phil.life)
+	if strength == phil.life
+		return SUPER_EFFECTIVE
+	else
+		return NORMAL_EFFECTIVE
+	end
+end;
 
+# ╔═╡ eb29c4ee-2cd2-4c51-a1c3-954b5745b9a9
+attack(pikachu, pikachu)  # Electric on Electric: not very effective
+
+# ╔═╡ 5f605953-9216-41fc-b935-bb6c2ca5414e
+attack(pikachu, vaporeon)  # Electric on Water: super effective
+
+# ╔═╡ 35fe8041-58ba-419e-a9d2-f9fc97d13cce
+attack(vaporeon, pikachu)  # Water on Electric: normally effective
 
 # ╔═╡ 79b384b1-8393-4c8c-84e4-6c1c729c53eb
 md"""
@@ -493,7 +516,11 @@ md"""
 """
 
 # ╔═╡ 6daea6c1-6eb4-4117-8e11-63e9913792e3
-
+begin
+	friends(pok1::Philip, pok2::Pokemon) = true
+	friends(pok1::Pokemon, pok2::Philip) = true
+	friends(pok1::Philip, pok2::Philip) = true
+end;
 
 # ╔═╡ c491ca01-5a0b-4f91-825c-67f597aa788a
 hint(md"You might get an arror due to an ambiguous method. This means multiple dispatch has failed because there is no single most specific implementation. How do you fix this?")
@@ -537,9 +564,7 @@ begin
 	get_color(::Water) = colorant"blue"
 	get_color(::Grass) = colorant"green"
 	get_color(::Electric) = colorant"yellow"
-	if @isdefined(Corgi)
-		get_color(::Corgi) = colorant"purple"
-	end
+	get_color(::Corgi) = colorant"purple"
 end;
 
 # ╔═╡ f7b8330e-5897-4b71-a9aa-64838cf2a9bd
@@ -553,7 +578,13 @@ md"""
 """
 
 # ╔═╡ b66b0c70-fdd1-4d43-8adf-807f59055f8c
-
+function new_grid(pokemon_set; n, m)
+	grid = Matrix{Pokemon}(undef, n, m)
+	for i in 1:n, j in 1:m
+		grid[i, j] = rand(pokemon_set)
+	end
+	return grid
+end
 
 # ╔═╡ e227d7f2-ddb7-415e-9b9e-e0efd8945ca0
 begin
@@ -579,7 +610,20 @@ md"""
 """
 
 # ╔═╡ 52121c38-fe60-4c52-8c43-40970fc8d69c
-
+function step!(grid::Matrix{<:Pokemon})
+	n, m = size(grid)
+	i, j = rand(1:n), rand(1:m)
+	att = grid[i, j]
+	neighbors = [
+		((i + Δi) % n + 1, (j + Δj) % m + 1)
+		for Δi in -1:1 for Δj in -1:1
+	]
+	i2, j2 = rand(neighbors)
+	def = grid[i2, j2]
+	if attack(att, def) == SUPER_EFFECTIVE
+		grid[i2, j2] = att
+	end
+end
 
 # ╔═╡ 4ea66307-dbfc-45d2-894c-fbd89f1957ce
 begin
@@ -597,7 +641,20 @@ md"""
 """
 
 # ╔═╡ 7f97374d-04d9-4241-b166-aa5a6e052c66
-
+function step_consider_friends!(grid::Matrix{<:Pokemon})
+	n, m = size(grid)
+	i, j = rand(1:n), rand(1:m)
+	att = grid[i, j]
+	neighbors = [
+		((i + Δi) % n + 1, (j + Δj) % m + 1)
+		for Δi in -1:1 for Δj in -1:1
+	]
+	i2, j2 = rand(neighbors)
+	def = grid[i2, j2]
+	if !friends(att, def) && attack(att, def) == SUPER_EFFECTIVE
+		grid[i2, j2] = att
+	end
+end
 
 # ╔═╡ 2b34aa16-107c-4e17-88bb-6dfc6e2b4881
 begin
@@ -637,17 +694,17 @@ md"""
 # ╔═╡ de109133-313f-4235-a885-eb8ca55cde67
 basic_pokemon = [Snorlax(), Charmander(), Squirtle(), Bulbasaur(), Pikachu()]
 
-# ╔═╡ 176c6971-483f-408c-abc2-994546a5f57f
-simulation(
-	basic_pokemon;
-	n=100, m=100, T=100_000
-)
-
 # ╔═╡ 876837a1-06b7-4b86-829d-4edeae166dc3
 eevees = [Eevee(), Flareon(), Vaporeon(), Leafeon(), Jolteon()]
 
 # ╔═╡ fb8696b8-4d1b-49cf-8e25-703287d2b3f1
 all_pokemon = vcat(basic_pokemon, eevees, Philip(5))
+
+# ╔═╡ 176c6971-483f-408c-abc2-994546a5f57f
+simulation(
+	basic_pokemon;
+	n=100, m=100, T=100_000
+)
 
 # ╔═╡ 97541230-5515-4b78-b211-2a01a2d9ed83
 simulation(
@@ -876,25 +933,21 @@ check_friends_philip
 
 # ╔═╡ 2b8f9fce-639a-432c-986e-956297743f14
 check_new_grid = begin
-	if @isdefined new_grid 
-		my_pokemon_set = [Snorlax()]
-		my_grid = new_grid(my_pokemon_set; n=20, m=50)
-		if my_grid isa Matrix{<:Pokemon}
-			if size(my_grid) == (20, 50)
-				contents = Set(my_grid)
-				if Set(my_grid) == Set(my_pokemon_set)
-					correct(md"`new_grid` is correctly defined.")
-				else
-					almost(md"Make sure that `new_grid` chooses random elements from the input `pokemon_set`.")
-				end
+	my_pokemon_set = [Snorlax()]
+	my_grid = new_grid(my_pokemon_set; n=20, m=50)
+	if my_grid isa Matrix{<:Pokemon}
+		if size(my_grid) == (20, 50)
+			contents = Set(my_grid)
+			if Set(my_grid) == Set(my_pokemon_set)
+				correct(md"`new_grid` is correctly defined.")
 			else
-				almost(md"Make sure that `new_grid` returns a matrix of size `n × m`.")
+				almost(md"Make sure that `new_grid` chooses random elements from the input `pokemon_set`.")
 			end
 		else
-			almost(md"Make sure that `new_grid` returns a `Matrix{<:Pokemon}`, i.e. a 2-dimensional array.")
+			almost(md"Make sure that `new_grid` returns a matrix of size `n × m`.")
 		end
 	else
-		almost(md"Make sure that `new_grid` is defined")
+		almost(md"Make sure that `new_grid` returns a `Matrix{<:Pokemon}`, i.e. a 2-dimensional array.")
 	end
 end;
 
@@ -2151,11 +2204,11 @@ version = "1.4.1+0"
 # ╟─d931270d-1ceb-474f-b04e-0185595a4b5a
 # ╠═7dbd7cfd-5c52-4591-b6ba-eba7f3076a45
 # ╟─72ac44a7-7c18-4d0e-85e4-9ca9cb5173a8
-# ╟─d20b68c4-3091-4e49-8873-199672ed2695
 # ╠═74a44465-7332-45b0-91c4-2ae5ed658160
+# ╟─d20b68c4-3091-4e49-8873-199672ed2695
 # ╟─ed8a218f-287c-425b-a6b6-793be7ad1a7b
-# ╟─fc1c3e85-b1af-4cbb-a8fe-597174bea4d4
 # ╟─037d04d4-f5f2-4b77-80ed-b799c1ea9b77
+# ╟─fc1c3e85-b1af-4cbb-a8fe-597174bea4d4
 # ╠═87081f51-7c44-4365-b412-7b34ed2b3191
 # ╟─d4619cdf-f902-4a8e-8e60-b8606aee40d2
 # ╠═2e9ddef4-688c-4623-8b58-578e7931204b
@@ -2254,9 +2307,9 @@ version = "1.4.1+0"
 # ╠═e227d7f2-ddb7-415e-9b9e-e0efd8945ca0
 # ╠═72f838ef-ecbd-412e-9ea6-88fc48fe8da6
 # ╟─d8058473-2ffa-4ae4-8699-435bdf7d6f08
+# ╠═04de7b1e-ea7c-438d-b16a-8e758bb40a70
 # ╟─ebddaba7-792a-4546-9739-df271df2a880
 # ╠═52121c38-fe60-4c52-8c43-40970fc8d69c
-# ╠═04de7b1e-ea7c-438d-b16a-8e758bb40a70
 # ╠═4ea66307-dbfc-45d2-894c-fbd89f1957ce
 # ╟─8d558109-3d41-4ed1-b855-2d7ce7f29369
 # ╠═7f97374d-04d9-4241-b166-aa5a6e052c66
@@ -2265,9 +2318,9 @@ version = "1.4.1+0"
 # ╠═012dd868-8815-4c3e-9adb-1ce854081bac
 # ╟─dd38f9f9-0da9-4039-b1bd-ed914d434c7f
 # ╠═de109133-313f-4235-a885-eb8ca55cde67
-# ╠═176c6971-483f-408c-abc2-994546a5f57f
 # ╠═876837a1-06b7-4b86-829d-4edeae166dc3
 # ╠═fb8696b8-4d1b-49cf-8e25-703287d2b3f1
+# ╠═176c6971-483f-408c-abc2-994546a5f57f
 # ╠═97541230-5515-4b78-b211-2a01a2d9ed83
 # ╠═e3478b55-7100-49c8-809f-4a8bf15071f3
 # ╟─d4324265-e4af-4f00-ab00-d65976d8d583
