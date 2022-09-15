@@ -383,7 +383,7 @@ philip.life, other_philip.life
 
 # ╔═╡ eaea15b2-5918-4fc0-b44a-3cb0c085fa67
 md"""
-When an attack is launched against `Philip`, a random number is drawn between $1$ and `life`. If this number is equal to `life`, the attack is `SUPER_EFFECTIVE`, otherwise it is `NORMAL_EFFECTIVE`.
+When an attack is launched against `Philip`, a random number is drawn between $1$ and `life`. If this number is equal to `life`, the attack is super effective, otherwise it is normally effective.
 """
 
 # ╔═╡ 8fc13f81-3e49-4b98-8592-fb9f24eda900
@@ -570,9 +570,6 @@ At each time step, the following events occur in order:
 3. If the attack is super effective, the defender is replaced in the grid by a copy of the attacker.
 """
 
-# ╔═╡ 04de7b1e-ea7c-438d-b16a-8e758bb40a70
-T_test = 10
-
 # ╔═╡ ebddaba7-792a-4546-9739-df271df2a880
 md"""
 > Task: Define a function `step!(grid)` which applies one step of fight simulation to a matrix of Pokémon, modifying this matrix in the process.
@@ -580,6 +577,9 @@ md"""
 
 # ╔═╡ 52121c38-fe60-4c52-8c43-40970fc8d69c
 
+
+# ╔═╡ 04de7b1e-ea7c-438d-b16a-8e758bb40a70
+T_test = 10
 
 # ╔═╡ 4ea66307-dbfc-45d2-894c-fbd89f1957ce
 begin
