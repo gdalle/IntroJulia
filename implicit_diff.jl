@@ -24,272 +24,258 @@ TableOfContents()
 
 # ╔═╡ a405d214-4348-4692-999e-0e890bd91e5d
 md"""
-# HW2 - Automatic and implicit differentiation
+# HW2 - Automatic differentiation
 """
 
-# ╔═╡ e7fa3587-d99d-4a77-b99d-a58b2df8f3c0
+# ╔═╡ 1cfba628-aa7b-4851-89f1-84b1a45802b3
 md"""
-# 1. Calculus and autodiff refresher
+# Warm up: scalar functions
+"""
+
+# ╔═╡ 3829f016-a7cd-4ce6-b2d4-1c84da8fdb97
+md"""
+Let $f : \mathbb{R} \longrightarrow \mathbb{R}$ be a function with scalar input and output.
+When we say that $f$ is differentiable at $x \in \mathbb{R}$, we mean that there is a _number_ $f'(x) \in \mathbb{R}$ such that for any perturbation $h \in \mathbb{R}$,
+
+$$f(x+h) = f(x) + f'(x)h + o(h)$$
+
+In other words, $f$ can be approximated with a straight tangent line around $x$.
+Furthermore, the error is negligible compared with the distance $\lvert h \rvert$ to $x$, at least for small enough values of $\lvert h \rvert$ (that is what the $o(h)$ means).
+
+The number $f'(x)$ is called the _derivative_ of $f$ at $x$, and it gives the slope of the tangent.
+"""
+
+# ╔═╡ 755ff203-43d8-488f-a075-14a858b0a096
+md"""
+To generalize derivatives in higher dimensions, we will need to shift our focus from lines to functions.
+Indeed, a straight line with slope $f'(x)$ is nothing but a linear function $h \longmapsto f'(x)h$.
+So computing a derivative boils down to the following question:
+
+_What is the best linear approximation of my function around a given point?_
+"""
+
+# ╔═╡ a7d2e710-cf08-4c77-9042-78ee73b6f698
+md"""
+# From differentials to Jacobians
 """
 
 # ╔═╡ 4d9d2f52-c406-4a7c-8b0e-ba5af7ebc3d8
 md"""
-## From differentials to Jacobians
-
 Let $f: \mathcal{A} \longrightarrow \mathcal{B}$ be a function between two normed vector spaces.
-When we say that $f$ is differentiable at $x \in \mathcal{A}$, we mean that there is a _linear_ function $df_x: \mathcal{A} \longrightarrow \mathcal{B}$ such that for any perturbation $h$,
+When we say that $f$ is differentiable at $x \in \mathcal{A}$, we mean that there is a _linear function_ $df_x: \mathcal{A} \longrightarrow \mathcal{B}$ such that for any perturbation $h \in \mathcal{A}$,
 
 $$f(x + h) = f(x) + df_x(h) + o(\lVert h \rVert)$$
 
-In other words, $f$ can be approximated linearly around $x$, and the error is negligible compared with the distance to $x$.
-
 The linear function $df_x$ is called the _differential_ of $f$ at $x$.
+"""
+
+# ╔═╡ de4df88a-2a55-4a02-aeaf-f02242b6c52f
+md"""
 When $\mathcal{A} = \mathbb{R}^n$ and $\mathcal{B} = \mathbb{R}^m$ are both Euclidean spaces, we can always find a matrix $Jf_x \in \mathbb{R}^{m \times n}$ that satisfies
 
 $$df_x(h) = Jf_x h$$
 
-Note the change of perspective: the left hand side is the application of a function to a vector, while the right hand side is a matrix-vector product.
+In the previous equation, the left hand side is the application of a function to a vector, while the right hand side is a matrix-vector product.
 The matrix $Jf_x$ is called the _Jacobian_ of $f$ at $x$.
+"""
 
-An interesting special case is when $m = 1$, _i.e._ when the function $f$ is real-valued.
-Then, the Jacobian matrix has only one row, and it can be seen as the transpose of the gradient: $Jf_x = \nabla f_x^\top$.
-Among other things, this applies to loss functions in deep learning, which have many inputs but a single output.
+# ╔═╡ e22cec4a-03d3-4821-945b-9283e16207a8
+md"""
+It can be expressed with partial derivatives: if $x = (x_1, ..., x_n)$ and $f(x) = (f_1(x), ..., f_m(x))$, then
+
+$$Jf_x = \begin{pmatrix}
+\frac{\partial f_1(x)}{\partial x_1} & \frac{\partial f_1(x)}{\partial x_2} & \cdots & \frac{\partial f_1(x)}{\partial x_n} \\
+\frac{\partial f_2(x)}{\partial x_1} & \frac{\partial f_2(x)}{\partial x_2} & \cdots & \frac{\partial f_2(x)}{\partial x_n} \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{\partial f_m(x)}{\partial x_1} & \frac{\partial f_m(x)}{\partial x_2} & \cdots & \frac{\partial f_m(x)}{\partial x_n} \\
+\end{pmatrix}$$
+
+However, it is good practice to learn how to manipulate Jacobians in matrix form, without needing to compute individual coefficients.
+"""
+
+# ╔═╡ e19f2824-e7a0-4ee0-b37d-350342d3cbdd
+md"""
+!!! danger "Task"
+	Consider a real-valued function $f: \mathbb{R}^n \longrightarrow \mathbb{R}$. What is the shape of the Jacobian matrix? What is its relation to the gradient $\nabla f_x$?
+"""
+
+# ╔═╡ 82fd26e3-b429-480d-be04-f0ac363c4a31
+md"""
+When the function $f$ is real-valued, $m = 1$ and the Jacobian matrix only has one row.
+It can be seen as the transpose of the gradient: $Jf_x = \nabla f_x^\top$.
+"""
+
+# ╔═╡ 25b572fa-1f9a-43f9-98a3-181d8dd6e21a
+md"""
+---
+"""
+
+# ╔═╡ f51920d4-652b-467c-8f02-fcd1a0f92c2e
+md"""
+The case of real-valued functions is especially interesting in machine learning.
+Neural networks are trained by minimizing a scalar loss function computed from their parameters.
+While the parameter dimension $n$ may be of order $10^6$ or even $10^9$, the output dimension $m$ is always $1$.
+"""
+
+# ╔═╡ b5241dc4-32c1-4e91-b401-c25f4b7cb3cd
+md"""
+**Example: linear regression**
 """
 
 # ╔═╡ d76d5ddc-fe59-47f4-8b56-6f704b486ebc
 md"""
-### Example: linear regression
-
 Linear regression is perhaps the most basic form of machine learning.
-Given a matrix of features $X \in \mathbb{R}^{m \times n}$ and a vector of targets $y \in \mathbb{R}^m$, we approximate $y$ by a linear function $X\theta$, where $\theta \in \mathbb{R}^n$ is a vector of parameters.
-One way to measure the quality of the approximation for a given $\theta$ is to compute the quadratic error on each component of $y$:
+Given a matrix of features $M \in \mathbb{R}^{m \times n}$ and a vector of targets $y \in \mathbb{R}^m$, we approximate $y$ by a linear function $M x$, where $x \in \mathbb{R}^n$ is a vector of parameters (feature weights).
+One way to measure the quality of the approximation for a given $x$ is to compute the squared error on all components of $y$:
 
-$$f: \theta \in \mathbb{R}^n \longmapsto (X\theta - y) \odot (X\theta - y) \in \mathbb{R}^m$$
+$$f: x \in \mathbb{R}^n \longmapsto \lVert M x - y \rVert^2 = \sum_{i=1}^{m} (M x - y)_i^2 \in \mathbb{R}$$
 
-where $\odot$ denotes the componentwise product.
-To insert this function into a neural network, we need to differentiate it with respect to the parameters.
+If we want to find the best possible $x$, we can do it by minimizing the error $f(x)$.
+We may also wish to use the function $f$ within a larger neural network.
+In both cases, it is essential to differentiate it with respect to its input $x$ (assuming $M$ and $y$ are fixed).
 """
 
 # ╔═╡ ae7b2114-de91-4f1b-8765-af5e02cc1b63
 md"""
-> Task: Compute the differential and then the Jacobian matrix of the function $f$ at a point $\theta$.
+!!! danger "Task"
+	Compute the differential and then the Jacobian matrix of the function $f$ at a point $x$.
 """
 
 # ╔═╡ b8974b20-d8dc-4109-a64e-585c7afdb484
 md"""
-Let us look at what happens when we add a small perturbation $\varepsilon$ to $\theta$:
+Let us look at what happens when we add a small perturbation $h$ to $x$:
 
 $$\begin{aligned}
-f(\theta + \varepsilon)
-& = [X(\theta + \varepsilon) - y] \odot [X(\theta + \varepsilon) - y] \\
-& = [(X\theta - y) + X\varepsilon] \odot [(X\theta - y) + X\varepsilon]
+f(x + h)
+& = \lVert M(x + h) - y \rVert^2 \\
+& = \lVert (Mx - y) + Mh \rVert^2 \\
+& = \underbrace{\lVert Mx - y \rVert^2}_{f(x)} + \underbrace{2 (Mx - y)^\top (Mh)}_{\text{linear in $h$}} + \underbrace{\lVert Mh \rVert^2}_{\text{small wrt $h$}}
 \end{aligned}$$
+"""
 
-The componentwise product is bilinear, which means we can expand as follows:
+# ╔═╡ f4994938-9270-4058-9c95-01591c87d9c7
+md"""
+Now we pause for a minute and examine the three terms we obtained.
 
-$$\begin{aligned}
-f(\theta + \varepsilon)
-& = \underbrace{(X\theta - y) \odot (X\theta - y)}_{f(\theta)} + \underbrace{2(X\theta - y) \odot X\varepsilon}_{df_\theta(\varepsilon)} + \underbrace{X\varepsilon \odot X\varepsilon}_{o(\lVert \varepsilon \rVert)}
-\end{aligned}$$
+1. The first one is exactly the value of $f$ at $x$
+2. The second one is a linear function of $h$
+3. The third one is of order $\lVert h \rVert^2$, which is negligible compared to $\lVert h \rVert$ in the "small $h$" regime
 
-The middle term of the right hand side is a linear function of $\varepsilon$, which is how we identify the differential:
+This means we can identify the differential:
 
-$$df_\theta: \varepsilon \in \mathbb{R}^n \longmapsto 2(X\theta - y) \odot X\varepsilon \in \mathbb{R}^m$$
+$$df_x: h \in \mathbb{R}^n \longmapsto 2 (Mx - y)^\top M h$$
 
-Now we only need to work out the Jacobian associated with this differential.
-The trick is to represent componentwise multiplication using a diagonal matrix:
+And the Jacobian associated with this differential is simply the $1 \times n$ matrix
 
-$$Jf_\theta = 2 \mathrm{diag}(X\theta - y) X$$
+$$Jf_x = 2 (Mx - y)^\top M = \nabla f_x^\top$$
+"""
+
+# ╔═╡ f472111d-d7e8-42db-9a08-6a8dd67af09b
+md"""
+---
 """
 
 # ╔═╡ 28f31ef9-27ea-4e94-8f03-89b0f6cfa0d1
 md"""
-> Task: Implement the function $f$ and a function computing its Jacobian matrix.
+!!! danger "Task"
+	Implement the function $f$ and a function computing its Jacobian.
 """
 
-# ╔═╡ 7d27892c-4781-4f22-a37e-2be5bafa68b1
-hint(md"You can use `.*` for the componenwise product, and `Diagonal` (from `LinearAlgebra`) to create a diagonal matrix from a vector.")
+# ╔═╡ ca4b41dd-353e-498d-a461-648c582cb999
+hint(md"Look up the documentation for the `sum` function. You can apply a function to the elements before summing them: how about `abs2`?")
 
 # ╔═╡ 883803e0-2fa1-4922-be37-f325af4f5c41
-function linreg_errors(θ; X, y)
-	err = (X * θ .- y)
-	return err .* err
+function f(x; M, y)
+	return sum(abs2, M * x .- y)
 end
 
 # ╔═╡ c5fc8f3a-ed90-41ec-b4b9-1172a41e3adc
-function linreg_errors_jacobian(θ; X, y)
-	return 2 .* Diagonal(X * θ .- y) * X
+function Jf(x; M, y)
+	return 2 * (M * x .- y)' * M
 end
 
 # ╔═╡ 40e13883-dd9a-43b9-9ef7-1069ef036846
 let
 	n, m = 3, 5
-	X = rand(m, n)
+	M = rand(m, n)
 	y = rand(m)
-	θ = rand(n)
-	ε = 0.001 .* rand(n)
-	diff1 = linreg_errors(θ + ε; X=X, y=y) .- linreg_errors(θ; X=X, y=y)
-	diff2 = linreg_errors_jacobian(θ; X=X, y=y) * ε
+	x = rand(n)
+	h = 0.001 .* rand(n)
+	diff1 = f(x + h; M=M, y=y) .- f(x; M=M, y=y)
+	diff2 = Jf(x; M=M, y=y) * h
 	diff1, diff2
 end
 
+# ╔═╡ 4440f39c-51e5-4ffd-8031-96d4a760270c
+md"""
+---
+"""
+
+# ╔═╡ 69a9ec45-d2ff-4362-9c3c-5c004e46ceb3
+md"""
+# JVPs and VJPs
+"""
+
 # ╔═╡ 8923a5ad-ddba-4ae2-886e-84526a3521ba
 md"""
-## JVPs & VJPs
-
-In concrete applications, the dimensions $n$ and $m$ can easily reach $10^6$ or even $10^9$.
-This makes it completely impossible to store a full Jacobian (of size $m \times n$) in memory.
-As a result, autodiff systems only manipulate Jacobians "lazily" / "implicitly" by computing their products with vectors.
+In concrete applications, the dimensions $n$ and $m$ often make it impossible to store a full Jacobian (of size $m \times n$) in memory.
+As a result, autodiff systems only manipulate Jacobians "lazily" by computing their products with vectors.
 These products come in two flavors:
 
-- _Jacobian-vector products_ (JVPs) of the form $u \in \mathbb{R}^n \longmapsto Jf_x u \in \mathbb{R}^m$. 
-- _vector-Jacobian products_ (VJPs) of the form $v \in \mathbb{R}^m \longmapsto v^\top Jf_x \in \mathbb{R}^n$. 
+- _Jacobian-vector products_ (JVPs) of the form $u \in \mathbb{R}^n \longmapsto J u \in \mathbb{R}^m$. 
+- _vector-Jacobian products_ (VJPs) of the form $v \in \mathbb{R}^m \longmapsto v^\top J \in \mathbb{R}^n$.
 
-When $n = 1$ (scalar input), we can compute a JVP with $u = 1$ and retrieve the full Jacobian that way, since it has only one column.
-When $m = 1$ (scalar output), we can compute a VJP with $v = 1$ and retrieve the full Jacobian that way, since it has only one row.
-When $n = m = 1$ (fully scalar function), JVPs and VJPs are one and the same. 
+With a little bit of sweat, it is usually possible to implement these operations in a clever way, without needing the full Jacobian. 
+"""
 
+# ╔═╡ e1b9f114-58e7-4546-a3c0-5e07fb1665e7
+md"""
+!!! danger "Task"
+	How many JVPs would it take to compute the full Jacobian, and what vectors should you choose? Same question for VJPs.
+"""
+
+# ╔═╡ ba07ccda-ae66-4fce-837e-00b2b039b404
+md"""
+- If we cycle through the basis vectors $u = (0, ..., 0, 1, 0, ..., 0) \in \mathbb{R}^n$ of the input space, each product $Ju$ gives us one _column_ of the Jacobian matrix. Therefore, we need $n$ JVPs in total.
+- If we cycle through the basis vectors $v = (0, ..., 0, 1, 0, ..., 0) \in \mathbb{R}^m$ of the output space, each product $v^\top J$ gives us one _row_ of the Jacobian matrix. Therefore, we need $m$ VJPs in total.
+"""
+
+# ╔═╡ 663e3899-e7b3-4420-8d66-7e88c1b79185
+md"""
+---
+"""
+
+# ╔═╡ 5ae3bf90-6393-45b9-840e-feeb2e727508
+md"""
 Rules that compute JVPs and VJPs for built-in functions are the first ingredient of autodiff.
-They serve as a basic building block for more complex constructs.
-In Julia, this is taken care of by the [`ChainRules.jl`](https://github.com/JuliaDiff/ChainRules.jl) ecosystem.
+They serve as basic building blocks for more complex constructs.
+In Julia, these rules are handled by the [`ChainRules.jl`](https://github.com/JuliaDiff/ChainRules.jl) ecosystem.
 """
 
-# ╔═╡ face60fb-e54e-4490-8002-daa56c3f14f8
+# ╔═╡ 268ac292-c12f-4ce1-85b1-699c9f1c74f0
 md"""
-### Example (continued)
-
-> Task: In the case of linear regression, explain (with your own words) why it uses less memory and CPU to compute a single JVP / VJP than the full Jacobian matrix. 
+# Forward and reverse mode
 """
-
-# ╔═╡ 870bf931-7dc6-47fa-9d48-7f294a81e65d
-md"""
-Because we can perform two matrix-vector product one after the other:
-
-$$\begin{aligned}
-	Jf_\theta u & = 2 \mathrm{diag}(X\theta - y) (Xu) \\
-	v^\top Jf_\theta & = (v^\top 2 \mathrm{diag}(X\theta - y)) X \\
-\end{aligned}$$
-
-Besides, the products with a diagonal matrix can be implemented as componentwise operations.
-"""
-
-# ╔═╡ 7bb17e25-0fee-43d1-9cf6-309e8363ebfa
-md"""
-> Task: Implement functions that compute the JVP and the VJP for $f$. Make sure that the VJP returns a column vector and not a row vector.
-"""
-
-# ╔═╡ 10db457a-e546-45fd-b8d5-c22b16f4aae5
-function linreg_errors_jvp(u, θ; X, y)
-	return (2 .* (X * θ .- y)) .* (X * u)
-end
-
-# ╔═╡ a0e5cac8-a775-46ab-9f62-e8bdedc68ebe
-function linreg_errors_vjp(v, θ; X, y)
-	return X' * (v .* 2 .* (X * θ .- y))
-end
-
-# ╔═╡ 004f563d-d265-4cd7-81ee-614f03aec9cb
-let
-	n, m = 3, 5
-	X = rand(m, n)
-	y = rand(m)
-	θ = rand(n)
-	u = rand(n)
-	v = rand(m)
-	jvp = linreg_errors_jvp(u, θ; X=X, y=y)
-	vjp = linreg_errors_vjp(v, θ; X=X, y=y)
-	jvp, vjp
-end
-
-# ╔═╡ 5f82da90-5fb4-45df-8a23-150ef60f0137
-md"""
-> Task: Check the correctness of your JVP / VJP using the following naive implementations.
-"""
-
-# ╔═╡ 5459eef9-6731-40f6-858c-095d31389c79
-function linreg_errors_jvp_naive(u, θ; X, y)
-	J = linreg_errors_jacobian(θ; X=X, y=y)
-	return J * u
-end
-
-# ╔═╡ 07308936-f443-457e-af09-c66ce365c289
-function linreg_errors_vjp_naive(v, θ; X, y)
-	J = linreg_errors_jacobian(θ; X=X, y=y)
-	return J' * v
-end
-
-# ╔═╡ 45bc5357-2150-4f7c-8274-1897cb0eaa42
-let
-	n, m = 3, 5
-	X = rand(m, n)
-	y = rand(m)
-	θ = rand(n)
-	u = rand(n)
-	jvp = linreg_errors_jvp(u, θ; X=X, y=y)
-	jvp_naive = linreg_errors_jvp_naive(u, θ; X=X, y=y)
-	@assert jvp ≈ jvp_naive
-	jvp, jvp_naive
-end
-
-# ╔═╡ 7a2c6e9d-13da-4701-9080-3f98e602f2e1
-let
-	n, m = 3, 5
-	X = rand(m, n)
-	y = rand(m)
-	θ = rand(n)
-	v = rand(m)
-	vjp = linreg_errors_vjp(v, θ; X=X, y=y)
-	vjp_naive = linreg_errors_vjp_naive(v, θ; X=X, y=y)
-	@assert vjp ≈ vjp_naive
-	vjp, vjp_naive
-end
-
-# ╔═╡ 077a4a05-18c3-4b5d-b72a-333b6eee0db2
-md"""
-> Task: Compare the performance of your JVP / VJP to that of the naive implementations.
-"""
-
-# ╔═╡ 253ed069-8a26-4887-9f0d-a715c786eb66
-hint(md"You can use the macro `@benchmark` (from `BenchmarkTools.jl`). For technical reasons, you will need to put dollar signs in front of every variable when calling your functions.")
-
-# ╔═╡ 1dda6335-e574-4af8-bc0b-ef620bee5cf7
-let
-	n, m = 3, 5
-	X = rand(m, n)
-	y = rand(m)
-	θ = rand(n)
-	u = rand(n)
-	benchmark = @benchmark linreg_errors_jvp($u, $θ; X=$X, y=$y)
-	benchmark_naive = @benchmark linreg_errors_jvp_naive($u, $θ; X=$X, y=$y)
-	benchmark, benchmark_naive
-end
-
-# ╔═╡ 97f88ed8-6e6b-4ef3-acbb-cf609f5372b5
-let
-	n, m = 3, 5
-	X = rand(m, n)
-	y = rand(m)
-	θ = rand(n)
-	v = rand(m)
-	benchmark = @benchmark linreg_errors_vjp($v, $θ; X=$X, y=$y)
-	benchmark_naive = @benchmark linreg_errors_vjp_naive($v, $θ; X=$X, y=$y)
-	benchmark, benchmark_naive
-end
 
 # ╔═╡ f843b77d-8160-4d87-8641-eeb04549af8f
 md"""
-## Forward & reverse mode
-
 Let us now consider a composite function $f = f^3 \circ f^2 \circ f^1$ with $3$ layers.
 The _chain rule_ yields the following differential:
 
 $$df_x = df^3_{(f^2 \circ f^1) (x)} \circ df^2_{f^1(x)} \circ df^1_x$$
 
-Again, in the Euclidean case, we can re-interpret this function composition as a matrix product:
+In the Euclidean case, we can re-interpret this function composition as a matrix product:
 
 $$\underbrace{Jf_{x}}_J = \underbrace{Jf^3_{(f^2 \circ f^1) (x)}}_{J^3} \underbrace{Jf^2_{f^1(x)}}_{J^2} \underbrace{Jf^1_{x\phantom{)}}}_{J^1}$$
+"""
 
-What happens if we want to compute JVPs and VJPs without storing these Jacobian matrices?
+# ╔═╡ 9b34a8f9-6afa-4712-bde8-a94f4d5e7a33
+md"""
+But again, storing and multiplying full Jacobian matrices is expensive in high dimension.
+Assuming we know how to manipulate the $J^k$ lazily, can we do the same for $J$?
+In other words, can we deduce JVPs / VJPs for $f$ based on JVPs / VJPs for the $f^k$?
+
+The answer is yes, but only if we do it in the right direction:
 
 - For a JVP, we can accumulate the product from first to last layer (in _forward mode_):
 
@@ -299,153 +285,185 @@ $$J u = J^3 J^2 J^1 u \quad \implies \quad \begin{cases} u^1 = J^1 u \\ u^2 = J^
 
 $$v^\top J = v^\top J^3 J^2 J^1 \quad \implies \quad \begin{cases} v^3 = v^\top J^3 \\ v^2 = (v^3)^\top J^2 \\ v^1 = (v^2)^\top J^1 \end{cases}$$
 
-These considerations generalize to more complex computational graphs.
+These considerations generalize to more complex computational graphs, such as the ones drawn in class.
+"""
 
-Utilities that compose JVPs (or VJPs) using the chain rule are the second ingredient of autodiff.
-In Julia, this is taken care of by various backends, such as `Zygote.jl` or `Enzyme.jl`.
-While some are more widely used than others, there is no clear best choice: a comprehensive list of options is available on the [JuliaDiff](https://juliadiff.org/) website.
+# ╔═╡ 7f4610e7-35f5-4287-b5eb-c8b347b04337
+md"""
+!!! danger "Task"
+	Which autodiff mode should you choose if you want to compute the gradient of a function: forward or reverse?
+"""
 
-Making composition work for arbitrary computational graphs is no easy task, and it is the subject of ongoing research.
-That is why we do not ask you to try it at home.
-In the rest of this homework, our goal is to show how custom JVPs and VJPs can be defined, and we will let the autodiff backend take care of composition.
+# ╔═╡ a8c24bdc-7d8b-43c3-92a3-93614e3bf3c5
+md"""
+For a real-valued function, the gradient is the transpose of the Jacobian, which has a single row.
+It can be computed with a single VJP, as opposed to $n$ JVPs.
+Therefore, reverse mode is more adequate.
+"""
+
+# ╔═╡ 5aaac098-461d-486b-913a-244696e84557
+md"""
+---
+"""
+
+# ╔═╡ d83aa26e-ec82-4951-b31c-f5dfbb57c140
+md"""
+Utilities that compose JVPs / VJPs using the chain rule are the second ingredient of autodiff.
+In Julia, this is taken care of by various _autodiff backends_, such as `Zygote.jl` or `Enzyme.jl`.
+While some are more widely used than others, there is no overall best choice.
+A comprehensive list of options is available on the [JuliaDiff](https://juliadiff.org/) website.
+From now on, we will use `Zygote.jl`, which is a reverse mode backend.
+"""
+
+# ╔═╡ 0ecc5901-cfa0-4add-aea5-a39cd7341d2b
+md"""
+# `ChainRules.jl`
 """
 
 # ╔═╡ 8752f8f9-55f5-42bb-b3da-45e4a2d41779
 md"""
-## `ChainRules.jl`
-
-The `ChainRules.jl` package is an attempt to unify JVP and VJP rules (also called "pushforwards" and "pullbacks") for many different autodiff backends.
-It contains rules for most of the Julia standard library, but also allows users to define homemade rules.
+The `ChainRules.jl` package is an attempt to provide unified JVP / VJP rules (also called "pushforwards" and "pullbacks") to many different autodiff backends.
+It contains rules for most of the Julia standard library, but also allows users to define custom rules.
 We strongly encourage you to read the [first page of the `ChainRules.jl` documentation](https://juliadiff.org/ChainRulesCore.jl/stable/) before going further.
+"""
 
+# ╔═╡ ac45151f-f1e2-4db3-bac8-5a9d843f4c17
+md"""
 Custom rules are mainly useful in two situations.
+First, autodiff backends are not all-powerful: many of them impose limitations on the language constructs they accept.
+For instance, functions that mutate one of their arguments (typically indicated with a `!`) will give rise to errors with most reverse mode backends.
+Another example is functions that call other programming languages behind the scenes (like C++ or Python).
 
-1. First, autodiff backends are not all-powerful: many of them impose limitations on the language constructs they accept. For instance, functions that mutate one of their arguments (typically indicated with a `!`) will give rise to errors with most reverse mode backends. Another example is functions that call other programming languages (like C++ or Python). 
-2. Second, the derivatives computed by autodiff backends may be suboptimal in terms of performance. This is typically the case for iterative procedures: fixed point algorithms, optimization routines, ODE solvers, etc. For such functions, the default behavior of an autodiff backend is to "unroll" the iterations and differentiate through them one at a time.
+Second, the derivatives computed by autodiff backends may be suboptimal in terms of performance.
+This is typically the case for iterative procedures: fixed point algorithms, optimization routines, ODE solvers, etc.
+For such functions, the default behavior of an autodiff backend is to "unroll" the iterations and differentiate through them one at a time.
+Trust me on this: we can do better.
+"""
 
-We illustrate situation 1 below, and use this opportunity to introduce the rule writing syntax.
-An elegant solution for situation 2 is implicit differentiation, which we introduce in the second part of this homework.
-From now on, we only focus on reverse mode autodiff, that is, we forget all about JVPs and only work with VJPs.
+# ╔═╡ 96bcf799-67c2-41c5-8634-b8c4e861bfca
+md"""
+**Example: linear regression (continued)**
 """
 
 # ╔═╡ b3fd3a8b-22fd-40a0-9af3-0c66a7ec05a3
 md"""
-### Example (continued)
-
-Here we focus on an alternative implementation of the error function $f$, which involves mutation.
+Suppose we implement our function $f$ by pre-allocating an output vector for individual squared errors.
+This is a common pattern in Julia, for performance reasons.
 """
 
 # ╔═╡ ea16d4c6-d6e4-46fa-a721-fa5a0f2ff021
-function linreg_errors_mutating(θ; X, y)
-	err = (X * θ .- y)
-	err .^= 2
-	return err
+function f!(e, x; M, y)
+	mul!(e, M, x)  # in-place matrix multiplication: now e = Mx
+	e .-= y  # now e = Mx - y
+	return sum(abs2, e)
 end
+
+# ╔═╡ a47f12aa-5baa-440a-b977-ae5138f3fb50
+md"""
+As we can see, this version is a bit faster than the one you coded (hopefully).
+"""
 
 # ╔═╡ 53c4fb54-ab79-4924-9d65-fc5e5b5b50a1
 let
 	n, m = 3, 5
-	X = rand(m, n)
+	M = rand(m, n)
 	y = rand(m)
-	θ = rand(n)
-	err1 = linreg_errors(θ; X=X, y=y)
-	err2 = linreg_errors_mutating(θ; X=X, y=y)
-	err1, err2
-end
-
-# ╔═╡ 568abbe8-872c-4e76-a2ad-52d894f8cf01
-md"""
-The mutating version is quite efficient, perhaps more than the one you wrote.
-"""
-
-# ╔═╡ 20011833-32f1-4c6f-bb51-ae809aeb3dd3
-let
-	n, m = 3, 5
-	X = rand(m, n)
-	y = rand(m)
-	θ = rand(n)
-	benchmark1 = @benchmark linreg_errors($θ; X=$X, y=$y)
-	benchmark2 = @benchmark linreg_errors_mutating($θ; X=$X, y=$y)
+	x = rand(n)
+	e = rand(m)
+	benchmark1 = @benchmark f($x; M=$M, y=$y)
+	benchmark2 = @benchmark f!($e, $x; M=$M, y=$y)
 	benchmark1, benchmark2
 end
 
 # ╔═╡ 80fb6b17-69f1-40fc-96d4-fa3f0a05f349
 md"""
-But this version makes our reverse mode autodiff backend (`Zygote.jl`) very angry.
-Fortunately, we have done all the grunt work and can easily define a custom reverse rule to overcome this issue.
-This is done by implementing a new method of `ChainRulesCore.rrule`, which must return two things:
-
-- the output $f(x)$ of the initial function
-- a `pullback` function that takes $v$ as input and outputs the VJP $v^\top Jf_x$ 
+But it also makes our reverse mode autodiff backend (`Zygote.jl`) very angry.
 """
 
+# ╔═╡ a80b3a0f-53d1-473e-9bea-2494a85ac511
+let
+	n, m = 3, 5
+	M = rand(m, n)
+	y = rand(m)
+	x = rand(n)
+	e = rand(m)
+	Zygote.jacobian(x -> f!(e, x; M=M, y=y), x)[1]
+end
+
+# ╔═╡ bcda87d0-1c35-4c47-bd4b-c0a96bc8a18d
+md"""
+Fortunately, we have done all the grunt work and can easily define a custom reverse rule to overcome this issue.
+This involves implementing a new method of `ChainRulesCore.rrule`, which must return two things:
+
+- the output $f(x)$ of the initial function
+- a `pullback` function that turns $v$ into the VJP $v^\top Jf_x$ 
+
+To improve clarity, we do this on a copy of our mutating $f$.
+"""
+
+# ╔═╡ 1ec1e8a8-4bb3-4aab-9abf-8e754c2eb88f
+function f_diff!(e, x; M, y)
+	mul!(e, M, x)
+	e .-= y
+	return sum(abs2, e)
+end
+
 # ╔═╡ e6df285d-b8d9-434a-ba83-02fc5e3d83bb
-function ChainRulesCore.rrule(f::typeof(linreg_errors_mutating), θ; X, y)
-	err = linreg_errors_mutating(θ; X=X, y=y)
+function ChainRulesCore.rrule(fun::typeof(f_diff!), e, x; M, y)
+	output = f!(e, x; M=M, y=y)
 	function pullback(v)
-		@info "Calling pullback" v
-		vjp_f = NoTangent()
-		vjp_θ = linreg_errors_vjp(v, θ; X=X, y=y)
-		return (vjp_f, vjp_θ)
+		@info "Calling custom pullback" v
+		vjp_fun = NoTangent()
+		vjp_e = ZeroTangent()
+		vjp_x = Jf(x; M=M, y=y)' * v
+		return (vjp_fun, vjp_e, vjp_x)
 	end
-	return err, pullback
+	return output, pullback
 end
 
 # ╔═╡ e8b97c6f-9228-4fa4-99aa-9c81fb582693
 md"""
 Here are a few explanations regarding the syntax.
 
-- What does `f::typeof(linreg_errors_mutating)` do? It tells `ChainRulesCore.jl` that the reverse rule we define applies to one specific function. In Julia, each function has its own unique type, which allows us to dispatch on it.
-- Why does `pullback` return a $2$-tuple? Because in some settings, the function $f$ may have internal parameters that we also want to take into account when differentiating. It is not the case here, so we specify that there is no tangent (VJP) with respect to `f`. This is the role of the dummy `NoTangent()` struct. On the other hand, the tangent (VJP) with respect to `θ` does exist, so we return an actual value for this one.
-- Okay but then what about `X` and `y`? Shouldn't the pullback return a $4$-tuple? By convention, `ChainRulesCore.jl` only considers derivatives with respect to positional arguments, not keyword arguments.
+What does `fun::typeof(f_diff!)` mean?
+It tells `ChainRulesCore.jl` that the reverse rule we define applies to one specific function.
+In Julia, each function has its own unique type, which allows us to dispatch on it.
+
+Why does `pullback` return a $3$-tuple `(vjp_fun, vjp_e, vjp_x)`?
+Because `ChainRulesCore.jl` wants us to define a VJP for every positional argument of the function `fun`... and also for the function `fun` itself.
+Indeed, the function may have internal parameters that we want to take into account when differentiating.
+It is not the case here, so we specify that there is no tangent (VJP) with respect to `fun` by returning a dummy `NoTangent()` struct.
+Similarly, we return a `ZeroTangent()` for `e`, since it is completely overwritten by our function: its initial value does not affect the final result.
+On the other hand, the VJP with respect to `x` does exist, so we return an nontrivial value for this one.
 """
 
 # ╔═╡ 98a59f9c-af6c-460a-bf70-f4e28da1aa80
 let
 	n, m = 3, 5
-	X = rand(m, n)
+	M = rand(m, n)
 	y = rand(m)
-	θ = rand(n)
-	jac0 = linreg_errors_jacobian(θ; X=X, y=y)
-	jac1 = Zygote.jacobian(θ -> linreg_errors(θ; X=X, y=y), θ)[1]
-	# Run the following line without a custom rrule, and you will get an error
-	jac2 = Zygote.jacobian(θ -> linreg_errors_mutating(θ; X=X, y=y), θ)[1]
+	x = rand(n)
+	e = rand(m)
+	jac0 = Jf(x; M=M, y=y)
+	jac1 = Zygote.jacobian(x -> f(x; M=M, y=y), x)[1]
+	jac2 = Zygote.jacobian(x -> f_diff!(e, x; M=M, y=y), x)[1]
 	jac0, jac1, jac2
 end
 
-# ╔═╡ b0341e9e-bc59-4530-8a92-0d54995de534
+# ╔═╡ 448995fc-25b0-4879-910e-6406f359d577
 md"""
-> Task: Explain why the pullback is called several times when computing the Jacobian.
+!!! danger "Task"
+	How many times is the pullback called? Is it expected?
 """
 
-# ╔═╡ ae94949d-3a91-462d-8302-065c162d412b
+# ╔═╡ 4eda48ec-fe88-41dc-88b7-b1ad547d698f
 md"""
-
+Only once because we are computing a gradient in reverse mode.
 """
 
-# ╔═╡ 93585262-4d86-48cf-a1c3-6b83615879d6
+# ╔═╡ 15b3aa76-1ef0-4089-a189-ce11573f5812
 md"""
-# 2. Implicit differentiation
-"""
-
-# ╔═╡ 98580356-21c5-472a-aedd-4f47a6799f24
-md"""
-## The implicit function theorem
-"""
-
-# ╔═╡ 60b6952b-d546-4663-9f4f-800b437621f1
-md"""
-## A useful fixed-point algorithm
-"""
-
-# ╔═╡ d6fbb62f-f89a-4737-84fd-736f5af206d6
-md"""
-## Implicit differentiation
-"""
-
-# ╔═╡ 14f4b3cd-3cbc-41c7-9038-0e3db1809447
-md"""
-## Bonus round: matrix-free solver
+---
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -474,7 +492,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.1"
 manifest_format = "2.0"
-project_hash = "f9e5d3087c5ed2087b1075066cd418a666749ef0"
+project_hash = "0af485d7e89b8a75544611deb46d779dd867df4e"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1027,49 +1045,59 @@ version = "17.4.0+0"
 # ╠═ddbf8ae6-39b6-11ed-226e-0d38991ed784
 # ╠═f447c167-2bcb-4bf3-86cd-0f40f4e54c97
 # ╟─a405d214-4348-4692-999e-0e890bd91e5d
-# ╟─e7fa3587-d99d-4a77-b99d-a58b2df8f3c0
+# ╟─1cfba628-aa7b-4851-89f1-84b1a45802b3
+# ╟─3829f016-a7cd-4ce6-b2d4-1c84da8fdb97
+# ╟─755ff203-43d8-488f-a075-14a858b0a096
+# ╟─a7d2e710-cf08-4c77-9042-78ee73b6f698
 # ╟─4d9d2f52-c406-4a7c-8b0e-ba5af7ebc3d8
+# ╟─de4df88a-2a55-4a02-aeaf-f02242b6c52f
+# ╟─e22cec4a-03d3-4821-945b-9283e16207a8
+# ╟─e19f2824-e7a0-4ee0-b37d-350342d3cbdd
+# ╟─82fd26e3-b429-480d-be04-f0ac363c4a31
+# ╟─25b572fa-1f9a-43f9-98a3-181d8dd6e21a
+# ╟─f51920d4-652b-467c-8f02-fcd1a0f92c2e
+# ╟─b5241dc4-32c1-4e91-b401-c25f4b7cb3cd
 # ╟─d76d5ddc-fe59-47f4-8b56-6f704b486ebc
 # ╟─ae7b2114-de91-4f1b-8765-af5e02cc1b63
 # ╟─b8974b20-d8dc-4109-a64e-585c7afdb484
+# ╟─f4994938-9270-4058-9c95-01591c87d9c7
+# ╟─f472111d-d7e8-42db-9a08-6a8dd67af09b
 # ╟─28f31ef9-27ea-4e94-8f03-89b0f6cfa0d1
-# ╟─7d27892c-4781-4f22-a37e-2be5bafa68b1
+# ╟─ca4b41dd-353e-498d-a461-648c582cb999
 # ╠═883803e0-2fa1-4922-be37-f325af4f5c41
 # ╠═c5fc8f3a-ed90-41ec-b4b9-1172a41e3adc
 # ╠═40e13883-dd9a-43b9-9ef7-1069ef036846
+# ╟─4440f39c-51e5-4ffd-8031-96d4a760270c
+# ╟─69a9ec45-d2ff-4362-9c3c-5c004e46ceb3
 # ╟─8923a5ad-ddba-4ae2-886e-84526a3521ba
-# ╟─face60fb-e54e-4490-8002-daa56c3f14f8
-# ╟─870bf931-7dc6-47fa-9d48-7f294a81e65d
-# ╟─7bb17e25-0fee-43d1-9cf6-309e8363ebfa
-# ╠═10db457a-e546-45fd-b8d5-c22b16f4aae5
-# ╠═a0e5cac8-a775-46ab-9f62-e8bdedc68ebe
-# ╠═004f563d-d265-4cd7-81ee-614f03aec9cb
-# ╟─5f82da90-5fb4-45df-8a23-150ef60f0137
-# ╠═5459eef9-6731-40f6-858c-095d31389c79
-# ╠═07308936-f443-457e-af09-c66ce365c289
-# ╠═45bc5357-2150-4f7c-8274-1897cb0eaa42
-# ╠═7a2c6e9d-13da-4701-9080-3f98e602f2e1
-# ╟─077a4a05-18c3-4b5d-b72a-333b6eee0db2
-# ╟─253ed069-8a26-4887-9f0d-a715c786eb66
-# ╠═1dda6335-e574-4af8-bc0b-ef620bee5cf7
-# ╠═97f88ed8-6e6b-4ef3-acbb-cf609f5372b5
+# ╟─e1b9f114-58e7-4546-a3c0-5e07fb1665e7
+# ╟─ba07ccda-ae66-4fce-837e-00b2b039b404
+# ╟─663e3899-e7b3-4420-8d66-7e88c1b79185
+# ╟─5ae3bf90-6393-45b9-840e-feeb2e727508
+# ╟─268ac292-c12f-4ce1-85b1-699c9f1c74f0
 # ╟─f843b77d-8160-4d87-8641-eeb04549af8f
+# ╟─9b34a8f9-6afa-4712-bde8-a94f4d5e7a33
+# ╟─7f4610e7-35f5-4287-b5eb-c8b347b04337
+# ╟─a8c24bdc-7d8b-43c3-92a3-93614e3bf3c5
+# ╟─5aaac098-461d-486b-913a-244696e84557
+# ╟─d83aa26e-ec82-4951-b31c-f5dfbb57c140
+# ╟─0ecc5901-cfa0-4add-aea5-a39cd7341d2b
 # ╟─8752f8f9-55f5-42bb-b3da-45e4a2d41779
+# ╟─ac45151f-f1e2-4db3-bac8-5a9d843f4c17
+# ╟─96bcf799-67c2-41c5-8634-b8c4e861bfca
 # ╟─b3fd3a8b-22fd-40a0-9af3-0c66a7ec05a3
 # ╠═ea16d4c6-d6e4-46fa-a721-fa5a0f2ff021
+# ╟─a47f12aa-5baa-440a-b977-ae5138f3fb50
 # ╠═53c4fb54-ab79-4924-9d65-fc5e5b5b50a1
-# ╟─568abbe8-872c-4e76-a2ad-52d894f8cf01
-# ╠═20011833-32f1-4c6f-bb51-ae809aeb3dd3
 # ╟─80fb6b17-69f1-40fc-96d4-fa3f0a05f349
+# ╠═a80b3a0f-53d1-473e-9bea-2494a85ac511
+# ╟─bcda87d0-1c35-4c47-bd4b-c0a96bc8a18d
+# ╠═1ec1e8a8-4bb3-4aab-9abf-8e754c2eb88f
 # ╠═e6df285d-b8d9-434a-ba83-02fc5e3d83bb
 # ╟─e8b97c6f-9228-4fa4-99aa-9c81fb582693
 # ╠═98a59f9c-af6c-460a-bf70-f4e28da1aa80
-# ╟─b0341e9e-bc59-4530-8a92-0d54995de534
-# ╠═ae94949d-3a91-462d-8302-065c162d412b
-# ╟─93585262-4d86-48cf-a1c3-6b83615879d6
-# ╟─98580356-21c5-472a-aedd-4f47a6799f24
-# ╟─60b6952b-d546-4663-9f4f-800b437621f1
-# ╟─d6fbb62f-f89a-4737-84fd-736f5af206d6
-# ╟─14f4b3cd-3cbc-41c7-9038-0e3db1809447
+# ╟─448995fc-25b0-4879-910e-6406f359d577
+# ╟─4eda48ec-fe88-41dc-88b7-b1ad547d698f
+# ╟─15b3aa76-1ef0-4089-a189-ce11573f5812
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
