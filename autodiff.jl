@@ -214,12 +214,12 @@ md"""
 """
 
 # ╔═╡ ca4b41dd-353e-498d-a461-648c582cb999
-hint(md"Componentwise products can be performed with the broadcasted `.*` operator. You may also want to use the `Diagonal` constructor from `LinearAlgebra`.")
+hint(md"You may want to use the `Diagonal` constructor from `LinearAlgebra`.")
 
 # ╔═╡ 883803e0-2fa1-4922-be37-f325af4f5c41
 function f(x; M, y)
-	err = (M * x .- y)
-	return err .* err
+	err = (M * x .- y) .^ 2
+	return err
 end
 
 # ╔═╡ c5fc8f3a-ed90-41ec-b4b9-1172a41e3adc
@@ -260,7 +260,7 @@ In concrete applications, the dimensions $n$ and $m$ often make it impossible to
 As a result, autodiff systems only manipulate Jacobians "lazily" by computing their products with vectors.
 These products come in two flavors:
 
-- _Jacobian-vector products_ (JVPs) of the form $u \in \mathbb{R}^n \longmapsto J u \in \mathbb{R}^m$.
+- _Jacobian-vector products_ (JVPs) of the form $u \in \mathbb{R}^n \longmapsto J u \in \mathbb{R}^m$. 
 - _vector-Jacobian products_ (VJPs) of the form $v \in \mathbb{R}^m \longmapsto v^\top J \in \mathbb{R}^n$.
 
 With a little bit of sweat, it is usually possible to implement these operations in a clever way.
@@ -287,7 +287,7 @@ md"""
 md"""
 Rules that compute JVPs and VJPs for built-in functions are the first ingredient of autodiff.
 They serve as basic building blocks for more complex constructs.
-In Julia, these rules are handled by the [`ChainRules.jl`](https://github.com/JuliaDiff/ChainRules.jl) ecosystem.
+In Julia, these rules are handled by the [`ChainRules.jl`](https://github.com/JuliaDiff/ChainRules.jl) ecosystem (see part 5).
 """
 
 # ╔═╡ 37cab21f-aa70-48c2-be62-55e285481525
@@ -351,7 +351,7 @@ md"""
 # ╔═╡ 14dcad57-23ae-4905-aac4-d29066f2a085
 md"""
 !!! danger "Task"
-	Check the correctness of your JVP / VJP implementations by comparing them to the naive alternatives below.
+	Check the correctness of your JVP / VJP implementations against the naive versions provided below.
 """
 
 # ╔═╡ 0ea654fe-d3d0-4f40-b3dc-806b1982c040
@@ -397,7 +397,7 @@ md"""
 """
 
 # ╔═╡ ba206cb6-d2ca-4a4a-9c20-d66b015226dd
-hint(md"To obtain unbiased results, you will need to prepend every variable name with a dollar sign `$` when using this macro.")
+hint(md"To obtain unbiased results, you will need to prepend every variable name with a dollar sign `$` when using this macro. Otherwise the variables are treated as global, which impacts performance.")
 
 # ╔═╡ 0cc728dd-40d2-4713-b378-e67b3ed1c44f
 let
@@ -606,7 +606,7 @@ Fortunately, we have done all the grunt work and can easily define a custom reve
 This involves implementing a new method of `ChainRulesCore.rrule`, which must return two things:
 
 - the output $f(x)$ of the initial function
-- a `pullback` function that turns $v$ into the VJP $v^\top Jf_x$
+- a `pullback` function that turns $v$ into the VJP $v^\top Jf_x$ 
 
 To improve clarity, we do this on a copy of our mutating $f$.
 """
