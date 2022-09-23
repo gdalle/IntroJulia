@@ -2,8 +2,8 @@
 # v0.19.12
 
 #> [frontmatter]
-#> title = "HW2 - Automatic and implicit differentiation"
-#> date = "2022-09-22"
+#> title = "HW2 - Automatic differentiation"
+#> date = "2022-09-23"
 
 using Markdown
 using InteractiveUtils
@@ -12,11 +12,13 @@ using InteractiveUtils
 begin
 	using BenchmarkTools
 	using ChainRulesCore
+	using ForwardDiff
 	using LinearAlgebra
 	using Plots
 	using PlutoTeachingTools
 	using PlutoUI
-	import Zygote
+	using ProgressLogging
+	using Zygote
 end
 
 # ╔═╡ f447c167-2bcb-4bf3-86cd-0f40f4e54c97
@@ -29,183 +31,20 @@ md"""
 
 # ╔═╡ d19834fc-edd1-433b-8bfc-6022fd7e3239
 md"""
-Throughout this homework, whenever I introduce a function (or macro) you don't know, I recomment you check out its documentation using Pluto.
-Just create a new cell and type in `?` followed by the function name: a documentation tab will open automatically.
+Throughout this homework, whenever a new function (or macro) is introduced, it is a good idea to check out its documentation using Pluto.
+Just create a new cell and type in `?` followed by the function name, then the "Live docs" tab will open automatically.
+We also try to include the link to the GitHub repository of every external package we use.
+Once you're on the repository, look for a badge like [![docs-stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://youtu.be/dQw4w9WgXcQ) or [![docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://youtu.be/dQw4w9WgXcQ), it will take you to the appropriate documentation page.
 """
 
-# ╔═╡ 19fd4ce6-fc2e-4047-b265-7b54e9bbdad4
+# ╔═╡ 7493915c-53b4-4284-bb7f-33cac680f759
 md"""
-# 1. High performance code (episode 1)
-"""
-
-# ╔═╡ 38a6618a-00e9-4565-aaef-4893afcb3181
-md"""
-Many people use Julia for high performance scientific computations.
-But it takes some knowledge and practice to get to that level.
-So buckle up, cause your journey to lightning fast code starts... now!
-
-In this section, we discuss two topics:
-- How to measure code performance
-- How to improve it with a clever use of memory
-
-I have other tricks up my sleeve, mostly related to types and dispatch, but we will get to them later in the class.
-"""
-
-# ╔═╡ 9ba8d153-e2c9-4387-a487-fb5a25f5808b
-md"""
-## Benchmarking
-"""
-
-# ╔═╡ 25d27d5a-dcaa-464c-ba44-9aea9ea8be38
-md"""
-To start with, let us note that Julia already has a useful built-in macro called `@time`.
-When you use it before a function call, it measures the CPU time, memory use and number of allocations required.
-"""
-
-# ╔═╡ d0263b55-0f11-4a37-9837-bb4f9e322aa8
-@time rand(1000, 1000);
-
-# ╔═╡ d1079990-5d9a-495c-9dbf-d9ea07c5c8f7
-md"""
-But `@time` has a few drawbacks:
-- it only runs the function one time, which means estimates are noisy (and include compilation time if the function has never been run before)
-- it can be fooled by global variables, which are a common [performance pitfalls](https://docs.julialang.org/en/v1/manual/performance-tips/#Avoid-untyped-global-variables) in Julia
-
-Here are some examples.
-"""
-
-# ╔═╡ 751234f4-6957-4273-84e9-9d048c756fa7
-@time cos.(rand(1000, 1000));
-
-# ╔═╡ 2e4ac856-fe22-426d-b58b-f3adbacdee8a
-md"""
-The first time you run the previous cell, most of the time will actually be spent compiling the function.
-If you run it a second time, the benchmarking result will be completely different.
-"""
-
-# ╔═╡ e75e2ea0-bf1a-4519-87a2-efb61736ab44
-let; x = randn(1000, 1000); @time sum(abs, x); end; 
-
-# ╔═╡ 6ebe2c16-400b-40a0-bec6-e52d2858e83a
-md"""
-In the previous cell, there is no reason for the sum to allocate anything: this is just an artefact due to the global variable `x`.
-"""
-
-# ╔═╡ 9aa600b1-9c39-430a-88d4-169c5d84e145
-md"""
-For all of these reasons, the [`BenchmarkTools.jl`](https://github.com/JuliaCI/BenchmarkTools.jl) is a much better option.
-Its `@btime` macro does basically the same job as `@time`, but runs the function several times and circumvents global variables, as long as they are "interpolated" with a `$` sign.
-"""
-
-# ╔═╡ 43cfe774-4ed1-4f4f-985a-c261c4d569bf
-@btime rand(100, 100);
-
-# ╔═╡ 88103471-6f2c-4604-83cc-0d76645776d7
-md"""
-This benchmark is pretty comparable to the one given by `@time`.
-"""
-
-# ╔═╡ 5d9c5359-d0a9-4a0a-853e-3fd0028f23df
-@btime sin.(rand(1000, 1000));
-
-# ╔═╡ 6bacff8b-ac8c-46b0-adeb-7d8b1aab85f2
-md"""
-This benchmark does not include compilation time.
-"""
-
-# ╔═╡ 86399001-e7c4-4733-b476-503650c11e0c
-let; x = randn(1000, 1000); @btime sum(abs, $x); end; 
-
-# ╔═╡ 0817247f-f9ae-48cc-9966-dd451c136d43
-md"""
-This benchmark shows zero allocation, which is what we actually expect.
-"""
-
-# ╔═╡ 27ba5955-8643-403d-b962-288cd55e7499
-md"""
-# 0. Plan
-"""
-
-# ╔═╡ 6d0c4884-fe93-45bf-8bb2-d25da75f7a15
-md"""
-Mutation for performance, compare 2 versions of a function
-
-Benchmarking CPU time and allocations
-"""
-
-# ╔═╡ 0b8f20c7-094a-48d5-8af6-f277c803a5a9
-md"""
-Teach empty arguments
-"""
-
-# ╔═╡ 81c449a5-dbcc-47fe-8840-937bd7ed9d71
-md"""
-Zygote is the most used reverse mode AD backend
-
-Differentiable programming: Zygote can differentiate through most code you write... but not mutable
-"""
-
-# ╔═╡ bb5700af-3ab8-4a72-b476-f799474b96ee
-Zygote.gradient(sin, 1)
-
-# ╔═╡ 84884d6b-e18a-4a05-9542-ff67bcc90e6d
-non_breaking(x) = 2x
-
-# ╔═╡ 1fdc3983-c578-4d2b-ab7a-c928c9414c88
-function breaking!(x)
-	x .*= 2
-	return x
-end
-
-# ╔═╡ 876b2468-4c3f-4c04-8281-1008a3ed6e25
-Zygote.jacobian(breaking!, rand(10))
-
-# ╔═╡ 5bfde36e-f893-47c5-ae03-b23ae4765627
-Zygote.jacobian(non_breaking, rand(10))
-
-# ╔═╡ fce9799f-4744-400a-9ec6-5fe68c03557c
-md"""
-Implement a breaking and non breaking function yourself related to matrix vectors products
-"""
-
-# ╔═╡ 69271ff4-1057-4ebd-951f-2440484dd635
-md"""
-Look up `mul!`
-"""
-
-# ╔═╡ fe2610f4-a30e-42a4-8874-a7daf7c0d28e
-function nonbreaking_matvec(A, b)
-	return A * b
-end
-
-# ╔═╡ 4c79f32e-e609-485d-9650-6573c83250bf
-function breaking_matvec!(result, A, b)
-	mul!(result, A, b)
-end
-
-# ╔═╡ c4109350-0bb1-40fd-a3a3-be7ab9a1a061
-md"""
-Tell them why it breaks: computational graph
-"""
-
-# ╔═╡ 2b9e862b-3519-4b3f-8478-08ec7137cc92
-md"""
-Best of both worlds? Define a custom differentiation rule for the fast function that breaks zygote
-"""
-
-# ╔═╡ 4cd8e1c7-7943-4b6a-a1c1-bbe58b6f4b8b
-md"""
-$f(x) = (Mx - y).^2$
-"""
-
-# ╔═╡ 86d73d53-b868-463c-86cb-e0996c8948ed
-md"""
-Derive the analytical formula
+# 0. Calculus refresher (optional)
 """
 
 # ╔═╡ 1cfba628-aa7b-4851-89f1-84b1a45802b3
 md"""
-# 1. Warm up: scalar functions
+## Scalar functions
 """
 
 # ╔═╡ 3829f016-a7cd-4ce6-b2d4-1c84da8fdb97
@@ -230,41 +69,36 @@ So computing a derivative boils down to the following question:
 _What is the best linear approximation of my function around a given point?_
 """
 
-# ╔═╡ a7d2e710-cf08-4c77-9042-78ee73b6f698
+# ╔═╡ fd6dd009-2a52-46d1-b1a8-5f094e8c1d98
 md"""
-# 2. From differentials to Jacobians
-"""
-
-# ╔═╡ d50a296b-bbfc-4d88-b8db-582f6176609d
-md"""
-## Theory
+## Vector functions
 """
 
 # ╔═╡ 4d9d2f52-c406-4a7c-8b0e-ba5af7ebc3d8
 md"""
 Let $f: \mathcal{A} \longrightarrow \mathcal{B}$ be a function between two normed vector spaces.
-When we say that $f$ is differentiable at $x \in \mathcal{A}$, we mean that there is a _linear function_ $df_x: \mathcal{A} \longrightarrow \mathcal{B}$ such that for any perturbation $h \in \mathcal{A}$,
+When we say that $f$ is differentiable at $x \in \mathcal{A}$, we mean that there is a _linear function_ $f'(x): \mathcal{A} \longrightarrow \mathcal{B}$ such that for any perturbation $h \in \mathcal{A}$,
 
-$$f(x + h) = f(x) + df_x(h) + o(\lVert h \rVert)$$
+$$f(x + h) = f(x) + f'(x)(h) + o(\lVert h \rVert)$$
 
-The linear function $df_x$ is called the _differential_ of $f$ at $x$.
+The linear function $f'(x)$ is called the _derivative_ of $f$ at $x$.
 """
 
 # ╔═╡ de4df88a-2a55-4a02-aeaf-f02242b6c52f
 md"""
-When $\mathcal{A} = \mathbb{R}^n$ and $\mathcal{B} = \mathbb{R}^m$ are both Euclidean spaces, we can always find a matrix $Jf_x \in \mathbb{R}^{m \times n}$ that satisfies
+When $\mathcal{A} = \mathbb{R}^n$ and $\mathcal{B} = \mathbb{R}^m$ are both Euclidean spaces, we can always find a matrix $J_f(x) \in \mathbb{R}^{m \times n}$ that satisfies
 
-$$df_x(h) = Jf_x h$$
+$$f'(x)(h) = J_f(x) h$$
 
-In the previous equation, the left hand side is the application of a function to a vector, while the right hand side is a matrix-vector product.
-The matrix $Jf_x$ is called the _Jacobian_ of $f$ at $x$.
+In the previous equation, the left hand side is the application of the function $f'(x)$ to the vector $h$, while the right hand side is a product between the matrix $J_f(x)$ and the same vector $h$.
+The matrix $J_f(x)$ is called the _Jacobian_ of $f$ at $x$.
 """
 
 # ╔═╡ e22cec4a-03d3-4821-945b-9283e16207a8
 md"""
 It can be expressed with partial derivatives: if $x = (x_1, ..., x_n)$ and $f(x) = (f_1(x), ..., f_m(x))$, then
 
-$$Jf_x = \begin{pmatrix}
+$$J_f(x) = \begin{pmatrix}
 \frac{\partial f_1(x)}{\partial x_1} & \frac{\partial f_1(x)}{\partial x_2} & \cdots & \frac{\partial f_1(x)}{\partial x_n} \\
 \frac{\partial f_2(x)}{\partial x_1} & \frac{\partial f_2(x)}{\partial x_2} & \cdots & \frac{\partial f_2(x)}{\partial x_n} \\
 \vdots & \vdots & \ddots & \vdots \\
@@ -274,58 +108,638 @@ $$Jf_x = \begin{pmatrix}
 However, it is good practice to learn how to manipulate Jacobians in matrix form, without needing to compute individual coefficients.
 """
 
-# ╔═╡ f51920d4-652b-467c-8f02-fcd1a0f92c2e
+# ╔═╡ 19fd4ce6-fc2e-4047-b265-7b54e9bbdad4
 md"""
-The case of real-valued functions is especially interesting in machine learning.
-Neural networks are trained by minimizing a scalar loss function computed from their parameters.
-While the parameter dimension $n$ may be of order $10^6$ or even $10^9$, the output dimension $m$ is always $1$.
+# 1. Memory & performance
 """
 
-# ╔═╡ e19f2824-e7a0-4ee0-b37d-350342d3cbdd
+# ╔═╡ 38a6618a-00e9-4565-aaef-4893afcb3181
+md"""
+Many people use Julia for high performance scientific computations.
+But it takes some knowledge and practice to get to that level.
+So buckle up, because your journey to lightning fast code starts... now!
+
+In this section, we discuss two topics:
+- How to measure code performance
+- How to improve it with a clever use of memory
+
+There are other tricks you can learn, mostly related to types and dispatch, but we will get to them later in the class.
+"""
+
+# ╔═╡ 9ba8d153-e2c9-4387-a487-fb5a25f5808b
+md"""
+## Benchmarking
+"""
+
+# ╔═╡ 25d27d5a-dcaa-464c-ba44-9aea9ea8be38
+md"""
+To start with, let us note that Julia already has a useful built-in macro called `@time`.
+When you put it before a function call, it measures the CPU time, memory use and number of allocations required.
+"""
+
+# ╔═╡ d0263b55-0f11-4a37-9837-bb4f9e322aa8
+@time rand(1000, 1000);
+
+# ╔═╡ d1079990-5d9a-495c-9dbf-d9ea07c5c8f7
+md"""
+But `@time` has a few drawbacks:
+- it only runs the function one time, which means estimates are noisy
+- it includes compilation time if the function has never been run before
+- it can be biased by [global variables](https://docs.julialang.org/en/v1/manual/performance-tips/#Avoid-untyped-global-variables)
+
+Here are some examples.
+"""
+
+# ╔═╡ 751234f4-6957-4273-84e9-9d048c756fa7
+@time cos.(rand(1000, 1000));
+
+# ╔═╡ 2e4ac856-fe22-426d-b58b-f3adbacdee8a
+md"""
+The first time you run the previous cell, most of the time will actually be spent compiling the function.
+If you run it a second time, the benchmarking result will be completely different.
+"""
+
+# ╔═╡ e75e2ea0-bf1a-4519-87a2-efb61736ab44
+let
+	x = rand(1000, 1000)
+	sum(abs2, x)  # run once to compile
+	@time sum(abs2, x)
+end; 
+
+# ╔═╡ 6ebe2c16-400b-40a0-bec6-e52d2858e83a
+md"""
+In the previous cell, there is no reason for the sum to allocate anything: this is just an artefact due to the global variable `x`.
+"""
+
+# ╔═╡ 9aa600b1-9c39-430a-88d4-169c5d84e145
+md"""
+For all of these reasons, [`BenchmarkTools.jl`](https://github.com/JuliaCI/BenchmarkTools.jl) is a much better option.
+Its `@btime` macro does basically the same job as `@time`, but runs the function several times and circumvents global variables, as long as they are "interpolated" with a `$` sign.
+"""
+
+# ╔═╡ 43cfe774-4ed1-4f4f-985a-c261c4d569bf
+@btime rand(1000, 1000);
+
+# ╔═╡ 88103471-6f2c-4604-83cc-0d76645776d7
+md"""
+This benchmark is pretty comparable to the one given by `@time`.
+"""
+
+# ╔═╡ 5d9c5359-d0a9-4a0a-853e-3fd0028f23df
+@btime sin.(rand(1000, 1000));
+
+# ╔═╡ 6bacff8b-ac8c-46b0-adeb-7d8b1aab85f2
+md"""
+This benchmark does not include compilation time, because the first run of the function is just one of many.
+"""
+
+# ╔═╡ 86399001-e7c4-4733-b476-503650c11e0c
+let; x = randn(1000, 1000); @btime sum(abs2, $x); end; 
+
+# ╔═╡ 0817247f-f9ae-48cc-9966-dd451c136d43
+md"""
+This benchmark shows zero allocation, which is what we actually expect.
+"""
+
+# ╔═╡ 1d1d83b0-8669-452c-90ca-26c1396c822a
 md"""
 !!! danger "Task"
-	Consider a real-valued function $f: \mathbb{R}^n \longrightarrow \mathbb{R}$. What is the shape of the Jacobian matrix? What is its relation to the gradient $\nabla f_x$?
+	Write a function that compares the speed of matrix addition and multiplication for a given size $n$.
 """
 
-# ╔═╡ 82fd26e3-b429-480d-be04-f0ac363c4a31
+# ╔═╡ 2ded206d-e563-4752-a0b1-19402e1e4f52
+hint(md"
+Unlike `@btime`, which prints a bunch of information but returns the result of the function, `@belapsed` actually returns the elapsed CPU time.
+")
+
+# ╔═╡ 5b47082b-d080-4243-90a2-5d98b82451d4
+function compare_add_mul(n)
+	A = rand(n, n)
+	B = rand(n, n)
+	time_add = @belapsed $A + $B
+	time_mul = @belapsed $A * $B
+	return time_add, time_mul
+end
+
+# ╔═╡ 89b1f353-523a-4a4c-aee4-9b6e36b944fb
+compare_add_mul(10)
+
+# ╔═╡ 4b1a6ce2-b57d-466a-97cd-35036689fe43
+compare_add_mul(100)
+
+# ╔═╡ fe1f4c0e-becb-4058-a069-be213622aa92
 md"""
-When the function $f$ is real-valued, $m = 1$ and the Jacobian matrix only has one row.
-It can be seen as the transpose of the gradient: $Jf_x = \nabla f_x^\top$.
+!!! danger "Task"
+	Plot addition and multiplication CPU times for $n \in \{3, 10, 30, 100, 300\}$, normalized by the number of operations ($n^2$ and $n^3$ respectively). Comment on what you observe.
 """
 
-# ╔═╡ 25b572fa-1f9a-43f9-98a3-181d8dd6e21a
+# ╔═╡ eb0d58fc-3348-47f9-966c-e7f9f316ddb7
+hint(md"
+The loop over $n$ may take a little time, don't be scared.
+You can put the `@progress` macro from [`ProgressLogging`](https://github.com/JuliaLogging/ProgressLogging.jl) in front of the `for` keyword if you want to track its progress.
+
+Use the [`Plots.jl`](https://github.com/JuliaPlots/Plots.jl) package for visualization.
+The function `plot` will let you create an empty plot with the properties you need (like `xscale=:log10`).
+The function `scatter!` will allow you to modify it by adding series of dots.
+")
+
+# ╔═╡ b327c04c-932b-42df-bdf0-31213cdc0adf
+begin
+	n_values = [3, 10, 30, 100, 300]
+	times_add = Float64[]
+	times_mul = Float64[]
+	@progress for n in n_values
+		ta, tm = compare_add_mul(n)
+		push!(times_add, ta / n^2)
+		push!(times_mul, tm / n^3)
+	end
+end
+
+# ╔═╡ 11f3c0d4-0609-4446-aa84-4db3d93e93b0
+begin
+	plot(
+		xlabel="matrix size", ylabel="normalized operation cost (s)",
+		xscale=:log10, yscale=:log10,
+		legend=:best
+	)
+	scatter!(n_values, times_add, label="matrix addition")
+	scatter!(n_values, times_mul, label="matrix multiplication")
+end
+
+# ╔═╡ c22a890c-a308-4d1b-be4b-d78f93693a9c
 md"""
----
+## Memory management
 """
 
-# ╔═╡ b5241dc4-32c1-4e91-b401-c25f4b7cb3cd
+# ╔═╡ 48511240-20d1-41b6-bc7b-a8ecfc3aa06d
 md"""
-## Example
+Since Julia is a high-level language, you don't need to care about memory to write correct code.
+New objects are allocated transparently, and once you no longer need them, the Garbage Collector (GC) automaticaly frees their memory slots.
+
+However, in many cases, memory management is a performance bottleneck.
+If you want to write fast code, you might need to work "in place" (mutating existing arrays), as opposed to "out of place" (creating many temporary arrays).
+This is emphasized [several](https://docs.julialang.org/en/v1/manual/performance-tips/#Measure-performance-with-[@time](@ref)-and-pay-attention-to-memory-allocation) [times](https://docs.julialang.org/en/v1/manual/performance-tips/#Pre-allocating-outputs) in the Julia performance tips.
+"""
+
+# ╔═╡ ffb8851d-c7e8-47ae-ac9d-96baf0774ca3
+md"""
+A common pattern is broadcasted operations, which can look like `x .+ y` (the `.` goes in front for short operators) or `exp.(x)` (the `.` goes behind for functions).
+They allow you to work directly with array components, instead of allocating new arrays.
+This leads to performance gains, as explained [here](https://docs.julialang.org/en/v1/manual/performance-tips/#More-dots:-Fuse-vectorized-operations).
+"""
+
+# ╔═╡ a6eb6028-acca-447a-9e55-e60ecd3c6f84
+md"""
+!!! danger "Task"
+	Try to explain the difference in speed and memory use between the following code snippets.
+"""
+
+# ╔═╡ 1da14b09-5d62-42cc-b9b4-a5a6ddc34181
+hint(md"`x += y` is syntactically equivalent to `x = x + y`.")
+
+# ╔═╡ f2bedf2b-2dfe-4392-ba2a-add10882af07
+let
+	x = rand(100, 100)
+	y = rand(100, 100)
+	@btime $x += $y
+end;
+
+# ╔═╡ f504954b-ac63-4843-8891-b1ca0e5ae58b
+let
+	x = rand(100, 100)
+	y = rand(100, 100)
+	@btime $x .= $y
+end;
+
+# ╔═╡ a9472534-e32b-4323-8dfc-e00b9f31f8e0
+md"""
+The first snippet allocates a new vector for the result of `x + y`, and then points `x` to that new vector.
+The second snipped uses `x` directly to store the result of `x + y`.
+"""
+
+# ╔═╡ ecfe4d79-b1c6-4a6d-a9d7-a563a26e32cd
+md"""
+Whenever possible, you may also want to use / write mutating versions of critical functions.
+By convention, such functions get a `!` suffix to warn about their side effects.
+"""
+
+# ╔═╡ 83423082-2d3a-42a1-b1db-ed267399cb31
+md"""
+!!! danger "Task"
+	Write a function that compares the speed of mutating and non-mutating matrix multiplication for a given size $n$.
+"""
+
+# ╔═╡ fb416cfd-f9ee-4d7d-9e83-056e81c422e0
+hint(md"Take a look at the documentation for the three-argument function `mul!`.")
+
+# ╔═╡ d0020df6-62a1-4000-b8cf-ceacb8014a0b
+function compare_mul!_mul(n)
+	A = rand(n, n)
+	B = rand(n, n)
+	C = rand(n, n)
+	time_mul! = @belapsed mul!($C, $A, $B)
+	time_mul = @belapsed $A * $B
+	return time_mul!, time_mul
+end
+
+# ╔═╡ 82f79519-3a68-4cd1-a539-85bf78ff2cb0
+compare_mul!_mul(10)
+
+# ╔═╡ d4bcd863-a788-4f65-b826-4604d6d19216
+compare_mul!_mul(100)
+
+# ╔═╡ d8301150-7b08-45b6-a986-d21574eee91b
+md"""
+# 2. Autodiff works... almost always
+"""
+
+# ╔═╡ 1f40437c-0419-4fc0-96ae-a8130efaa36a
+md"""
+## Differentiable programming
+"""
+
+# ╔═╡ 8419603a-3c5c-45a0-9a70-4a74347a7ad7
+md"""
+In scientific computing, differentiation plays a central role.
+Gradients, Jacobians and Hessians are used everywhere, from optimization algorithms to differential equations or sensitivity analysis.
+Unfortunately, the functions involved may be very complicated, sometimes without an explicit formula.
+
+That is where _differentiable programming_ comes into play: the idea that you can use computer programs to represent complex functions, and then differentiate through these programs with automatic differentiation.
+"""
+
+# ╔═╡ 4f9d3c2e-1ec8-4337-b49b-e0dc1d63bc62
+md"""
+The Julia ecosystem is very interesting in this regard, because its autodiff packages are compatible with a large fraction of the language itself.
+Conversely, major Python autodiff packages like `PyTorch` or `TensorFlow` expect the user to only manipulate custom tensors, which restricts their generality. 
+
+An extensive list of packages is available on the JuliaDiff [web page](https://juliadiff.org/).
+Right now, the most widely used are probably:
+- [`ForwardDiff.jl`](https://github.com/JuliaDiff/ForwardDiff.jl) for forward mode autodiff
+- [`Zygote.jl`](https://github.com/FluxML/Zygote.jl) for reverse mode autodiff
+
+Here is an example showing how to use them for Jacobian computation.
+"""
+
+# ╔═╡ 7476a638-5eca-47cc-9a01-41f30b9dbf9d
+function powersum(x; p=5)
+	return sum(x.^i for i in 0:p)
+end
+
+# ╔═╡ d0d580d4-8e92-4d46-8177-67f52fbb3934
+let
+	x = 0.5 .* ones(3)
+	powersum(x)
+end
+
+# ╔═╡ c5784ec1-17cf-4897-8cd3-ff81998b9d9c
+let
+	x = rand(3)
+	J1 = ForwardDiff.jacobian(powersum, x)
+	J2 = Zygote.jacobian(powersum, x)[1]
+	J1, J2
+end
+
+# ╔═╡ 387d145f-e77c-4e13-89b7-fc8733215694
+md"""
+## The limitations of autodiff packages
+"""
+
+# ╔═╡ 3790f106-9895-4425-a16f-5c5e0857e99e
+md"""
+Alas, every autodiff package comes with its own limitations.
+Here are the main ones you should be aware of:
+- `ForwardDiff.jl` requires functions that work with generic number types, not just `Float64` for example. The reason is that forward mode relies on numbers of type `Dual` (whch store both a quantity and its derivative)
+- `Zygote.jl` requires functions that avoid mutating arrays. The reason is that array mutation gives rise to several nodes in the computational graph for a single variable in the code, which is complicated to handle from an implementation perspective. 
+"""
+
+# ╔═╡ 945a16d3-805c-40c9-9166-5120743bd3d7
+md"""
+!!! danger "Task"
+	Write a function that does the same computation as `mypowersum`, but for which `ForwardDiff.jl` will throw an error.
+"""
+
+# ╔═╡ 3716d3cc-8706-41bf-873d-193543cb0514
+function powersum_breakforwarddiff(x::Vector{Float64}; p=5)
+	return sum(x.^i for i in 0:p)
+end
+
+# ╔═╡ 87c72b22-8c81-4062-8a9c-40902f83a623
+let
+	x = 0.5 .* ones(3)
+	powersum(x), powersum_breakforwarddiff(x)
+end
+
+# ╔═╡ 1362cd95-6a87-44e3-980d-014496afce85
+let
+	x = rand(3)
+	# this should throw "No method matching powersum_breakforwarddiff(Vector{Dual})"
+	ForwardDiff.jacobian(powersum_breakforwarddiff, x)
+end
+
+# ╔═╡ 46075912-60b7-46d2-88c9-a13a8b015e0b
+md"""
+!!! danger "Task"
+	Write a function that does the same computation as `mypowersum`, but for which `Zygote.jl` will throw an error.
+"""
+
+# ╔═╡ cf13543a-9dd4-40ef-9523-5953e9db2c78
+function powersum_breakzygote(x; p=5)
+	y = ones(eltype(x), length(x))
+	for i in 1:p
+		y .+= x.^i
+	end
+	return y
+end
+
+# ╔═╡ 0736648c-a181-4352-8b4e-bacf745fda64
+let
+	x = 0.5 .* ones(3)
+	powersum(x), powersum_breakzygote(x)
+end
+
+# ╔═╡ 95dd7822-ef43-4629-bb42-ddb15bd1f965
+let
+	x = rand(3)
+	# this should throw "Mutating arrays is not supported..."
+	Zygote.jacobian(powersum_breakzygote, x)[1]  
+end
+
+# ╔═╡ 786b7ea2-7827-4cab-abbb-786abe935cc3
+md"""
+Usually, it is quite easy to write type-generic code that works with `ForwardDiff.jl`.
+On the other hand, sometimes mutation is inevitable for performance reasons, which means `Zygote.jl` will be mad at us.
+So how do we get the best of both worlds, _performance AND differentiability_?
+The answer is: by teaching `Zygote.jl` a custom differentiation rule.
+"""
+
+# ╔═╡ 4440f39c-51e5-4ffd-8031-96d4a760270c
+md"""
+## The role of custom differentiation rules
+"""
+
+# ╔═╡ bfb3280e-638f-4e8f-8e37-d5f8fd75541d
+md"""
+Autodiff packages have two main ingredients:
+
+- a set of differentiation rules for built-in functions (`+`, `-`, `*`, `/`, `exp`, ...)
+- a way to compose these basic functions and their derivatives (using the chain rule)
+"""
+
+# ╔═╡ 7f6e72fd-aacc-47a8-a496-25794c60343c
+md"""
+The [`ChainRules.jl`](https://github.com/JuliaDiff/ChainRules.jl) package is an attempt to provide unified differentiation rules for Julia's whole autodiff ecosystem.
+It contains rules for most of the functions in the Julia standard library, but also allows users to define custom rules.
+
+Since `Zygote.jl` cannot handle mutation out of the box, we must define a custom reverse rule for any function involving mutation.
+This will allow `Zygote.jl` to differentiate it "blindly", without looking inside.
+"""
+
+# ╔═╡ 55160454-2738-4911-be15-29f484f610db
+md"""
+Without further ado, we show the definition of a custom reverse rule for the following function.
+It is identical to the one that used to break `Zygote.jl` earlier.
+"""
+
+# ╔═╡ e90098ec-a9c3-4204-95f7-88adeb74ee50
+function powersum_okayzygote(x; p=5)
+	y = zeros(eltype(x), length(x))
+	for i in 0:p
+		y .+= x.^i
+	end
+	return y
+end
+
+# ╔═╡ 7b92051d-4015-4e22-b6b9-41462e2cc54f
+let
+	x = rand(3)
+	powersum(x), powersum_okayzygote(x)
+end
+
+# ╔═╡ 4eef090f-29b1-44e1-929a-98162719ae93
+md"""
+Of course, if we want to teach a derivative to Julia, we have to know how to compute it.
+"""
+
+# ╔═╡ 32f6a219-f69b-4085-ba4b-5c7dc3ca2155
+function powersum_okayzygote_jacobian(x; p=5)
+	J = zeros(eltype(x), length(x), length(x))
+	for i in 1:p
+		J .+= Diagonal(i .* x.^(i-1))
+	end
+	return J
+end
+
+# ╔═╡ ffffadbb-5fcd-443d-97fb-b6d372029814
+md"""
+Custom reverse rules are created by writing a new method for the `ChainRulesCore.rrule` function.
+For technical reasons, the reverse rule does not work with the Jacobian directly, but instead computes _Jacobian-vector products_ (VJPs) of the form $v^\top J_f(x)$ (see section 4).
+"""
+
+# ╔═╡ 19198826-15a0-432d-abe2-ae5ead6869f5
+function ChainRulesCore.rrule(fun::typeof(powersum_okayzygote), x; p=5)
+	y = powersum_okayzygote(x; p=p)
+	J = powersum_okayzygote_jacobian(x; p=p)
+	function vector_jacobian_product(v)
+		return (NoTangent(), J' * v)
+	end
+	return y, vector_jacobian_product
+end
+
+# ╔═╡ 0d762ed4-dfb9-433f-8ded-1ae653ad87c2
+begin
+	rrule_syntax = md"""
+	The arguments given to `rrule` are all the arguments of the function we want to differentiate (in this case `powersum_okayzygote`), plus an additional first argument `fun` which is a function.
+	We define our method to only accept the type of `powersum_okayzygote` itself, so that autodiff packages can recognize it and dispatch on the appropriate rule for each function.
+	So we actually do not need `fun` in the body of the `rrule`, and we could also have used an empty argument:
+	```
+	function ChainRulesCore.rrule(::typeof(powersum_okayzygote), x; p=5)
+		...
+	end
+	```
+
+	The output of `rrule` is a couple that contains 1) the return value of the function `powersum_okayzygote` and 2) a nested function called `vector_jacobian_product`, which is used during reverse mode autodiff.
+
+	This nested function computes a VJP for each positional argument of `rrule`, in this case `fun` and `x`.
+	By convention, we do not compute VJPs for keyword arguments, since one does not usually differentiate with respect to those.
+	Most of the time, the VJP with respect to `fun` is `NoTangent()`, since the function `fun` rarely has internal parameters.
+	On the other hand, the VJP with respect to `x` is the interesting part.
+	It is given as `J' * v` instead of `v' * J` because we want a column vector instead of a row vector.
+	We precompute the Jacobian matrix `J` outside of the `vector_jacobian_product` because it can be reused with several vectors `v`.
+	"""
+	Foldable("Unfold to understand the syntax of the reverse rule", rrule_syntax)
+end
+
+# ╔═╡ ef28a71e-74f4-40dd-a72d-1a51628fd01b
+md"""
+Thanks to this new rule, `Zygote.jl` is now able to differentiate through our mutating power sum.
+"""
+
+# ╔═╡ f9ca3e33-243c-45c8-b646-587aa7d2d902
+md"""
+By now, you may have a question on your mind.
+What is the point of autodiff if I need to work out derivatives by hand anyway?
+Indeed, when `Zygote.jl` is unable to handle your function, you may need to provide derivatives manually.
+
+But then, you can insert your function within a larger computational graph (like a neural network), and the rest of the derivatives will be computed without your help.
+In other words, your efforts are only required for a few performance-critical functions, and the rest is taken care of automatically.
+"""
+
+# ╔═╡ c7a0dbbe-89e6-4759-a57f-b367fbeba62e
+md"""
+Let us see what that looks like by composing several functions.
+"""
+
+# ╔═╡ 9a8f7f42-2677-43ff-a280-3b75df6258e1
+function big_composition(x)
+	y = vcat(x, -x)
+	z = powersum_okayzygote(x)
+	return sum(abs, z)
+end
+
+# ╔═╡ 7b3551c2-22f7-47dd-82dc-b817d7e0f1fb
+md"""
+Isn't that wonderful?
+"""
+
+# ╔═╡ f6330892-3379-4e0d-a007-c451a465bd06
+md"""
+# 3. Application to linear regression
+"""
+
+# ╔═╡ 6d848043-e5bc-4beb-a18a-004d4cac5c23
+md"""
+Linear regression is perhaps the most basic form of machine learning.
+Given a matrix of features $M \in \mathbb{R}^{m \times n}$ and a vector of targets $y \in \mathbb{R}^m$, we approximate $y$ by $M x$, where $x \in \mathbb{R}^n$ is a vector of parameters (feature weights).
+"""
+
+# ╔═╡ fc84dce4-779c-4377-af2a-cda7e453f382
+md"""
+## Computing the squared errors
 """
 
 # ╔═╡ d76d5ddc-fe59-47f4-8b56-6f704b486ebc
 md"""
-Linear regression is perhaps the most basic form of machine learning.
-Given a matrix of features $M \in \mathbb{R}^{m \times n}$ and a vector of targets $y \in \mathbb{R}^m$, we approximate $y$ by $M x$, where $x \in \mathbb{R}^n$ is a vector of parameters (feature weights).
+
 One way to measure the quality of the approximation for a given $x$ is to compute the squared error on all components of $y$.
 Let us denote by $\odot$ the componentwise product between vectors: we define the function
 
-$$f: x \in \mathbb{R}^n \longmapsto (Mx - y) \odot (Mx - y) = \begin{pmatrix} (Mx - y)_1^2 \\ \vdots \\ (Mx - y)_m^2 \end{pmatrix} \in \mathbb{R}^m$$
+$$f: x \in \mathbb{R}^n \longmapsto (Mx - y) \odot (Mx - y) = \left((Mx - y)_i^2 \right)_{i \in [m]} \in \mathbb{R}^m$$
+"""
 
-If we want to find the best possible $x$, we can do it by minimizing the sum of the components of $f(x)$.
-We may also wish to use the function $f$ within a larger neural network.
+# ╔═╡ 9ef1e014-5a7d-4b17-98de-0cf51d788bfa
+md"""
+!!! danger "Task"
+	Implement the function $f$ in a naive way.
+"""
+
+# ╔═╡ f8cd5dce-6a4c-4c6c-b2d5-7ec56132e95e
+function f(x; M, y)
+	e = (M * x - y) .^ 2
+	return e
+end
+
+# ╔═╡ c7ee9795-2c7a-480a-9269-440a9227c591
+let
+	n, m = 3, 5
+	M = rand(m, n)
+	y = rand(m)
+	x = rand(n)
+	f(x; M=M, y=y)
+end
+
+# ╔═╡ 28f31ef9-27ea-4e94-8f03-89b0f6cfa0d1
+md"""
+!!! danger "Task"
+	Implement the function $f$ in the most efficient way you can, by pre-allocating and mutating the output vector `e`.
+	Compare the performance of both implementations.
+"""
+
+# ╔═╡ 1676ec54-bd96-4892-aa08-3ae831b537bb
+hint(md"Modify `e` step-by-step: start with $Mx$, then $Mx-y$, and finally $(Mx-y) \odot (Mx-y)$.")
+
+# ╔═╡ ea16d4c6-d6e4-46fa-a721-fa5a0f2ff021
+function f!(e, x; M, y)
+	mul!(e, M, x)  # in-place matrix multiplication: now e = Mx
+	e .-= y  # now e = Mx - y
+	e .^= 2  # now e = (Mx - y) .^ 2
+	return e
+end
+
+# ╔═╡ bd37c58d-8544-40b1-a0b5-ea03ec5692a8
+let
+	n, m = 3, 5
+	M = rand(m, n)
+	y = rand(m)
+	x = rand(n)
+	e = rand(m)
+	f(x; M=M, y=y), f!(e, x; M=M, y=y)
+end
+
+# ╔═╡ 5bbd690b-6a98-4dbf-a8c4-581ac77a4da5
+let
+	n, m = 3, 5
+	M = rand(m, n)
+	y = rand(m)
+	x = rand(n)
+	e = rand(m)
+	@btime f($x; M=$M, y=$y)
+	@btime f!($e, $x; M=$M, y=$y)
+end;
+
+# ╔═╡ cc224a30-81bf-4a2c-b636-40ff5c941bb6
+md"""
+## Differentiating the squared errors
+"""
+
+# ╔═╡ 3d20c24c-469b-4f0d-9936-705e42033ded
+md"""
+If we want to find the best possible $x$, we can do it by minimizing the sum of the components of $f(x)$ (_e.g._ with gradient descent).
+We may also wish to use the function $f$ within a neural network.
 In both cases, it is essential to differentiate $f$ with respect to its input $x$ (assuming $M$ and $y$ are fixed).
+"""
+
+# ╔═╡ bf6c5fc8-8283-46d4-aa67-416d53f7d315
+md"""
+!!! danger "Task"
+	Try to compute the Jacobian of `f` and `f!` with `Zygote.jl`.
+"""
+
+# ╔═╡ d00bf3fd-9bd8-4b11-b755-a85f0f8644cb
+let
+	n, m = 3, 5
+	M = rand(m, n)
+	y = rand(m)
+	x = rand(n)
+	Zygote.jacobian(x -> f(x; M=M, y=y), x)[1]
+end
+
+# ╔═╡ a80b3a0f-53d1-473e-9bea-2494a85ac511
+let
+	n, m = 3, 5
+	M = rand(m, n)
+	y = rand(m)
+	x = rand(n)
+	e = rand(m)
+	Zygote.jacobian(x -> f!(e, x; M=M, y=y), x)[1]
+end
+
+# ╔═╡ ab398337-adb5-48fa-ae1b-4c9499438097
+md"""
+Once you are done with this section, you will be able to do this without encountering an error. Yay!
 """
 
 # ╔═╡ ae7b2114-de91-4f1b-8765-af5e02cc1b63
 md"""
 !!! danger "Task"
-	Compute the differential of the function $f$ at a point $x$.
+	Work out the derivative of the function $f$ at a point $x$.
 """
 
 # ╔═╡ e4aedbd4-a609-4eaf-812b-d2f3d6f4df3d
-hint(md"Write $f(x+h)$ as a componentwise product, and then expand it as you would do with a regular product (trust me, you are allowed to do that).
-Keep in mind that you need to group the terms according to their order in $h$: zero-th order, first order or second order.")
+hint(md"
+Write $f(x+h)$ as a componentwise product, and then expand it as you would do with a regular product.
+You are allowed to do that since the componentwise product is bilinear..
+Keep in mind that you need to group the terms according to their order in $h$: zero-th order, first order or second order.
+")
 
 # ╔═╡ b8974b20-d8dc-4109-a64e-585c7afdb484
 md"""
@@ -347,20 +761,15 @@ Now we pause for a minute and examine the three terms we obtained.
 2. The second one is a linear function of $h$
 3. The third one is a quadratic function of $h$, which is negligible compared to the linear term (in the "small $h$" regime)
 
-This means we can identify the differential:
+This means we can identify the derivative:
 
-$$df_x: h \in \mathbb{R}^n \longmapsto 2 (Mx - y) \odot (M h) \in \mathbb{R}^m$$
-"""
-
-# ╔═╡ f472111d-d7e8-42db-9a08-6a8dd67af09b
-md"""
----
+$$f'(x): h \in \mathbb{R}^n \longmapsto 2 (Mx - y) \odot (M h) \in \mathbb{R}^m$$
 """
 
 # ╔═╡ bd10d753-eea6-4798-939c-8e5551d40c5c
 md"""
 !!! danger "Task"
-	Compute the Jacobian matrix of the function $f$ at a point $x$. Check that its size is coherent.
+	Deduce the Jacobian matrix of the function $f$ at a point $x$. Check that its size is coherent.
 """
 
 # ╔═╡ 2f95afd6-1418-44bb-9868-970dbe888500
@@ -370,24 +779,20 @@ Using this with $a = 2(Mx - y)$ and $b = Mh$ should help you recognize the Jacob
 # ╔═╡ 06e91432-935f-4d7c-899f-d7968a10a78e
 md"""
 If $a \in \mathbb{R}^m$ is a vector, we denote by $D(a)$ the diagonal matrix with diagonal coefficients $a_1, ..., a_m$.
-Using the hint above, we find that
+Using the hint above, we recognize that
 
-$$df_x(h) = 2 D(Mx - y) (Mh) = \left[2 D(Mx-y)M\right] h$$
+$$f'(x)(h) = 2 D(Mx - y) (Mh) = \left[2 D(Mx-y)M\right] h$$
 
 This yields the following Jacobian formula:
 
-$$Jf_x = 2D(Mx-y)M \in \mathbb{R}^{m \times n}$$
+$$J_f(x) = 2D(Mx-y)M \in \mathbb{R}^{m \times n}$$
 """
 
-# ╔═╡ 8ff815b0-34a4-4e42-8c18-ff45096ed260
-md"""
----
-"""
-
-# ╔═╡ 28f31ef9-27ea-4e94-8f03-89b0f6cfa0d1
+# ╔═╡ c7efc656-ae9b-4eef-b0cd-3afe3852d396
 md"""
 !!! danger "Task"
-	Implement the function $f$ and a function computing its Jacobian.
+	Implement a function computing the Jacobian matrix $J_f$ at a point $x$.
+	Check your result using finite differences.
 """
 
 # ╔═╡ ca4b41dd-353e-498d-a461-648c582cb999
@@ -398,71 +803,95 @@ function Jf(x; M, y)
 	return 2 * Diagonal(M * x .- y) * M
 end
 
-# ╔═╡ 4440f39c-51e5-4ffd-8031-96d4a760270c
+# ╔═╡ 40e13883-dd9a-43b9-9ef7-1069ef036846
+let
+	n, m = 3, 5
+	M = rand(m, n)
+	y = rand(m)
+	x = rand(n)
+	h = 0.001 .* rand(n)
+	diff1 = f(x + h; M=M, y=y) .- f(x; M=M, y=y)
+	diff2 = Jf(x; M=M, y=y) * h
+	diff1, diff2
+end
+
+# ╔═╡ 7c7bdbd9-edd5-4142-a765-4c498761f7e7
 md"""
----
+## Custom rule, from slow to fast
 """
 
-# ╔═╡ 69a9ec45-d2ff-4362-9c3c-5c004e46ceb3
-md"""
-# 3. JVPs and VJPs
-"""
-
-# ╔═╡ 7c172e2d-5672-405e-8960-f104607a3610
-md"""
-## Theory
-"""
-
-# ╔═╡ 6a9e6056-6e4e-430b-871f-627ac8be8833
-md"""
-Motivate vector: storage, gradient / sequentially => only reverse mode
-"""
-
-# ╔═╡ 8923a5ad-ddba-4ae2-886e-84526a3521ba
-md"""
-In concrete applications, the dimensions $n$ and $m$ often make it impossible to store a full Jacobian (of size $m \times n$) in memory.
-As a result, autodiff systems only manipulate Jacobians "lazily" by computing their products with vectors.
-These products come in two flavors:
-
-- _Jacobian-vector products_ (JVPs) of the form $u \in \mathbb{R}^n \longmapsto J u \in \mathbb{R}^m$. 
-- _vector-Jacobian products_ (VJPs) of the form $v \in \mathbb{R}^m \longmapsto v^\top J \in \mathbb{R}^n$.
-
-With a little bit of sweat, it is usually possible to implement these operations in a clever way.
-"""
-
-# ╔═╡ e1b9f114-58e7-4546-a3c0-5e07fb1665e7
+# ╔═╡ 8569cd7b-890f-4b04-a6d5-c92a70a226ab
 md"""
 !!! danger "Task"
-	How many JVPs would it take to compute the full Jacobian, and what vectors should you choose? Same question for VJPs.
+	Define a custom reverse rule for `f2!` (because of a Pluto bug we couldn't use `f!` directly). Check that `Zygote.jl` is now able to compute its Jacobian.
 """
 
-# ╔═╡ ba07ccda-ae66-4fce-837e-00b2b039b404
+# ╔═╡ cf250e37-ed37-47cd-b689-8e2596f9fdc5
+f2!(e, x; M, y) = f!(e, x; M, y)
+
+# ╔═╡ 8f46db4a-cc94-4497-aad8-0fc4b0cfa1e3
+hint(md"Beware: you will need to give a VJP with respect to `rrule` arguments `fun`, `e` and `x`. Use `NoTangent()` for `fun` and `ZeroTangent()` for `e`.")
+
+# ╔═╡ dccf9f6d-82a6-423c-bbe5-22c5a8c2f5e4
+function ChainRulesCore.rrule(::typeof(f2!), e, x; M, y)
+	f2!(e, x; M=M, y=y)
+	J = Jf(x; M=M, y=y)
+	function vector_jacobian_product(v)
+		vjp_fun = NoTangent()
+		vjp_e = ZeroTangent()
+		vjp_x = J' * v
+		return (vjp_fun, vjp_e, vjp_x)
+	end
+	return e, vector_jacobian_product
+end
+
+# ╔═╡ ffd6df27-c0e5-44be-aee9-2c7a9d4fb5c0
+let
+	x = rand(3)
+	ChainRulesCore.rrule(powersum_okayzygote, x)  # trick Pluto's dependency handler
+	J = powersum_okayzygote_jacobian(x)
+	J_zygote = Zygote.jacobian(powersum_okayzygote, x)[1]
+	J, J_zygote
+end
+
+# ╔═╡ 0cee5c93-266c-4be3-9997-20728cf11921
+let
+	x = rand(3)
+	ChainRulesCore.rrule(powersum_okayzygote, x)  # trick Pluto's dependency handler
+	Zygote.gradient(big_composition, x)[1]
+end
+
+# ╔═╡ bbe25d4e-952b-4ed5-b20e-24b3dcd30495
 md"""
-- If we cycle through the basis vectors $u = (0, ..., 0, 1, 0, ..., 0) \in \mathbb{R}^n$ of the input space, each product $Ju$ gives us one _column_ of the Jacobian matrix. Therefore, we need $n$ JVPs in total.
-- If we cycle through the basis vectors $v = (0, ..., 0, 1, 0, ..., 0) \in \mathbb{R}^m$ of the output space, each product $v^\top J$ gives us one _row_ of the Jacobian matrix. Therefore, we need $m$ VJPs in total.
+!!! danger "Task"
+	Uncomment and run the following cell once the `rrule` above is complete.
 """
 
-# ╔═╡ 663e3899-e7b3-4420-8d66-7e88c1b79185
-md"""
----
-"""
+# ╔═╡ 77eac64f-eac5-4d12-8acf-5b5070e60858
+# let
+# 	n, m = 3, 5
+# 	M = rand(m, n)
+# 	y = rand(m)
+# 	x = rand(n)
+# 	e = rand(m)
+# 	ChainRulesCore.rrule(f2!, e, x; M=M, y=y)  # trick Pluto's dependency handler
+# 	J1 = Zygote.jacobian(x -> f(x; M=M, y=y), x)[1]
+# 	J2 = Zygote.jacobian(x -> f2!(e, x; M=M, y=y), x)[1]
+# 	J1, J2
+# end
 
-# ╔═╡ 5ae3bf90-6393-45b9-840e-feeb2e727508
+# ╔═╡ aa4194d6-2f8c-4367-850e-22ebcf1b72e4
 md"""
-Rules that compute JVPs and VJPs for built-in functions are the first ingredient of autodiff.
-They serve as basic building blocks for more complex constructs.
-In Julia, these rules are handled by the [`ChainRules.jl`](https://github.com/JuliaDiff/ChainRules.jl) ecosystem (see part 5).
-"""
-
-# ╔═╡ 37cab21f-aa70-48c2-be62-55e285481525
-md"""
-## Example
+Although we managed to get reverse mode autodiff working, the end result is still not very satisfactory.
+On the one hand, the function `f2!` is fast and requires zero allocation.
+On the other hand, the custom reverse rule still involves computing and storing a full Jacobian matrix, which is pretty expensive.
+Luckily, we can do better.
 """
 
 # ╔═╡ f66a0ea7-70fd-4340-8b02-6fbaab847dfc
 md"""
 !!! danger "Task"
-	Explain why JVPs and JVPs can be computed for our linear regression function $f$ without storing its full Jacobian.
+	Explain why a VJP can be computed for the function $f$ without working with its full Jacobian.
 """
 
 # ╔═╡ 8cca11ed-a61c-4cc8-af4b-350137073756
@@ -470,76 +899,40 @@ hint(md"Try to think in terms of computer program instead of mathematics. Descri
 
 # ╔═╡ 7144c6c8-79dd-437d-a201-bac143f6a261
 md"""
-The JVP can be computed as follows:
+A VJP can be computed as follows:
 
-$$Jf_x u = 2D(Mx-y)M u \quad \implies \begin{cases} a = Mu \\ b = 2D(Mx-y) a \end{cases}$$
+$$v^\top J_f(x) = v^\top 2D(Mx-y)M \quad \implies \begin{cases} a = v^\top 2D(Mx - y) \\ b = a M \end{cases}$$
 
-The VJP can be computed as follows:
-
-$$v^\top Jf_x = v^\top 2D(Mx-y)M \quad \implies \begin{cases} a = v^\top 2D(Mx - y) \\ b = a M \end{cases}$$
-
-In both cases, we only need to store a few vectors and not full matrices.
-"""
-
-# ╔═╡ 07cd4e47-5fac-49c4-80a5-c5bdf21bd484
-md"""
----
+This means we only need to store a vector and not a full matrix.
 """
 
 # ╔═╡ 45765f4a-536d-4e9d-be9d-144b7ccd4dcf
 md"""
 !!! danger "Task"
-	Implement the JVP and VJP for the function $f$, following the efficient method you just suggested.
-	Try to reduce allocations as much as possible by mutating vectors.
+	Implement a VJP function for $f$, following the efficient method you just suggested.
 """
 
 # ╔═╡ df89f509-cfd7-46b3-9dd1-cdcfcea68053
-hint(md"Now you should revert to `.*` for componentwise products instead of using diagonal matrices.
-You may also need the `'` operator for transposition.")
-
-# ╔═╡ 37dbaa56-7b8f-4c2a-ad8c-6c3ba6060cfa
-function f_jvp(u, x; M, y)
-	return 2 .* (M * x .- y) .* (M * u)
-end
+hint(md"
+Now you should revert to `.*` for componentwise products instead of using diagonal matrices.
+Remember that you must return a column vector, so technically $J_f(x)^\top v$ instead of $v^\top J_f(x)$.
+")
 
 # ╔═╡ 0b51e23e-a015-4e86-ba48-6475a9ee9779
 function f_vjp(v, x; M, y)
 	return (v .* 2 .* (M * x .- y))' * M
 end
 
-# ╔═╡ 79880fd1-0fc1-4f14-9d1f-664afcc939c8
-md"""
----
-"""
-
 # ╔═╡ 14dcad57-23ae-4905-aac4-d29066f2a085
 md"""
 !!! danger "Task"
-	Check the correctness of your JVP / VJP implementations against the naive versions provided below.
+	Check the correctness of your VJP function against the naive version provided below.
 """
-
-# ╔═╡ 0ea654fe-d3d0-4f40-b3dc-806b1982c040
-function f_jvp_naive(u, x; M, y)
-	J = Jf(x; M=M, y=y)
-	return J * u
-end
 
 # ╔═╡ 06a59777-b6ec-4808-9105-7a2542a629ea
 function f_vjp_naive(v, x; M, y)
 	J = Jf(x; M=M, y=y)
 	return v' * J
-end
-
-# ╔═╡ 90c6515b-b0c0-4f9b-bd4e-ae29c0ecab23
-let
-	n, m = 3, 5
-	M = rand(m, n)
-	y = rand(m)
-	x = rand(n)
-	u = rand(n)
-	jvp1 = f_jvp(u, x; M=M, y=y)
-	jvp2 = f_jvp_naive(u, x; M=M, y=y)
-	jvp1, jvp2
 end
 
 # ╔═╡ 9222d644-5d20-474a-83db-4b2e3bed45e2
@@ -557,22 +950,8 @@ end
 # ╔═╡ c511e1c4-0306-46c7-800f-8257266c0091
 md"""
 !!! danger "Task"
-	Compare the performance of both implementations, using the macro `@benchmark` from `BenchmarkTools.jl`.
+	Compare the performance of both VJP implementations.
 """
-
-# ╔═╡ ba206cb6-d2ca-4a4a-9c20-d66b015226dd
-hint(md"To obtain unbiased results, you will need to prepend every variable name with a dollar sign `$` when using this macro. Otherwise the variables are treated as global, which impacts performance.")
-
-# ╔═╡ 0cc728dd-40d2-4713-b378-e67b3ed1c44f
-let
-	n, m = 3, 5
-	M = rand(m, n)
-	y = rand(m)
-	x = rand(n)
-	u = rand(n)
-	benchmark1 = @btime f_jvp($u, $x; M=$M, y=$y)
-	benchmark2 = @btime f_jvp_naive($u, $x; M=$M, y=$y)
-end;
 
 # ╔═╡ c79e7017-4acc-4562-817a-50245ce654dc
 let
@@ -581,311 +960,96 @@ let
 	y = rand(m)
 	x = rand(n)
 	v = rand(m)
-	benchmark1 = @benchmark f_vjp($v, $x; M=$M, y=$y)
-	benchmark2 = @benchmark f_vjp_naive($v, $x; M=$M, y=$y)
-	benchmark1, benchmark2
-end
+	@btime f_vjp($v, $x; M=$M, y=$y)
+	@btime f_vjp_naive($v, $x; M=$M, y=$y)
+end;
+
+# ╔═╡ 69a9ec45-d2ff-4362-9c3c-5c004e46ceb3
+md"""
+# 4. Going further: why VJPs? (optional)
+"""
+
+# ╔═╡ cc167cfd-b776-4280-a308-d5908ceaec4b
+md"""
+## Lazy manipulation of Jacobians
+"""
+
+# ╔═╡ 8923a5ad-ddba-4ae2-886e-84526a3521ba
+md"""
+In concrete applications, the dimensions $n$ and $m$ often make it impossible to store a full Jacobian (of size $m \times n$) in memory.
+As a result, autodiff systems only manipulate Jacobians "lazily" by computing their products with vectors.
+
+In machine learning, we are mostly interested in loss functions with many inputs ($n \gg 1$) and a single scalar output ($m = 1$).
+This means the Jacobian matrix only has one row, and it can be seen as the transpose of the gradient: $J_f(x) = \nabla f(x)^\top$.
+Thus we only need one VJP (with $v = 1$) to retrieve the gradient.
+"""
+
+# ╔═╡ e1b9f114-58e7-4546-a3c0-5e07fb1665e7
+md"""
+!!! danger "Task"
+	How many VJPs would it take to compute the full Jacobian for a function $f : \mathbb{R}^n \longrightarrow \mathbb{R}^m$, and which vectors $v$ should you choose?
+"""
+
+# ╔═╡ ba07ccda-ae66-4fce-837e-00b2b039b404
+md"""
+If we cycle through the basis vectors $v = (0, ..., 0, 1, 0, ..., 0) \in \mathbb{R}^m$ of the output space, each product $v^\top J_f(x)$ gives us one row of the Jacobian matrix. Therefore, we need $m$ VJPs in total.
+"""
 
 # ╔═╡ d0ae8c14-b341-4220-8a1c-79fed9758f64
 md"""
----
-"""
-
-# ╔═╡ 268ac292-c12f-4ce1-85b1-699c9f1c74f0
-md"""
-# 4. Forward and reverse mode
-"""
-
-# ╔═╡ f1170858-9464-4cc1-9772-fe2b49ff7893
-md"""
-## Theory
-"""
-
-# ╔═╡ 3e6c947f-6e01-4364-a608-7a59f3d9f5bb
-md"""
-Name the partials, keep notations
+## The reason behind reverse mode
 """
 
 # ╔═╡ f843b77d-8160-4d87-8641-eeb04549af8f
 md"""
-Let us now consider a composite function $f = f^3 \circ f^2 \circ f^1$ with $3$ layers.
-The _chain rule_ yields the following differential:
+Let us now consider a composite function $f = f_3 \circ f_2 \circ f_1$ with $3$ layers.
+The _chain rule_ yields the following derivative:
 
-$$df_x = df^3_{(f^2 \circ f^1) (x)} \circ df^2_{f^1(x)} \circ df^1_x$$
+$$f'(x) = f_3'((f_2 \circ f_1)(x)) \circ f_2'(f_1(x)) \circ f_1'(x)$$
 
 In the Euclidean case, we can re-interpret this function composition as a matrix product:
 
-$$\underbrace{Jf_{x}}_J = \underbrace{Jf^3_{(f^2 \circ f^1) (x)}}_{J^3} \underbrace{Jf^2_{f^1(x)}}_{J^2} \underbrace{Jf^1_{x\phantom{)}}}_{J^1}$$
+$$\underbrace{J_f(x)}_J = \underbrace{J_{f_3}((f^2 \circ f^1) (x))}_{J_3} ~ \underbrace{J_{f_2}(f^1(x))}_{J_2} ~ \underbrace{J_{f_1}(x)}_{J_1}$$
 """
 
 # ╔═╡ 9b34a8f9-6afa-4712-bde8-a94f4d5e7a33
 md"""
 But again, storing and multiplying full Jacobian matrices is expensive in high dimension.
-Assuming we know how to manipulate the $J^k$ lazily, can we do the same for $J$?
-In other words, can we deduce JVPs / VJPs for $f$ based on JVPs / VJPs for the $f^k$?
+Assuming we know how to manipulate the $J_k$ lazily, can we do the same for $J$?
+In other words, can we deduce a VJP for $f$ based on a  VJP for the $f_k$?
 
-The answer is yes, but only if we do it in the right direction:
-
-- For a JVP, we can accumulate the product from first to last layer (in _forward mode_):
-
-$$J u = J^3 J^2 J^1 u \quad \implies \quad \begin{cases} u^1 = J^1 u \\ u^2 = J^2 u^1 \\ u^3 = J^3 u^2 \end{cases}$$
-
-- For a VJP, we can accumulate the product from last to first layer (in _reverse mode_)
+The answer is yes, but only if we do it in the right direction.
+Indeed, we can accumulate the product from last to first layer:
 
 $$v^\top J = v^\top J^3 J^2 J^1 \quad \implies \quad \begin{cases} v^3 = v^\top J^3 \\ v^2 = (v^3)^\top J^2 \\ v^1 = (v^2)^\top J^1 \end{cases}$$
 
-These considerations generalize to more complex computational graphs, such as the ones drawn in class.
+This is why reverse mode autodiff uses VJPs, as shown in the `ChainRulesCore.rrule` syntax.
+They allow efficient propagation of derivative information from the last layer to the first, which is particularly appropriate to compute gradients of high-dimensional loss functions.
+
+Congrats, you now know how neural networks are trained!
 """
-
-# ╔═╡ 7f4610e7-35f5-4287-b5eb-c8b347b04337
-md"""
-!!! danger "Task"
-	Which autodiff mode should you choose if you want to compute the gradient of a real-valued function: forward or reverse?
-"""
-
-# ╔═╡ a8c24bdc-7d8b-43c3-92a3-93614e3bf3c5
-md"""
-For a real-valued function, the gradient is the transpose of the Jacobian, which has a single row.
-It can be computed with a single VJP, as opposed to $n$ JVPs.
-Therefore, reverse mode is more adequate.
-"""
-
-# ╔═╡ 5aaac098-461d-486b-913a-244696e84557
-md"""
----
-"""
-
-# ╔═╡ d83aa26e-ec82-4951-b31c-f5dfbb57c140
-md"""
-Utilities that compose JVPs / VJPs using the chain rule are the second ingredient of autodiff.
-In Julia, this is taken care of by various _autodiff backends_, such as `Zygote.jl` or `Enzyme.jl`.
-While some are more widely used than others, there is no overall best choice.
-A comprehensive list of options is available on the [JuliaDiff](https://juliadiff.org/) website.
-From now on, we will use `Zygote.jl`, which is a reverse mode backend.
-"""
-
-# ╔═╡ 36766a3d-0602-4919-91ca-53fdb158da1d
-md"""
-## Example
-"""
-
-# ╔═╡ 00351a96-e83e-4f5c-bff9-8fcff24cbaa0
-md"""
-!!! warning "TODO"
-	Compose $f$ with a sum
-"""
-
-# ╔═╡ 0ecc5901-cfa0-4add-aea5-a39cd7341d2b
-md"""
-# 5. `ChainRules.jl`
-"""
-
-# ╔═╡ 098c0148-5130-490c-a25b-3d0dfa0b20b9
-md"""
-## Theory
-"""
-
-# ╔═╡ 8752f8f9-55f5-42bb-b3da-45e4a2d41779
-md"""
-The `ChainRules.jl` package is an attempt to provide unified JVP / VJP rules (also called "pushforwards" and "pullbacks") to many different autodiff backends.
-It contains rules for most of the Julia standard library, but also allows users to define custom rules.
-We strongly encourage you to read the [first page of the `ChainRules.jl` documentation](https://juliadiff.org/ChainRulesCore.jl/stable/) before going further.
-"""
-
-# ╔═╡ ac45151f-f1e2-4db3-bac8-5a9d843f4c17
-md"""
-Custom rules are very useful because autodiff backends are not all-powerful.
-Many of them impose limitations on the language constructs they accept.
-For instance, functions that mutate one of their arguments (typically indicated with a `!`) will give rise to errors with most reverse mode backends.
-Another example is functions that call other programming languages behind the scenes (like C++ or Python).
-"""
-
-# ╔═╡ 96bcf799-67c2-41c5-8634-b8c4e861bfca
-md"""
-## Example
-"""
-
-# ╔═╡ b3fd3a8b-22fd-40a0-9af3-0c66a7ec05a3
-md"""
-Suppose we implement our linear regression function $f$ by pre-allocating the output vector.
-This is a common pattern in Julia because it improves performance.
-"""
-
-# ╔═╡ 40e13883-dd9a-43b9-9ef7-1069ef036846
-let
-	n, m = 3, 5
-	M = rand(m, n)
-	y = rand(m)
-	x = rand(n)
-	h = 0.001 .* rand(n)
-	diff1 = f(x + h; M=M, y=y) .- f(x; M=M, y=y)
-	diff2 = Jf(x; M=M, y=y) * h
-	diff1, diff2
-end
-
-# ╔═╡ ea16d4c6-d6e4-46fa-a721-fa5a0f2ff021
-function f!(e, x; M, y)
-	mul!(e, M, x)  # in-place matrix multiplication: now e = Mx
-	e .-= y  # now e = Mx - y
-	e .^= 2  # now e = (Mx - y) .^ 2
-	return e
-end
-
-# ╔═╡ a748644e-6e42-403f-8636-f0b75ea67b10
-md"""
-We can check that we obtain the same results.
-"""
-
-# ╔═╡ 1c74a79d-7780-431e-8c33-cbd7f12a1cc4
-let
-	n, m = 3, 5
-	M = rand(m, n)
-	y = rand(m)
-	x = rand(n)
-	e = rand(m)
-	err1 = f!(e, x; M=M, y=y)
-	err2 = f(x; M=M, y=y)
-	err1, err2
-end
-
-# ╔═╡ a47f12aa-5baa-440a-b977-ae5138f3fb50
-md"""
-And as we can see, this version is a bit faster than the one you coded, mostly because of better memory management.
-"""
-
-# ╔═╡ 53c4fb54-ab79-4924-9d65-fc5e5b5b50a1
-let
-	n, m = 3, 5
-	M = rand(m, n)
-	y = rand(m)
-	x = rand(n)
-	e = rand(m)
-	benchmark1 = @benchmark f!($e, $x; M=$M, y=$y)
-	benchmark2 = @benchmark f($x; M=$M, y=$y)
-	benchmark1, benchmark2
-end
-
-# ╔═╡ 80fb6b17-69f1-40fc-96d4-fa3f0a05f349
-md"""
-But it also makes our reverse mode autodiff backend (`Zygote.jl`) very angry.
-"""
-
-# ╔═╡ a80b3a0f-53d1-473e-9bea-2494a85ac511
-let
-	n, m = 3, 5
-	M = rand(m, n)
-	y = rand(m)
-	x = rand(n)
-	e = rand(m)
-	Zygote.jacobian(x -> f!(e, x; M=M, y=y), x)[1]
-end
-
-# ╔═╡ bcda87d0-1c35-4c47-bd4b-c0a96bc8a18d
-md"""
-Fortunately, we have done all the grunt work and can easily define a custom reverse rule to overcome this issue.
-This involves implementing a new method of `ChainRulesCore.rrule`, which must return two things:
-
-- the output $f(x)$ of the initial function
-- a `pullback` function that turns $v$ into the VJP $v^\top Jf_x$ 
-
-To improve clarity, we do this on a copy of our mutating $f$.
-"""
-
-# ╔═╡ 1ec1e8a8-4bb3-4aab-9abf-8e754c2eb88f
-function f_diff!(e, x; M, y)
-	mul!(e, M, x)
-	e .-= y
-	e .^= 2
-	return e
-end
-
-# ╔═╡ e6df285d-b8d9-434a-ba83-02fc5e3d83bb
-function ChainRulesCore.rrule(::typeof(f_diff!), e, x; M, y)
-	output = f!(e, x; M=M, y=y)
-	function pullback(v)
-		@info "Calling custom pullback" v
-		vjp_fun = NoTangent()
-		vjp_e = ZeroTangent()
-		vjp_x = f_vjp(v, x; M=M, y=y)
-		return (vjp_fun, vjp_e, vjp_x)
-	end
-	return output, pullback
-end
-
-# ╔═╡ e8b97c6f-9228-4fa4-99aa-9c81fb582693
-md"""
-Here are a few explanations regarding the syntax.
-
-What does `fun::typeof(f_diff!)` mean?
-It tells `ChainRulesCore.jl` that the reverse rule we define applies to one specific function.
-In Julia, each function has its own unique type, which allows us to dispatch on it.
-
-Why does `pullback` return a $3$-tuple `(vjp_fun, vjp_e, vjp_x)`?
-Because `ChainRulesCore.jl` wants us to define a VJP for every positional argument of the function `fun`... and also for the function `fun` itself.
-Indeed, the function may have internal parameters that we want to take into account when differentiating.
-It is not the case here, so we specify that there is no tangent (VJP) with respect to `fun` by returning a dummy `NoTangent()` struct.
-Similarly, we return a `ZeroTangent()` for `e`, since it is completely overwritten by our function: its initial value does not affect the final result.
-On the other hand, the VJP with respect to `x` does exist, so we return an nontrivial value for this one.
-"""
-
-# ╔═╡ 98a59f9c-af6c-460a-bf70-f4e28da1aa80
-let
-	n, m = 3, 5
-	M = rand(m, n)
-	y = rand(m)
-	x = rand(n)
-	e = rand(m)
-	jac0 = Jf(x; M=M, y=y)
-	jac1 = Zygote.jacobian(x -> f(x; M=M, y=y), x)[1]
-	jac2 = Zygote.jacobian(x -> f_diff!(e, x; M=M, y=y), x)[1]
-	jac0, jac1, jac2
-end
-
-# ╔═╡ 448995fc-25b0-4879-910e-6406f359d577
-md"""
-!!! danger "Task"
-	How many times is the pullback called? Is it expected?
-"""
-
-# ╔═╡ 4eda48ec-fe88-41dc-88b7-b1ad547d698f
-md"""
-Once for each output dimension, that is, for each row of the Jacobian.
-"""
-
-# ╔═╡ 15b3aa76-1ef0-4089-a189-ce11573f5812
-md"""
----
-"""
-
-# ╔═╡ c9b71969-ae5a-4427-81e9-fc2423ca18ce
-function f(x; M, y)
-	err = (M * x .- y) .^ 2
-	return err
-end
-
-# ╔═╡ 883803e0-2fa1-4922-be37-f325af4f5c41
-function f(x; M, y)
-	err = (M * x .- y) .^ 2
-	return err
-end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+ProgressLogging = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 BenchmarkTools = "~1.3.1"
 ChainRulesCore = "~1.15.5"
+ForwardDiff = "~0.10.32"
 Plots = "~1.33.0"
 PlutoTeachingTools = "~0.2.3"
 PlutoUI = "~0.7.40"
+ProgressLogging = "~0.1.4"
 Zygote = "~0.6.48"
 """
 
@@ -895,7 +1059,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.1"
 manifest_format = "2.0"
-project_hash = "539f08d0d30cffad912aeb4f4658268ce1fe9ba8"
+project_hash = "0358675a58c2ec698bf356c09ed6e927f5069cd9"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1594,6 +1758,12 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 deps = ["Printf"]
 uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 
+[[deps.ProgressLogging]]
+deps = ["Logging", "SHA", "UUIDs"]
+git-tree-sha1 = "80d919dee55b9c50e8d9e2da5eeafff3fe58b539"
+uuid = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
+version = "0.1.4"
+
 [[deps.Qt5Base_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "xkbcommon_jll"]
 git-tree-sha1 = "c6c0f690d0cc7caddb74cef7aa847b824a16b256"
@@ -2037,6 +2207,14 @@ version = "1.4.1+0"
 # ╠═f447c167-2bcb-4bf3-86cd-0f40f4e54c97
 # ╟─a405d214-4348-4692-999e-0e890bd91e5d
 # ╟─d19834fc-edd1-433b-8bfc-6022fd7e3239
+# ╟─7493915c-53b4-4284-bb7f-33cac680f759
+# ╟─1cfba628-aa7b-4851-89f1-84b1a45802b3
+# ╟─3829f016-a7cd-4ce6-b2d4-1c84da8fdb97
+# ╟─755ff203-43d8-488f-a075-14a858b0a096
+# ╟─fd6dd009-2a52-46d1-b1a8-5f094e8c1d98
+# ╟─4d9d2f52-c406-4a7c-8b0e-ba5af7ebc3d8
+# ╟─de4df88a-2a55-4a02-aeaf-f02242b6c52f
+# ╟─e22cec4a-03d3-4821-945b-9283e16207a8
 # ╟─19fd4ce6-fc2e-4047-b265-7b54e9bbdad4
 # ╟─38a6618a-00e9-4565-aaef-4893afcb3181
 # ╟─9ba8d153-e2c9-4387-a487-fb5a25f5808b
@@ -2051,115 +2229,123 @@ version = "1.4.1+0"
 # ╠═43cfe774-4ed1-4f4f-985a-c261c4d569bf
 # ╟─88103471-6f2c-4604-83cc-0d76645776d7
 # ╠═5d9c5359-d0a9-4a0a-853e-3fd0028f23df
-# ╠═6bacff8b-ac8c-46b0-adeb-7d8b1aab85f2
+# ╟─6bacff8b-ac8c-46b0-adeb-7d8b1aab85f2
 # ╠═86399001-e7c4-4733-b476-503650c11e0c
 # ╟─0817247f-f9ae-48cc-9966-dd451c136d43
-# ╠═27ba5955-8643-403d-b962-288cd55e7499
-# ╠═6d0c4884-fe93-45bf-8bb2-d25da75f7a15
-# ╠═0b8f20c7-094a-48d5-8af6-f277c803a5a9
-# ╠═81c449a5-dbcc-47fe-8840-937bd7ed9d71
-# ╠═bb5700af-3ab8-4a72-b476-f799474b96ee
-# ╠═84884d6b-e18a-4a05-9542-ff67bcc90e6d
-# ╠═1fdc3983-c578-4d2b-ab7a-c928c9414c88
-# ╠═876b2468-4c3f-4c04-8281-1008a3ed6e25
-# ╠═5bfde36e-f893-47c5-ae03-b23ae4765627
-# ╠═fce9799f-4744-400a-9ec6-5fe68c03557c
-# ╠═69271ff4-1057-4ebd-951f-2440484dd635
-# ╠═fe2610f4-a30e-42a4-8874-a7daf7c0d28e
-# ╠═4c79f32e-e609-485d-9650-6573c83250bf
-# ╠═c4109350-0bb1-40fd-a3a3-be7ab9a1a061
-# ╠═2b9e862b-3519-4b3f-8478-08ec7137cc92
-# ╠═4cd8e1c7-7943-4b6a-a1c1-bbe58b6f4b8b
-# ╠═86d73d53-b868-463c-86cb-e0996c8948ed
-# ╟─1cfba628-aa7b-4851-89f1-84b1a45802b3
-# ╟─3829f016-a7cd-4ce6-b2d4-1c84da8fdb97
-# ╟─755ff203-43d8-488f-a075-14a858b0a096
-# ╟─a7d2e710-cf08-4c77-9042-78ee73b6f698
-# ╟─d50a296b-bbfc-4d88-b8db-582f6176609d
-# ╟─4d9d2f52-c406-4a7c-8b0e-ba5af7ebc3d8
-# ╟─de4df88a-2a55-4a02-aeaf-f02242b6c52f
-# ╟─e22cec4a-03d3-4821-945b-9283e16207a8
-# ╟─f51920d4-652b-467c-8f02-fcd1a0f92c2e
-# ╟─e19f2824-e7a0-4ee0-b37d-350342d3cbdd
-# ╟─82fd26e3-b429-480d-be04-f0ac363c4a31
-# ╟─25b572fa-1f9a-43f9-98a3-181d8dd6e21a
-# ╟─b5241dc4-32c1-4e91-b401-c25f4b7cb3cd
+# ╟─1d1d83b0-8669-452c-90ca-26c1396c822a
+# ╟─2ded206d-e563-4752-a0b1-19402e1e4f52
+# ╠═5b47082b-d080-4243-90a2-5d98b82451d4
+# ╠═89b1f353-523a-4a4c-aee4-9b6e36b944fb
+# ╠═4b1a6ce2-b57d-466a-97cd-35036689fe43
+# ╟─fe1f4c0e-becb-4058-a069-be213622aa92
+# ╟─eb0d58fc-3348-47f9-966c-e7f9f316ddb7
+# ╠═b327c04c-932b-42df-bdf0-31213cdc0adf
+# ╠═11f3c0d4-0609-4446-aa84-4db3d93e93b0
+# ╟─c22a890c-a308-4d1b-be4b-d78f93693a9c
+# ╟─48511240-20d1-41b6-bc7b-a8ecfc3aa06d
+# ╟─ffb8851d-c7e8-47ae-ac9d-96baf0774ca3
+# ╟─a6eb6028-acca-447a-9e55-e60ecd3c6f84
+# ╟─1da14b09-5d62-42cc-b9b4-a5a6ddc34181
+# ╠═f2bedf2b-2dfe-4392-ba2a-add10882af07
+# ╠═f504954b-ac63-4843-8891-b1ca0e5ae58b
+# ╟─a9472534-e32b-4323-8dfc-e00b9f31f8e0
+# ╟─ecfe4d79-b1c6-4a6d-a9d7-a563a26e32cd
+# ╟─83423082-2d3a-42a1-b1db-ed267399cb31
+# ╟─fb416cfd-f9ee-4d7d-9e83-056e81c422e0
+# ╠═d0020df6-62a1-4000-b8cf-ceacb8014a0b
+# ╠═82f79519-3a68-4cd1-a539-85bf78ff2cb0
+# ╠═d4bcd863-a788-4f65-b826-4604d6d19216
+# ╟─d8301150-7b08-45b6-a986-d21574eee91b
+# ╟─1f40437c-0419-4fc0-96ae-a8130efaa36a
+# ╟─8419603a-3c5c-45a0-9a70-4a74347a7ad7
+# ╟─4f9d3c2e-1ec8-4337-b49b-e0dc1d63bc62
+# ╠═7476a638-5eca-47cc-9a01-41f30b9dbf9d
+# ╠═d0d580d4-8e92-4d46-8177-67f52fbb3934
+# ╠═c5784ec1-17cf-4897-8cd3-ff81998b9d9c
+# ╟─387d145f-e77c-4e13-89b7-fc8733215694
+# ╟─3790f106-9895-4425-a16f-5c5e0857e99e
+# ╟─945a16d3-805c-40c9-9166-5120743bd3d7
+# ╠═3716d3cc-8706-41bf-873d-193543cb0514
+# ╠═87c72b22-8c81-4062-8a9c-40902f83a623
+# ╠═1362cd95-6a87-44e3-980d-014496afce85
+# ╟─46075912-60b7-46d2-88c9-a13a8b015e0b
+# ╠═cf13543a-9dd4-40ef-9523-5953e9db2c78
+# ╠═0736648c-a181-4352-8b4e-bacf745fda64
+# ╠═95dd7822-ef43-4629-bb42-ddb15bd1f965
+# ╟─786b7ea2-7827-4cab-abbb-786abe935cc3
+# ╟─4440f39c-51e5-4ffd-8031-96d4a760270c
+# ╟─bfb3280e-638f-4e8f-8e37-d5f8fd75541d
+# ╟─7f6e72fd-aacc-47a8-a496-25794c60343c
+# ╟─55160454-2738-4911-be15-29f484f610db
+# ╠═e90098ec-a9c3-4204-95f7-88adeb74ee50
+# ╠═7b92051d-4015-4e22-b6b9-41462e2cc54f
+# ╟─4eef090f-29b1-44e1-929a-98162719ae93
+# ╠═32f6a219-f69b-4085-ba4b-5c7dc3ca2155
+# ╟─ffffadbb-5fcd-443d-97fb-b6d372029814
+# ╠═19198826-15a0-432d-abe2-ae5ead6869f5
+# ╟─0d762ed4-dfb9-433f-8ded-1ae653ad87c2
+# ╟─ef28a71e-74f4-40dd-a72d-1a51628fd01b
+# ╠═ffd6df27-c0e5-44be-aee9-2c7a9d4fb5c0
+# ╟─f9ca3e33-243c-45c8-b646-587aa7d2d902
+# ╟─c7a0dbbe-89e6-4759-a57f-b367fbeba62e
+# ╠═9a8f7f42-2677-43ff-a280-3b75df6258e1
+# ╠═0cee5c93-266c-4be3-9997-20728cf11921
+# ╟─7b3551c2-22f7-47dd-82dc-b817d7e0f1fb
+# ╟─f6330892-3379-4e0d-a007-c451a465bd06
+# ╟─6d848043-e5bc-4beb-a18a-004d4cac5c23
+# ╟─fc84dce4-779c-4377-af2a-cda7e453f382
 # ╟─d76d5ddc-fe59-47f4-8b56-6f704b486ebc
+# ╟─9ef1e014-5a7d-4b17-98de-0cf51d788bfa
+# ╠═f8cd5dce-6a4c-4c6c-b2d5-7ec56132e95e
+# ╠═c7ee9795-2c7a-480a-9269-440a9227c591
+# ╟─28f31ef9-27ea-4e94-8f03-89b0f6cfa0d1
+# ╟─1676ec54-bd96-4892-aa08-3ae831b537bb
+# ╠═ea16d4c6-d6e4-46fa-a721-fa5a0f2ff021
+# ╠═bd37c58d-8544-40b1-a0b5-ea03ec5692a8
+# ╠═5bbd690b-6a98-4dbf-a8c4-581ac77a4da5
+# ╟─cc224a30-81bf-4a2c-b636-40ff5c941bb6
+# ╟─3d20c24c-469b-4f0d-9936-705e42033ded
+# ╟─bf6c5fc8-8283-46d4-aa67-416d53f7d315
+# ╠═d00bf3fd-9bd8-4b11-b755-a85f0f8644cb
+# ╠═a80b3a0f-53d1-473e-9bea-2494a85ac511
+# ╟─ab398337-adb5-48fa-ae1b-4c9499438097
 # ╟─ae7b2114-de91-4f1b-8765-af5e02cc1b63
 # ╟─e4aedbd4-a609-4eaf-812b-d2f3d6f4df3d
 # ╟─b8974b20-d8dc-4109-a64e-585c7afdb484
 # ╟─f4994938-9270-4058-9c95-01591c87d9c7
-# ╟─f472111d-d7e8-42db-9a08-6a8dd67af09b
 # ╟─bd10d753-eea6-4798-939c-8e5551d40c5c
 # ╟─2f95afd6-1418-44bb-9868-970dbe888500
 # ╟─06e91432-935f-4d7c-899f-d7968a10a78e
-# ╟─8ff815b0-34a4-4e42-8c18-ff45096ed260
-# ╟─28f31ef9-27ea-4e94-8f03-89b0f6cfa0d1
+# ╟─c7efc656-ae9b-4eef-b0cd-3afe3852d396
 # ╟─ca4b41dd-353e-498d-a461-648c582cb999
-# ╠═883803e0-2fa1-4922-be37-f325af4f5c41
 # ╠═c5fc8f3a-ed90-41ec-b4b9-1172a41e3adc
 # ╠═40e13883-dd9a-43b9-9ef7-1069ef036846
-# ╟─4440f39c-51e5-4ffd-8031-96d4a760270c
-# ╟─69a9ec45-d2ff-4362-9c3c-5c004e46ceb3
-# ╟─7c172e2d-5672-405e-8960-f104607a3610
-# ╠═6a9e6056-6e4e-430b-871f-627ac8be8833
-# ╟─8923a5ad-ddba-4ae2-886e-84526a3521ba
-# ╟─e1b9f114-58e7-4546-a3c0-5e07fb1665e7
-# ╟─ba07ccda-ae66-4fce-837e-00b2b039b404
-# ╟─663e3899-e7b3-4420-8d66-7e88c1b79185
-# ╟─5ae3bf90-6393-45b9-840e-feeb2e727508
-# ╟─37cab21f-aa70-48c2-be62-55e285481525
+# ╟─7c7bdbd9-edd5-4142-a765-4c498761f7e7
+# ╟─8569cd7b-890f-4b04-a6d5-c92a70a226ab
+# ╠═cf250e37-ed37-47cd-b689-8e2596f9fdc5
+# ╟─8f46db4a-cc94-4497-aad8-0fc4b0cfa1e3
+# ╠═dccf9f6d-82a6-423c-bbe5-22c5a8c2f5e4
+# ╟─bbe25d4e-952b-4ed5-b20e-24b3dcd30495
+# ╠═77eac64f-eac5-4d12-8acf-5b5070e60858
+# ╟─aa4194d6-2f8c-4367-850e-22ebcf1b72e4
 # ╟─f66a0ea7-70fd-4340-8b02-6fbaab847dfc
 # ╟─8cca11ed-a61c-4cc8-af4b-350137073756
 # ╟─7144c6c8-79dd-437d-a201-bac143f6a261
-# ╟─07cd4e47-5fac-49c4-80a5-c5bdf21bd484
 # ╟─45765f4a-536d-4e9d-be9d-144b7ccd4dcf
 # ╟─df89f509-cfd7-46b3-9dd1-cdcfcea68053
-# ╠═37dbaa56-7b8f-4c2a-ad8c-6c3ba6060cfa
 # ╠═0b51e23e-a015-4e86-ba48-6475a9ee9779
-# ╟─79880fd1-0fc1-4f14-9d1f-664afcc939c8
 # ╟─14dcad57-23ae-4905-aac4-d29066f2a085
-# ╠═0ea654fe-d3d0-4f40-b3dc-806b1982c040
 # ╠═06a59777-b6ec-4808-9105-7a2542a629ea
-# ╠═90c6515b-b0c0-4f9b-bd4e-ae29c0ecab23
 # ╠═9222d644-5d20-474a-83db-4b2e3bed45e2
 # ╟─c511e1c4-0306-46c7-800f-8257266c0091
-# ╟─ba206cb6-d2ca-4a4a-9c20-d66b015226dd
-# ╠═0cc728dd-40d2-4713-b378-e67b3ed1c44f
 # ╠═c79e7017-4acc-4562-817a-50245ce654dc
+# ╟─69a9ec45-d2ff-4362-9c3c-5c004e46ceb3
+# ╟─cc167cfd-b776-4280-a308-d5908ceaec4b
+# ╟─8923a5ad-ddba-4ae2-886e-84526a3521ba
+# ╟─e1b9f114-58e7-4546-a3c0-5e07fb1665e7
+# ╟─ba07ccda-ae66-4fce-837e-00b2b039b404
 # ╟─d0ae8c14-b341-4220-8a1c-79fed9758f64
-# ╟─268ac292-c12f-4ce1-85b1-699c9f1c74f0
-# ╟─f1170858-9464-4cc1-9772-fe2b49ff7893
-# ╠═3e6c947f-6e01-4364-a608-7a59f3d9f5bb
 # ╟─f843b77d-8160-4d87-8641-eeb04549af8f
 # ╟─9b34a8f9-6afa-4712-bde8-a94f4d5e7a33
-# ╟─7f4610e7-35f5-4287-b5eb-c8b347b04337
-# ╟─a8c24bdc-7d8b-43c3-92a3-93614e3bf3c5
-# ╟─5aaac098-461d-486b-913a-244696e84557
-# ╟─d83aa26e-ec82-4951-b31c-f5dfbb57c140
-# ╟─36766a3d-0602-4919-91ca-53fdb158da1d
-# ╟─00351a96-e83e-4f5c-bff9-8fcff24cbaa0
-# ╟─0ecc5901-cfa0-4add-aea5-a39cd7341d2b
-# ╟─098c0148-5130-490c-a25b-3d0dfa0b20b9
-# ╟─8752f8f9-55f5-42bb-b3da-45e4a2d41779
-# ╟─ac45151f-f1e2-4db3-bac8-5a9d843f4c17
-# ╟─96bcf799-67c2-41c5-8634-b8c4e861bfca
-# ╟─b3fd3a8b-22fd-40a0-9af3-0c66a7ec05a3
-# ╠═c9b71969-ae5a-4427-81e9-fc2423ca18ce
-# ╠═ea16d4c6-d6e4-46fa-a721-fa5a0f2ff021
-# ╟─a748644e-6e42-403f-8636-f0b75ea67b10
-# ╠═1c74a79d-7780-431e-8c33-cbd7f12a1cc4
-# ╟─a47f12aa-5baa-440a-b977-ae5138f3fb50
-# ╠═53c4fb54-ab79-4924-9d65-fc5e5b5b50a1
-# ╟─80fb6b17-69f1-40fc-96d4-fa3f0a05f349
-# ╠═a80b3a0f-53d1-473e-9bea-2494a85ac511
-# ╟─bcda87d0-1c35-4c47-bd4b-c0a96bc8a18d
-# ╠═1ec1e8a8-4bb3-4aab-9abf-8e754c2eb88f
-# ╠═e6df285d-b8d9-434a-ba83-02fc5e3d83bb
-# ╟─e8b97c6f-9228-4fa4-99aa-9c81fb582693
-# ╠═98a59f9c-af6c-460a-bf70-f4e28da1aa80
-# ╟─448995fc-25b0-4879-910e-6406f359d577
-# ╟─4eda48ec-fe88-41dc-88b7-b1ad547d698f
-# ╟─15b3aa76-1ef0-4089-a189-ce11573f5812
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
