@@ -25,9 +25,9 @@ end
 md"""
 Homework 2 of the MIT Course [_Julia: solving real-world problems with computation_](https://github.com/mitmath/JuliaComputation)
 
-Release date: Friday, Sep 24, 2022 (version 1)
+Release date: Friday, Sep 23, 2022 (version 1)
 
-**Due date: Friday, Oct 1, 2022 at 11:59pm EST**
+**Due date: Friday, Sep 30, 2022 at 11:59pm EST**
 
 Submission by: Jazzy Doe (jazz@mit.edu)
 """
@@ -228,7 +228,11 @@ Unlike `@btime`, which prints a bunch of information but returns the result of t
 
 # ╔═╡ 5b47082b-d080-4243-90a2-5d98b82451d4
 function compare_add_mul(n)
-	# write your code here
+	A = rand(n, n)
+	B = rand(n, n)
+	time_add = @belapsed $A + $B
+	time_mul = @belapsed $A * $B
+	return time_add, time_mul
 end
 
 # ╔═╡ 89b1f353-523a-4a4c-aee4-9b6e36b944fb
@@ -253,8 +257,27 @@ The function `plot` will let you create an empty plot with the properties you ne
 The function `scatter!` will allow you to modify it by adding series of dots.
 ")
 
+# ╔═╡ b327c04c-932b-42df-bdf0-31213cdc0adf
+begin
+	n_values = [3, 10, 30, 100, 300]
+	times_add = Float64[]
+	times_mul = Float64[]
+	@progress for n in n_values
+		ta, tm = compare_add_mul(n)
+		push!(times_add, ta / n^2)
+		push!(times_mul, tm / n^3)
+	end
+end
+
 # ╔═╡ 11f3c0d4-0609-4446-aa84-4db3d93e93b0
-# write your code here
+begin
+	plot(
+		xlabel="matrix size", ylabel="normalized operation cost (s)",
+		xscale=:log10, yscale=:log10,
+	)
+	scatter!(n_values, times_add, label="matrix addition")
+	scatter!(n_values, times_mul, label="matrix multiplication")
+end
 
 # ╔═╡ c22a890c-a308-4d1b-be4b-d78f93693a9c
 md"""
@@ -284,6 +307,9 @@ md"""
 	Try to explain the difference in speed and memory use between the following code snippets.
 """
 
+# ╔═╡ 1da14b09-5d62-42cc-b9b4-a5a6ddc34181
+hint(md"`x += y` is syntactically equivalent to `x = x + y`.")
+
 # ╔═╡ f2bedf2b-2dfe-4392-ba2a-add10882af07
 let
 	x = rand(100, 100)
@@ -298,12 +324,10 @@ let
 	@btime $x .+= 2 .* $y
 end;
 
-# ╔═╡ 1da14b09-5d62-42cc-b9b4-a5a6ddc34181
-hint(md"`x += y` is syntactically equivalent to `x = x + y`.")
-
 # ╔═╡ a9472534-e32b-4323-8dfc-e00b9f31f8e0
 md"""
-> Write your answer here
+The first snippet allocates a new vector for `2y`, another one for `x + 2y`, and then points `x` to that new vector.
+The second snipped uses `x` directly to compute and store `x + 2y` componentwise.
 """
 
 # ╔═╡ ecfe4d79-b1c6-4a6d-a9d7-a563a26e32cd
@@ -322,7 +346,20 @@ md"""
 hint(md"Take a look at the documentation for the three-argument function `mul!`.")
 
 # ╔═╡ d0020df6-62a1-4000-b8cf-ceacb8014a0b
-# write your code here
+function compare_mul!_mul(n)
+	A = rand(n, n)
+	B = rand(n, n)
+	C = rand(n, n)
+	time_mul! = @belapsed mul!($C, $A, $B)
+	time_mul = @belapsed $A * $B
+	return time_mul!, time_mul
+end
+
+# ╔═╡ 82f79519-3a68-4cd1-a539-85bf78ff2cb0
+compare_mul!_mul(10)
+
+# ╔═╡ d4bcd863-a788-4f65-b826-4604d6d19216
+compare_mul!_mul(100)
 
 # ╔═╡ d8301150-7b08-45b6-a986-d21574eee91b
 md"""
@@ -358,7 +395,7 @@ Here is an example showing how to use them for Jacobian computation.
 
 # ╔═╡ 7476a638-5eca-47cc-9a01-41f30b9dbf9d
 function powersum(x; p=5)
-	return sum(x .^ i for i in 0:p)
+	return sum(x.^i for i in 0:p)
 end
 
 # ╔═╡ d0d580d4-8e92-4d46-8177-67f52fbb3934
@@ -395,8 +432,8 @@ md"""
 """
 
 # ╔═╡ 3716d3cc-8706-41bf-873d-193543cb0514
-function powersum_breakforwarddiff
-	# write your code here
+function powersum_breakforwarddiff(x::Vector{Float64}; p=5)
+	return sum(x.^i for i in 0:p)
 end
 
 # ╔═╡ 87c72b22-8c81-4062-8a9c-40902f83a623
@@ -419,8 +456,12 @@ md"""
 """
 
 # ╔═╡ cf13543a-9dd4-40ef-9523-5953e9db2c78
-function powersum_breakzygote
-	# write your code here
+function powersum_breakzygote(x; p=5)
+	y = ones(eltype(x), length(x))
+	for i in 1:p
+		y .+= x.^i
+	end
+	return y
 end
 
 # ╔═╡ 0736648c-a181-4352-8b4e-bacf745fda64
@@ -607,7 +648,8 @@ md"""
 
 # ╔═╡ f8cd5dce-6a4c-4c6c-b2d5-7ec56132e95e
 function f(x; M, y)
-	# write your code here
+	e = (M * x - y) .^ 2
+	return e
 end
 
 # ╔═╡ c7ee9795-2c7a-480a-9269-440a9227c591
@@ -631,7 +673,10 @@ hint(md"Modify `e` step-by-step: start with $Mx$, then $Mx-y$, and finally $(Mx-
 
 # ╔═╡ ea16d4c6-d6e4-46fa-a721-fa5a0f2ff021
 function f!(e, x; M, y)
-	# write your code here
+	mul!(e, M, x)  # in-place matrix multiplication: now e = Mx
+	e .-= y  # now e = Mx - y
+	e .^= 2  # now e = (Mx - y) .^ 2
+	return e
 end
 
 # ╔═╡ bd37c58d-8544-40b1-a0b5-ea03ec5692a8
@@ -689,7 +734,6 @@ let
 	y = rand(m)
 	x = rand(n)
 	e = rand(m)
-	# this should throw "Mutating arrays is not supported..."
 	Zygote.jacobian(x -> f!(e, x; M=M, y=y), x)[1]
 end
 
@@ -713,7 +757,27 @@ Then identify three parts in the resulting expression: $f(x)$, a linear function
 
 # ╔═╡ b8974b20-d8dc-4109-a64e-585c7afdb484
 md"""
-> Write your answer here
+Let us look at what happens when we add a small perturbation $h$ to $x$:
+
+$$\begin{aligned}
+f(x + h)
+& = [M(x + h) - y] \odot [M(x + h) - y] \\
+& = [(Mx - y) + Mh] \odot [(Mx - y) + Mh] \\
+& = \underbrace{(Mx - y) \odot (Mx - y)}_{\text{constant in $h$}} + \underbrace{2 (Mx - y) \odot (Mh)}_{\text{linear in $h$}} + \underbrace{(Mh) \odot (Mh)}_{\text{quadratic in $h$}}
+\end{aligned}$$
+"""
+
+# ╔═╡ f4994938-9270-4058-9c95-01591c87d9c7
+md"""
+Now we pause for a minute and examine the three terms we obtained.
+
+1. The first one is exactly the value of $f$ at $x$
+2. The second one is a linear function of $h$
+3. The third one is a quadratic function of $h$, which is negligible compared to the linear term (in the "small $h$" regime)
+
+This means we can identify the derivative:
+
+$$f'(x): h \in \mathbb{R}^n \longmapsto 2 (Mx - y) \odot (M h) \in \mathbb{R}^m$$
 """
 
 # ╔═╡ bd10d753-eea6-4798-939c-8e5551d40c5c
@@ -728,7 +792,14 @@ Using this with $a = 2(Mx - y)$ and $b = Mh$ should help you recognize the Jacob
 
 # ╔═╡ 06e91432-935f-4d7c-899f-d7968a10a78e
 md"""
-> Write your answer here
+If $a \in \mathbb{R}^m$ is a vector, we denote by $D(a)$ the diagonal matrix with diagonal coefficients $a_1, ..., a_m$.
+Using the hint above, we recognize that
+
+$$f'(x)(h) = 2 D(Mx - y) (Mh) = \left[2 D(Mx-y)M\right] h$$
+
+This yields the following Jacobian formula:
+
+$$J_f(x) = 2D(Mx-y)M \in \mathbb{R}^{m \times n}$$
 """
 
 # ╔═╡ c7efc656-ae9b-4eef-b0cd-3afe3852d396
@@ -743,7 +814,7 @@ hint(md"You may want to use the `Diagonal` constructor from [`LinearAlgebra`](ht
 
 # ╔═╡ c5fc8f3a-ed90-41ec-b4b9-1172a41e3adc
 function Jf(x; M, y)
-	# write your code here
+	return 2 * Diagonal(M * x .- y) * M
 end
 
 # ╔═╡ 40e13883-dd9a-43b9-9ef7-1069ef036846
@@ -777,9 +848,13 @@ hint(md"Beware: you will need to give a VJP with respect to `rrule` arguments `f
 
 # ╔═╡ dccf9f6d-82a6-423c-bbe5-22c5a8c2f5e4
 function ChainRulesCore.rrule(::typeof(f2!), e, x; M, y)
-	# write some code here
+	f2!(e, x; M=M, y=y)
+	J = Jf(x; M=M, y=y)
 	function vector_jacobian_product(v)
-		# and some code there
+		vjp_fun = NoTangent()
+		vjp_e = ZeroTangent()
+		vjp_x = J' * v
+		return (vjp_fun, vjp_e, vjp_x)
 	end
 	return e, vector_jacobian_product
 end
@@ -838,7 +913,11 @@ hint(md"Try to think in terms of computer program instead of mathematics. Descri
 
 # ╔═╡ 7144c6c8-79dd-437d-a201-bac143f6a261
 md"""
-> Write your answer here
+A VJP can be computed as follows:
+
+$$v^\top J_f(x) = v^\top 2D(Mx-y)M \quad \implies \begin{cases} a = v^\top 2D(Mx - y) \\ b = a M \end{cases}$$
+
+This means we only need to store a vector and not a full matrix.
 """
 
 # ╔═╡ 45765f4a-536d-4e9d-be9d-144b7ccd4dcf
@@ -855,7 +934,7 @@ Remember that you must return a column vector, so technically $J_f(x)^\top v$ in
 
 # ╔═╡ 0b51e23e-a015-4e86-ba48-6475a9ee9779
 function f_vjp(v, x; M, y)
-	# write your code here
+	return (v .* 2 .* (M * x .- y))' * M
 end
 
 # ╔═╡ 14dcad57-23ae-4905-aac4-d29066f2a085
@@ -871,7 +950,16 @@ function f_vjp_naive(v, x; M, y)
 end
 
 # ╔═╡ 9222d644-5d20-474a-83db-4b2e3bed45e2
-# write your code here
+let
+	n, m = 3, 5
+	M = rand(m, n)
+	y = rand(m)
+	x = rand(n)
+	v = rand(m)
+	vjp1 = f_vjp(v, x; M=M, y=y)
+	vjp2 = f_vjp_naive(v, x; M=M, y=y)
+	vjp1, vjp2
+end
 
 # ╔═╡ c511e1c4-0306-46c7-800f-8257266c0091
 md"""
@@ -880,7 +968,15 @@ md"""
 """
 
 # ╔═╡ c79e7017-4acc-4562-817a-50245ce654dc
-# write your code here
+let
+	n, m = 3, 5
+	M = rand(m, n)
+	y = rand(m)
+	x = rand(n)
+	v = rand(m)
+	@btime f_vjp($v, $x; M=$M, y=$y)
+	@btime f_vjp_naive($v, $x; M=$M, y=$y)
+end;
 
 # ╔═╡ 69a9ec45-d2ff-4362-9c3c-5c004e46ceb3
 md"""
@@ -910,7 +1006,7 @@ md"""
 
 # ╔═╡ ba07ccda-ae66-4fce-837e-00b2b039b404
 md"""
-> Write your answer here
+If we cycle through the basis vectors $v = (0, ..., 0, 1, 0, ..., 0) \in \mathbb{R}^m$ of the output space, each product $v^\top J_f(x)$ gives us one row of the Jacobian matrix. Therefore, we need $m$ VJPs in total.
 """
 
 # ╔═╡ d0ae8c14-b341-4220-8a1c-79fed9758f64
@@ -2121,7 +2217,7 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═ddbba011-f413-4804-b29b-fdc4efe2b3b3
+# ╟─ddbba011-f413-4804-b29b-fdc4efe2b3b3
 # ╠═9a1453a3-bfad-4212-ac19-a4b6c7df5b16
 # ╠═ddbf8ae6-39b6-11ed-226e-0d38991ed784
 # ╠═f447c167-2bcb-4bf3-86cd-0f40f4e54c97
@@ -2159,19 +2255,22 @@ version = "1.4.1+0"
 # ╠═4b1a6ce2-b57d-466a-97cd-35036689fe43
 # ╟─fe1f4c0e-becb-4058-a069-be213622aa92
 # ╟─eb0d58fc-3348-47f9-966c-e7f9f316ddb7
+# ╠═b327c04c-932b-42df-bdf0-31213cdc0adf
 # ╠═11f3c0d4-0609-4446-aa84-4db3d93e93b0
 # ╟─c22a890c-a308-4d1b-be4b-d78f93693a9c
 # ╟─48511240-20d1-41b6-bc7b-a8ecfc3aa06d
 # ╟─ffb8851d-c7e8-47ae-ac9d-96baf0774ca3
 # ╟─a6eb6028-acca-447a-9e55-e60ecd3c6f84
+# ╟─1da14b09-5d62-42cc-b9b4-a5a6ddc34181
 # ╠═f2bedf2b-2dfe-4392-ba2a-add10882af07
 # ╠═f504954b-ac63-4843-8891-b1ca0e5ae58b
-# ╟─1da14b09-5d62-42cc-b9b4-a5a6ddc34181
-# ╠═a9472534-e32b-4323-8dfc-e00b9f31f8e0
+# ╟─a9472534-e32b-4323-8dfc-e00b9f31f8e0
 # ╟─ecfe4d79-b1c6-4a6d-a9d7-a563a26e32cd
 # ╟─83423082-2d3a-42a1-b1db-ed267399cb31
 # ╟─fb416cfd-f9ee-4d7d-9e83-056e81c422e0
 # ╠═d0020df6-62a1-4000-b8cf-ceacb8014a0b
+# ╠═82f79519-3a68-4cd1-a539-85bf78ff2cb0
+# ╠═d4bcd863-a788-4f65-b826-4604d6d19216
 # ╟─d8301150-7b08-45b6-a986-d21574eee91b
 # ╟─1f40437c-0419-4fc0-96ae-a8130efaa36a
 # ╟─8419603a-3c5c-45a0-9a70-4a74347a7ad7
@@ -2228,10 +2327,11 @@ version = "1.4.1+0"
 # ╟─ab398337-adb5-48fa-ae1b-4c9499438097
 # ╟─ae7b2114-de91-4f1b-8765-af5e02cc1b63
 # ╟─e4aedbd4-a609-4eaf-812b-d2f3d6f4df3d
-# ╠═b8974b20-d8dc-4109-a64e-585c7afdb484
+# ╟─b8974b20-d8dc-4109-a64e-585c7afdb484
+# ╟─f4994938-9270-4058-9c95-01591c87d9c7
 # ╟─bd10d753-eea6-4798-939c-8e5551d40c5c
 # ╟─2f95afd6-1418-44bb-9868-970dbe888500
-# ╠═06e91432-935f-4d7c-899f-d7968a10a78e
+# ╟─06e91432-935f-4d7c-899f-d7968a10a78e
 # ╟─c7efc656-ae9b-4eef-b0cd-3afe3852d396
 # ╟─ca4b41dd-353e-498d-a461-648c582cb999
 # ╠═c5fc8f3a-ed90-41ec-b4b9-1172a41e3adc
@@ -2246,7 +2346,7 @@ version = "1.4.1+0"
 # ╟─aa4194d6-2f8c-4367-850e-22ebcf1b72e4
 # ╟─f66a0ea7-70fd-4340-8b02-6fbaab847dfc
 # ╟─8cca11ed-a61c-4cc8-af4b-350137073756
-# ╠═7144c6c8-79dd-437d-a201-bac143f6a261
+# ╟─7144c6c8-79dd-437d-a201-bac143f6a261
 # ╟─45765f4a-536d-4e9d-be9d-144b7ccd4dcf
 # ╟─df89f509-cfd7-46b3-9dd1-cdcfcea68053
 # ╠═0b51e23e-a015-4e86-ba48-6475a9ee9779
@@ -2259,7 +2359,7 @@ version = "1.4.1+0"
 # ╟─cc167cfd-b776-4280-a308-d5908ceaec4b
 # ╟─8923a5ad-ddba-4ae2-886e-84526a3521ba
 # ╟─e1b9f114-58e7-4546-a3c0-5e07fb1665e7
-# ╠═ba07ccda-ae66-4fce-837e-00b2b039b404
+# ╟─ba07ccda-ae66-4fce-837e-00b2b039b404
 # ╟─d0ae8c14-b341-4220-8a1c-79fed9758f64
 # ╟─f843b77d-8160-4d87-8641-eeb04549af8f
 # ╟─9b34a8f9-6afa-4712-bde8-a94f4d5e7a33
