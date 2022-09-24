@@ -260,7 +260,6 @@ begin
 	plot(
 		xlabel="matrix size", ylabel="normalized operation cost (s)",
 		xscale=:log10, yscale=:log10,
-		legend=:best
 	)
 	scatter!(n_values, times_add, label="matrix addition")
 	scatter!(n_values, times_mul, label="matrix multiplication")
@@ -301,20 +300,20 @@ hint(md"`x += y` is syntactically equivalent to `x = x + y`.")
 let
 	x = rand(100, 100)
 	y = rand(100, 100)
-	@btime $x += $y
+	@btime $x += 2 * $y
 end;
 
 # ╔═╡ f504954b-ac63-4843-8891-b1ca0e5ae58b
 let
 	x = rand(100, 100)
 	y = rand(100, 100)
-	@btime $x .= $y
+	@btime $x .+= 2 .* $y
 end;
 
 # ╔═╡ a9472534-e32b-4323-8dfc-e00b9f31f8e0
 md"""
-The first snippet allocates a new vector for the result of `x + y`, and then points `x` to that new vector.
-The second snipped uses `x` directly to store the result of `x + y`.
+The first snippet allocates a new vector for `2y`, another one for `x + 2y`, and then points `x` to that new vector.
+The second snipped uses `x` directly to compute and store `x + 2y` componentwise.
 """
 
 # ╔═╡ ecfe4d79-b1c6-4a6d-a9d7-a563a26e32cd
@@ -415,7 +414,7 @@ Here are the main ones you should be aware of:
 # ╔═╡ 945a16d3-805c-40c9-9166-5120743bd3d7
 md"""
 !!! danger "Task"
-	Write a function that does the same computation as `mypowersum`, but for which `ForwardDiff.jl` will throw an error.
+	Write a function that does the same computation as `powersum`, but for which `ForwardDiff.jl` will throw an error.
 """
 
 # ╔═╡ 3716d3cc-8706-41bf-873d-193543cb0514
@@ -532,7 +531,7 @@ end
 # ╔═╡ ffffadbb-5fcd-443d-97fb-b6d372029814
 md"""
 Custom reverse rules are created by writing a new method for the `ChainRulesCore.rrule` function.
-For technical reasons, the reverse rule does not work with the Jacobian directly, but instead computes _Jacobian-vector products_ (VJPs) of the form $v^\top J_f(x)$ (see section 4).
+For technical reasons, the reverse rule does not work with the Jacobian directly, but instead computes _vector-Jacobian products_ (VJPs) of the form $v^\top J_f(x)$ (see section 4).
 """
 
 # ╔═╡ 19198826-15a0-432d-abe2-ae5ead6869f5
@@ -621,7 +620,8 @@ md"""
 md"""
 
 One way to measure the quality of the approximation for a given $x$ is to compute the squared error on all components of $y$.
-Let us denote by $\odot$ the componentwise product between vectors: we define the function
+Let us denote by $\odot$ the componentwise product between vectors (which is the same as `.*` in Julia).
+We define the function
 
 $$f: x \in \mathbb{R}^n \longmapsto (Mx - y) \odot (Mx - y) = \left((Mx - y)_i^2 \right)_{i \in [m]} \in \mathbb{R}^m$$
 """
@@ -629,7 +629,7 @@ $$f: x \in \mathbb{R}^n \longmapsto (Mx - y) \odot (Mx - y) = \left((Mx - y)_i^2
 # ╔═╡ 9ef1e014-5a7d-4b17-98de-0cf51d788bfa
 md"""
 !!! danger "Task"
-	Implement the function $f$ in a naive way.
+	Implement the function $f$ in a way that does not mutate arrays.
 """
 
 # ╔═╡ f8cd5dce-6a4c-4c6c-b2d5-7ec56132e95e
@@ -737,8 +737,8 @@ md"""
 # ╔═╡ e4aedbd4-a609-4eaf-812b-d2f3d6f4df3d
 hint(md"
 Write $f(x+h)$ as a componentwise product, and then expand it as you would do with a regular product.
-You are allowed to do that since the componentwise product is bilinear..
-Keep in mind that you need to group the terms according to their order in $h$: zero-th order, first order or second order.
+You are allowed to do that since the componentwise product is bilinear.
+Then identify three parts in the resulting expression: $f(x)$, a linear function of $h$, and a term that is of order $\lVert h \rVert^2$ (in other words, negligible).
 ")
 
 # ╔═╡ b8974b20-d8dc-4109-a64e-585c7afdb484
@@ -796,7 +796,7 @@ md"""
 """
 
 # ╔═╡ ca4b41dd-353e-498d-a461-648c582cb999
-hint(md"You may want to use the `Diagonal` constructor from `LinearAlgebra`.")
+hint(md"You may want to use the `Diagonal` constructor from [`LinearAlgebra`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/).")
 
 # ╔═╡ c5fc8f3a-ed90-41ec-b4b9-1172a41e3adc
 function Jf(x; M, y)
@@ -891,7 +891,7 @@ Luckily, we can do better.
 # ╔═╡ f66a0ea7-70fd-4340-8b02-6fbaab847dfc
 md"""
 !!! danger "Task"
-	Explain why a VJP can be computed for the function $f$ without working with its full Jacobian.
+	Explain why a VJP can be computed for the function $f$ without ever storing the full Jacobian.
 """
 
 # ╔═╡ 8cca11ed-a61c-4cc8-af4b-350137073756
