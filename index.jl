@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.11
+# v0.19.19
 
 #> [frontmatter]
 #> title = "IntroJulia"
@@ -58,23 +58,25 @@ For more involved questions, the primary source of knowledge is the [Julia manua
 And for the ultimate list of Julia resources, go to [Julia.jl](https://svaksha.github.io/Julia.jl/).
 """
 
-# ╔═╡ 0def1275-d89d-49c1-97bf-2181ff351e52
-md"""
-## Coding environment
-
-When developing in Julia, you need to select a comfortable code editor.
-I strongly recommend using [Visual Studio Code](https://code.visualstudio.com/) with the [Julia for VSCode extension](https://www.julia-vscode.org/), but other IDEs also have [Julia support](https://github.com/JuliaEditorSupport).
-
-If you want something a bit lighter, here are two browser-based options:
-- [Pluto.jl](https://github.com/fonsp/Pluto.jl) is a Julia-based reactive notebook server (which we are using right now)
-- [IJulia.jl](https://github.com/JuliaLang/IJulia.jl) allows you to harness the power of [Jupyter](https://jupyter.org/). By the way, did you know that the "Ju" in "Jupyter" stands for Julia?
-"""
-
 # ╔═╡ c6bfaf1e-61a6-4d48-a169-58359ac8229d
 md"""
 ## Getting help
 
 The Julia [community](https://julialang.org/community/) is very active and welcoming, so don't hesitate to [ask for help](https://julialang.org/about/help/)!
+"""
+
+# ╔═╡ 0def1275-d89d-49c1-97bf-2181ff351e52
+md"""
+## Coding environment
+
+When developing in Julia, you need to select a comfortable code editor.
+The usual recommendation is [Visual Studio Code](https://code.visualstudio.com/) with the [Julia extension](https://www.julia-vscode.org/). There are plenty of other extensions for VS Code, and you will find one for whatever language you want to use (like [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) or [LaTeX](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop)).
+If you don't like Microsoft products, try [VS Codium](https://vscodium.com/) instead.
+
+Note that other IDEs also have [Julia support](https://github.com/JuliaEditorSupport).
+If you want something a bit lighter, here are two browser-based options:
+- [Pluto.jl](https://github.com/fonsp/Pluto.jl) is a Julia-based reactive notebook server (which we are using right now)
+- [IJulia.jl](https://github.com/JuliaLang/IJulia.jl) allows you to harness the power of [Jupyter](https://jupyter.org/). By the way, did you know that the "Ju" in "Jupyter" stands for Julia?
 """
 
 # ╔═╡ b293430c-8ebf-4c0e-9408-18c0bfdf8353
@@ -92,25 +94,16 @@ md"""
 ## General stuff
 
 1. [Basics of Julia](basics.html)
-1. [Developing packages](package.html)
-1. [Writing efficient code](efficiency.html)
+1. [Package development](package.html)
+1. [Performance](performance.html)
 """
 
-# ╔═╡ 813cd7f7-85e1-4cdf-bde3-af259d9aa429
+# ╔═╡ d69818c6-861d-4c86-a9b1-bbeaef2079f9
 md"""
-## Optimization (_work in progress_)
+## Optimization
 
-1. [Graph theory](graphs.html)
-1. [Polyhedra](polyhedra.html)
-1. [Linear Programming](jump.html)
-1. [Branch & Bound](branch_bound.html)
-"""
-
-# ╔═╡ e014d07e-a798-450b-b779-2cb4d027a011
-md"""
-## Miscellaneous (_work in progress_)
-
-1. [Pokémon](pokemon.html)
+1. [Graphs](graphs.html)
+1. [Linear programming](linear_programming.html)
 """
 
 # ╔═╡ 8f379769-4c9a-4152-aba9-88bc6fc4fae7
@@ -147,6 +140,15 @@ md"""
 - [TheAlgorithms](https://github.com/TheAlgorithms/Julia) (GitHub community)
 """
 
+# ╔═╡ 084993b2-062c-42de-a148-fb805cb667f8
+md"""
+## Exploration
+
+Before coding something, you want to make sure that someone else hasn't already coded it. For that, you may need to search for packages on a dedicated database: that's what [JuliaObserver](https://juliaobserver.com/) and [JuliaHub](https://juliahub.com/ui/Home) are here for.
+
+In addition, Julia packages with a common theme are often gathered into GitHub "groups" or organizations. Those are listed [here](https://julialang.org/community/organizations/).
+"""
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -160,7 +162,7 @@ PlutoUI = "~0.7.32"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.1"
+julia_version = "1.8.5"
 manifest_format = "2.0"
 project_hash = "843496cd44fbdabc30a5724f73519a3ea6a74f55"
 
@@ -189,7 +191,7 @@ version = "0.11.0"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "0.5.2+0"
+version = "1.0.1+0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -350,7 +352,7 @@ version = "1.0.0"
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.0"
+version = "1.10.1"
 
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
@@ -391,16 +393,16 @@ version = "17.4.0+0"
 # ╟─79c1ea6e-112c-47e2-a676-437f24298664
 # ╟─a5430a82-913f-439b-966d-73bad7f17283
 # ╟─cf6f6e8e-dc13-4473-9cdd-fa8604b6a9e2
-# ╟─0def1275-d89d-49c1-97bf-2181ff351e52
 # ╟─c6bfaf1e-61a6-4d48-a169-58359ac8229d
+# ╟─0def1275-d89d-49c1-97bf-2181ff351e52
 # ╟─b293430c-8ebf-4c0e-9408-18c0bfdf8353
 # ╟─b8667519-5a04-48da-ae79-cb2efc51f56d
 # ╟─6160429a-6b98-4bfc-ab85-2f8109e99182
-# ╟─813cd7f7-85e1-4cdf-bde3-af259d9aa429
-# ╟─e014d07e-a798-450b-b779-2cb4d027a011
+# ╟─d69818c6-861d-4c86-a9b1-bbeaef2079f9
 # ╟─8f379769-4c9a-4152-aba9-88bc6fc4fae7
 # ╟─67cff2eb-1636-448c-b99f-a93c76571b73
 # ╟─5a361b3d-d3e3-4406-a949-f091af1ab566
 # ╟─a4be17de-7154-4788-be2b-5c17ce78b6a9
+# ╟─084993b2-062c-42de-a148-fb805cb667f8
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

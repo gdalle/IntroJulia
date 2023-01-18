@@ -1,22 +1,22 @@
 ### A Pluto.jl notebook ###
-# v0.19.11
+# v0.19.19
 
 #> [frontmatter]
-#> title = "IntroJulia - the basics"
+#> title = "IntroJulia - basics"
 
 using Markdown
 using InteractiveUtils
 
 # ╔═╡ 202b23a5-0e7c-4bfc-99c4-e5efd8e6343a
 begin
-	using Markdown: MD, Admonition, Code
-	using PlutoUI
 	using Plots
+	using PlutoTeachingTools
+	using PlutoUI
 end
 
 # ╔═╡ fa8022a0-b4b1-4157-b761-b90c8aa31274
 md"""
-!!! danger "Introduction to Julia - the basics"
+!!! danger "Introduction to Julia - basics"
 	🏠[Course home](https://gdalle.github.io/IntroJulia/)
 """
 
@@ -25,7 +25,7 @@ TableOfContents()
 
 # ╔═╡ 9f45b9f5-21a8-421b-873d-ffcaeaf293d9
 md"""
-# Using Pluto notebooks
+# Pluto notebooks
 
 This document you see is a notebook created with [Pluto.jl](https://github.com/fonsp/Pluto.jl).
 It is a mixture of Julia code and web components, designed to make the programming experience more fun and interactive.
@@ -82,8 +82,17 @@ md"""
 In the cell below, define a variable `var3` equal to the product of `var1` and `var2`.
 """
 
-# ╔═╡ 21de7124-d8a8-46d7-8180-8167962d3cf5
+# ╔═╡ eb603832-0a89-4136-b1ae-aa6b76045aa3
 
+
+# ╔═╡ 13dce566-aaf0-48bf-8ab8-509b577209e4
+if !@isdefined var3
+	not_defined(:var3)
+elseif var3 != var1 * var2
+	almost(md"`var3` doesn't have the right value")
+else
+	correct()
+end
 
 # ╔═╡ be4b0a90-7175-4b8c-a0f6-540edc97f332
 md"""
@@ -117,6 +126,15 @@ In the cell below, define a variable named `α` and equal to $0.001$.
 
 # ╔═╡ 097c8536-0cd6-402f-801d-9a4adb3ad278
 
+
+# ╔═╡ d4ab7a0a-3069-4d9a-841c-00a4e995b9a7
+if !@isdefined α
+	not_defined(:α)
+elseif !(α ≈ 0.001)
+	almost(md"`α` doesn't have the right value")
+else
+	correct()
+end
 
 # ╔═╡ 9650902e-5e33-4f8e-a1d6-f32de582f743
 md"""
@@ -173,13 +191,32 @@ In the cell below, define a third method of `mystring` for real numbers.
 # ╔═╡ 2f175b45-db50-4b8f-8e92-519971921551
 
 
+# ╔═╡ 05fc5ad7-90ef-43b7-bb8e-d8e34f4101c0
+if mystring(3.) != "This is the real number 3."
+	almost(md"`mystring(3.)` doesn't have the right value")
+else
+	correct()
+end
+
 # ╔═╡ 0f4564c4-6273-4613-b858-80360e85aeab
 md"""
 Basic functions have lots of different implementations for each input type! As an example, try to compute the number of methods for addition in Julia and store the result in a variable named `nb_methods_addition`.
 """
 
+# ╔═╡ 385169fa-c03e-4dce-b4b7-7452be6a5f49
+hint(md"Search the docs for `+`, `methods` and `length`.")
+
 # ╔═╡ 63b373bd-2ddf-4c2b-9294-5165abee2e67
 
+
+# ╔═╡ be6daa5b-27c1-4ffc-9683-f71560255da4
+if !@isdefined nb_methods_addition
+	not_defined(:nb_methods_addition)
+elseif nb_methods_addition != length(methods(+))
+	almost(md"`nb_methods_addition` doesnt't have the right value")
+else
+	correct()
+end
 
 # ╔═╡ b242483f-9331-4f76-a030-b100b2bddea3
 md"""
@@ -217,8 +254,20 @@ md"""
 Note that arrays can store arbitrary content, including variables with different types, but this will make your code very inefficient. In the cell below, try to guess the type of the array `[1, "1"]` without creating it, and store your guess into `type_of_array`.
 """
 
+# ╔═╡ 8941fec5-dc88-4715-8392-8813e6d63c6b
+hint(md"""Use the function `supertypes` on the types of `1` and `"1"` to look for the lowest common supertype.""")
+
 # ╔═╡ 2d4cf48a-ab3d-4049-a2d8-6006602d0c6d
 
+
+# ╔═╡ bae28a24-06e6-4181-8e90-abe86fc1f26e
+if !@isdefined type_of_array
+	not_defined(:type_of_array)
+elseif type_of_array != Vector{Any}
+	almost(md"`type_of_array` doesn't have the right value")
+else
+	correct()
+end
 
 # ╔═╡ ae5f5814-a36f-438a-bd01-5fc12470e650
 md"""
@@ -243,6 +292,15 @@ To apply a function to all elements of an array, simply add a dot after its name
 
 # ╔═╡ f0de14d5-f97d-49ad-b97f-c9116408144d
 
+
+# ╔═╡ b077861d-4daf-45a6-ae46-bc0c4cf82b3b
+if !@isdefined exp_01
+	not_defined(:exp_01)
+elseif exp_01 != exp.([0, 1])
+	almost(md"`exp_01` doesn't have the right value")
+else
+	correct()
+end
 
 # ╔═╡ 4ac48d76-0d64-4990-ae38-22343b83653f
 md"""
@@ -338,6 +396,15 @@ These structures do not "contain" any methods. However, we can write some outsid
 # ╔═╡ 1c17177a-330d-4277-ac17-b2c1bcdf6a2f
 
 
+# ╔═╡ 876a902d-29ef-4b82-8101-851ae87aac22
+if !@isdefined norm
+	func_not_defined(:norm)
+elseif norm(Point(3., 4.)) != 5.
+	almost(md"`norm(Point(3., 4.)` doesn't have the right value")
+else
+	correct()
+end
+
 # ╔═╡ f3e299eb-704b-456d-b00a-bbc0dca6589a
 md"""
 If you are unsure what to do with a struct, you can list the applicable methods using `methodswith(type)`.
@@ -367,94 +434,16 @@ Here are some things you may need to know that didn't fit elsewhere:
 If you're still surprised by something, check the [Julia FAQ](https://docs.julialang.org/en/v1/manual/faq/).
 """
 
-# ╔═╡ d1824521-94e0-4d76-b561-77ffe8aabdf8
-begin
-	info(text; title="Info") = MD(Admonition("info", title, [text]))
-	tip(text; title="Tip") = MD(Admonition("tip", title, [text]))
-	warning(text; title="Warning") = MD(Admonition("warning", title, [text]))
-	danger(text; title="Danger") = MD(Admonition("danger", title, [text]))
-	hint(text; title="Hint") = MD(Admonition("hint", title, [text]))
-	not_defined(var) = warning(md"You must give a value to $(Code(string(var)))."; title="Undefined variable")
-	keep_working() = info(md"You're almost there."; title="Keep working!")
-	correct() = tip(md"Well done."; title="Correct!")
-end;
-
-# ╔═╡ 13dce566-aaf0-48bf-8ab8-509b577209e4
-if !@isdefined var3
-	not_defined(:var3)
-elseif var3 != var1 * var2
-	keep_working(md"`var3` is not equal to the product of `var1` and `var2`.")
-else
-	correct(md"You've made it: $var3 = $var1 x $var2.")
-end
-
-# ╔═╡ d4ab7a0a-3069-4d9a-841c-00a4e995b9a7
-if !@isdefined α
-	not_defined(:α)
-elseif !(α ≈ 0.001)
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ 05fc5ad7-90ef-43b7-bb8e-d8e34f4101c0
-if mystring(3.) != "This is the real number 3."
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ 385169fa-c03e-4dce-b4b7-7452be6a5f49
-hint(md"Search the docs for `+`, `methods` and `length`.")
-
-# ╔═╡ be6daa5b-27c1-4ffc-9683-f71560255da4
-if !@isdefined nb_methods_addition
-	not_defined(:nb_methods_addition)
-elseif nb_methods_addition != length(methods(+))
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ 8941fec5-dc88-4715-8392-8813e6d63c6b
-hint(md"""Use the function `supertypes` on the types of `1` and `"1"` to look for the lowest common supertype.""")
-
-# ╔═╡ bae28a24-06e6-4181-8e90-abe86fc1f26e
-if !@isdefined type_of_array
-	not_defined(:type_of_array)
-elseif type_of_array != Vector{Any}
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ b077861d-4daf-45a6-ae46-bc0c4cf82b3b
-if !@isdefined exp_01
-	not_defined(:exp_01)
-elseif exp_01 != exp.([0, 1])
-	keep_working()
-else
-	correct()
-end
-
-# ╔═╡ 876a902d-29ef-4b82-8101-851ae87aac22
-if !@isdefined norm
-	not_defined(:norm)
-elseif norm(Point(3., 4.)) != 5.
-	keep_working()
-else
-	correct()
-end
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 Plots = "~1.29.0"
+PlutoTeachingTools = "~0.2.5"
 PlutoUI = "~0.7.38"
 """
 
@@ -462,9 +451,9 @@ PlutoUI = "~0.7.38"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.0"
+julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "f66f90420b07d0eadbcbdfa00b205d4f46fdd670"
+project_hash = "5df49e9a6298c7833fce6de53fae2712b237ab67"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -495,7 +484,7 @@ uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.8+0"
 
 [[deps.Cairo_jll]]
-deps = ["Artifacts", "Bzip2_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
+deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
 git-tree-sha1 = "4b859a208b2397a7a623a03449e4636bdb17bcf2"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.16.1+1"
@@ -511,6 +500,12 @@ deps = ["ChainRulesCore", "LinearAlgebra", "Test"]
 git-tree-sha1 = "1e315e3f4b0b7ce40feded39c73049692126cf53"
 uuid = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
 version = "0.1.3"
+
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "0e5c14c3bb8a61b3d53b2c0620570c332c8d0663"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "1.2.0"
 
 [[deps.ColorSchemes]]
 deps = ["ColorTypes", "ColorVectorSpace", "Colors", "FixedPointNumbers", "Random"]
@@ -545,7 +540,7 @@ version = "3.43.0"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "0.5.2+0"
+version = "1.0.1+0"
 
 [[deps.Contour]]
 deps = ["StaticArrays"]
@@ -774,6 +769,12 @@ git-tree-sha1 = "b53380851c6e6664204efb2e62cd24fa5c47e4ba"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "2.1.2+0"
 
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "72ab280d921e8a013a83e64709f66bc3e854b2ed"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.9.20"
+
 [[deps.LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "f6250b16881adf048549549fba48b1161acdac8c"
@@ -851,9 +852,9 @@ version = "1.42.0+0"
 
 [[deps.Libiconv_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "42b62845d70a619f063a7da093d995ec8e15e778"
+git-tree-sha1 = "c7cb1f5d892775ba13767a87c7ada0b980ea0a71"
 uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531"
-version = "1.16.1+1"
+version = "1.16.1+2"
 
 [[deps.Libmount_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -885,6 +886,12 @@ version = "0.3.15"
 
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
+[[deps.LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "60168780555f3e663c536500aa790b6368adc02a"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "2.3.0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
@@ -1014,6 +1021,24 @@ git-tree-sha1 = "d457f881ea56bbfa18222642de51e0abf67b9027"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 version = "1.29.0"
 
+[[deps.PlutoHooks]]
+deps = ["InteractiveUtils", "Markdown", "UUIDs"]
+git-tree-sha1 = "072cdf20c9b0507fdd977d7d246d90030609674b"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0774"
+version = "0.0.5"
+
+[[deps.PlutoLinks]]
+deps = ["FileWatching", "InteractiveUtils", "Markdown", "PlutoHooks", "Revise", "UUIDs"]
+git-tree-sha1 = "8f5fa7056e6dcfb23ac5211de38e6c03f6367794"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0420"
+version = "0.1.6"
+
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "LaTeXStrings", "Latexify", "Markdown", "PlutoLinks", "PlutoUI", "Random"]
+git-tree-sha1 = "ea3e4ac2e49e3438815f8946fa7673b658e35bdb"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.2.5"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "UUIDs"]
 git-tree-sha1 = "670e559e5c8e191ded66fa9ea89c97f10376bb4c"
@@ -1032,9 +1057,9 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[deps.Qt5Base_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "xkbcommon_jll"]
-git-tree-sha1 = "c6c0f690d0cc7caddb74cef7aa847b824a16b256"
+git-tree-sha1 = "0c03844e2231e12fda4d0086fd7cbe4098ee8dc5"
 uuid = "ea2cea3b-5b76-57ae-a6ef-0a8af62496e1"
-version = "5.15.3+1"
+version = "5.15.3+2"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
@@ -1071,6 +1096,12 @@ deps = ["UUIDs"]
 git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
+
+[[deps.Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "fd5dba2f01743555d8435f7c96437b29eae81a17"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.5.0"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -1162,7 +1193,7 @@ version = "1.7.0"
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.0"
+version = "1.10.1"
 
 [[deps.TensorCore]]
 deps = ["LinearAlgebra"]
@@ -1434,7 +1465,7 @@ version = "0.9.1+5"
 # ╟─89e4cb15-e8e8-49be-9fd4-860e2753e262
 # ╠═cd1354d6-5e30-4acc-aba2-1e0bc611f44f
 # ╟─296e5f0d-f7d6-4a63-b836-43f7f8a5cb95
-# ╠═21de7124-d8a8-46d7-8180-8167962d3cf5
+# ╠═eb603832-0a89-4136-b1ae-aa6b76045aa3
 # ╟─13dce566-aaf0-48bf-8ab8-509b577209e4
 # ╟─be4b0a90-7175-4b8c-a0f6-540edc97f332
 # ╟─437bd878-066a-4159-9936-746f9111e62d
@@ -1499,6 +1530,5 @@ version = "0.9.1+5"
 # ╟─536f5bcb-3f1e-4427-b8e3-715710dd410b
 # ╠═ca0f6333-a0fa-4fe4-8769-2825991b679d
 # ╟─243c6579-6039-413f-b8bb-ec2c21567187
-# ╠═d1824521-94e0-4d76-b561-77ffe8aabdf8
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
