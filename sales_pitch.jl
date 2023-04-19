@@ -23,7 +23,7 @@ md"""
 """
 
 # ╔═╡ 6afdd882-b89b-4bad-9aa4-cd4867551b92
-html"<button onclick='present()'>Present</button>"
+present_button() 
 
 # ╔═╡ 85038100-6677-48e3-856c-8222735159ad
 TableOfContents()
@@ -118,6 +118,37 @@ md"""
 md"""
 ## Reactive notebooks
 """
+
+# ╔═╡ dce6d520-5245-4e09-89c2-5bd43e2dd2f3
+md"""
+Define a function `mysum` that takes two inputs and computes their sum.
+"""
+
+# ╔═╡ 957ee6e2-25db-41c9-a5a9-8b8efb39e6ff
+mysum(x, y) = x + y
+
+# ╔═╡ add00c30-7aa9-47f9-ac3b-4a1e97e23d09
+let
+	if @isdefined mysum
+		x, y = 1, 2
+		try
+			z = mysum(x, y)
+			if z isa promote_type(typeof(x), typeof(y))
+				if z ≈ x + y
+					correct()
+				else
+					almost(md"`mysum` returns the wrong numerical value")
+				end
+			else
+				almost(md"`mysum` returns the wrong type")
+			end
+		catch e
+			keep_working(md"`mysum` throws an error")
+		end
+	else
+		keep_working(md"`mysum` is not defined")
+	end
+end
 
 # ╔═╡ 31ce0ecf-69ea-41c6-970f-7117d8399ad2
 md"""
@@ -542,6 +573,9 @@ version = "17.4.0+0"
 # ╟─38d6ab9e-3aa0-4890-b8a6-ae1bc3dd4d00
 # ╟─8f333a67-090b-4310-9af8-5690855a6ac7
 # ╟─489823e8-1e5f-4493-a0c3-2dbbec842142
+# ╟─dce6d520-5245-4e09-89c2-5bd43e2dd2f3
+# ╠═957ee6e2-25db-41c9-a5a9-8b8efb39e6ff
+# ╠═add00c30-7aa9-47f9-ac3b-4a1e97e23d09
 # ╟─31ce0ecf-69ea-41c6-970f-7117d8399ad2
 # ╟─f57118ea-aa48-45dc-9608-01191b4e686c
 # ╟─01c815ae-f018-425a-995d-fda5892d7ed2
