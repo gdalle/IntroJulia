@@ -15,7 +15,7 @@ using PlutoUI; TableOfContents()
 md"""
 !!! danger "Introduction to Julia"
 	🏠[Course home](https://gdalle.github.io/IntroJulia/)
-	
+
 This website is an introduction to the Julia programming language, written by [Guillaume Dalle](https://gdalle.github.io).
 """
 
@@ -87,12 +87,14 @@ md"""
 # ╔═╡ b8667519-5a04-48da-ae79-cb2efc51f56d
 md"""
 All the links below point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.
+
 """
 
 # ╔═╡ 6160429a-6b98-4bfc-ab85-2f8109e99182
 md"""
 ## General stuff
 
+1. [Sales pitch](sales_pitch.html)
 1. [Basics of Julia](basics.html)
 1. [Package development](package.html)
 1. [Performance](performance.html)
