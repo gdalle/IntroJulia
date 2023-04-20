@@ -172,7 +172,11 @@ md"""
 - A great conference with plenty of topics
 - Introductory tutorials
 - Remote option
+- Growing community
 """
+
+# ╔═╡ 11a5ba78-c649-4846-a2a2-44fe9d97f047
+Resource("https://info.juliahub.com/hs-fs/hubfs/Annual%20growth%201.png?width=728&height=381&name=Annual%20growth%201.png")
 
 # ╔═╡ 38d6ab9e-3aa0-4890-b8a6-ae1bc3dd4d00
 md"""
@@ -385,10 +389,13 @@ Computer algebra (Symbolics.jl)
 Symbolics.@variables v₁, v₂, v₃
 
 # ╔═╡ 72ba1d12-43be-4910-b16f-9296a556be95
-v_symb = [v₁, v₂, v₃]
+v_symb = [1v₁, 2v₂, 3v₃]
 
 # ╔═╡ e6610f5a-e3c1-4954-b7f1-86ecedc045db
 mynorm(v_symb)
+
+# ╔═╡ 95650768-62a6-4de9-8a17-60821030acca
+Symbolics.gradient(mynorm(v_symb), v_symb)
 
 # ╔═╡ 24df1732-4cd1-4569-a030-c6ef6901176b
 md"""
@@ -2984,6 +2991,7 @@ version = "1.4.1+0"
 # ╠═064bec79-f5e3-4841-ac6e-68fddcb9df34
 # ╟─964afa90-73ce-42f3-bfcd-33688ccb7368
 # ╟─4be1270c-be70-4bdd-a015-ad92ff765124
+# ╠═11a5ba78-c649-4846-a2a2-44fe9d97f047
 # ╟─38d6ab9e-3aa0-4890-b8a6-ae1bc3dd4d00
 # ╟─2ce2824f-52b7-444e-950f-5370b4ba59e0
 # ╟─22b1bb59-f0de-4888-9b9c-fbaf0fab773c
@@ -3035,6 +3043,7 @@ version = "1.4.1+0"
 # ╠═beda159f-b853-43c7-a087-4d182965ce40
 # ╠═72ba1d12-43be-4910-b16f-9296a556be95
 # ╠═e6610f5a-e3c1-4954-b7f1-86ecedc045db
+# ╠═95650768-62a6-4de9-8a17-60821030acca
 # ╟─24df1732-4cd1-4569-a030-c6ef6901176b
 # ╟─772d1148-5181-425e-b2ca-365aa2b5c2a4
 # ╟─e6429073-ffe9-4153-b90f-e55b27e2817d
