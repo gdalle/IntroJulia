@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.22
+# v0.19.25
 
 #> [frontmatter]
 #> title = "IntroJulia - sales pitch"
@@ -46,13 +46,13 @@ md"""
 	🏠[Course home](https://gdalle.github.io/IntroJulia/)
 """
 
+# ╔═╡ 45e2bcc4-8fec-4305-9971-5a5a23fd91ff
+ChooseDisplayMode()
+
 # ╔═╡ 29ba495d-3d4c-4c77-b65d-97417ce59eeb
 md"""
 This demo notebook has A LOT of dependencies, so the first run is gonna take a while. Grab a cup of coffee.
 """
-
-# ╔═╡ 6afdd882-b89b-4bad-9aa4-cd4867551b92
-present_button() 
 
 # ╔═╡ 85038100-6677-48e3-856c-8222735159ad
 TableOfContents()
@@ -546,8 +546,6 @@ function mandelbrot(z; N=100)
 end
 
 # ╔═╡ 0e0fac4b-02de-4ec1-b54f-b78a68aaa18e
-# ╠═╡ disabled = true
-#=╠═╡
 let
 	xc, yc = -0.55, 0.61
 	x0, x1 = xc - 2, xc + 2
@@ -563,7 +561,6 @@ let
 	end
 	gif(anim,"mandelbrot_zooms.gif", fps=10)
 end
-  ╠═╡ =#
 
 # ╔═╡ 01c815ae-f018-425a-995d-fda5892d7ed2
 md"""
@@ -2883,10 +2880,10 @@ version = "1.4.1+0"
 
 # ╔═╡ Cell order:
 # ╟─56057902-de8d-11ed-1278-971402574480
+# ╠═45e2bcc4-8fec-4305-9971-5a5a23fd91ff
 # ╟─29ba495d-3d4c-4c77-b65d-97417ce59eeb
 # ╠═8edb1e45-934a-453c-a5e2-4e5a7847767a
-# ╟─6afdd882-b89b-4bad-9aa4-cd4867551b92
-# ╟─85038100-6677-48e3-856c-8222735159ad
+# ╠═85038100-6677-48e3-856c-8222735159ad
 # ╟─97f084c0-08cc-437a-8794-b33af7e01758
 # ╠═dc9ec0c3-b6b5-47bc-b382-fd72ceacd0ea
 # ╟─dd796fa6-fa31-4559-9855-f6ade6a6c510
