@@ -46,6 +46,11 @@ md"""
 	🏠[Course home](https://gdalle.github.io/IntroJulia/)
 """
 
+# ╔═╡ 29ba495d-3d4c-4c77-b65d-97417ce59eeb
+md"""
+This demo notebook has A LOT of dependencies, so the first run is gonna take a while. Grab a cup of coffee.
+"""
+
 # ╔═╡ 6afdd882-b89b-4bad-9aa4-cd4867551b92
 present_button() 
 
@@ -113,30 +118,35 @@ md"""
 ## 2022: user testimonies
 """
 
-# ╔═╡ fd937762-0915-4655-846a-0e6fa735e239
+# ╔═╡ 905281d4-ce29-47f1-9ca9-fd9fa76e1808
 md"""
-> Before, I was thinking language was fixed and it's the differential equation solvers [...] that were "my" work, but with Julia everything opened up. Is the implementation of generating random Poisson numbers fast enough, or for this use case is there something faster that hits the statistical tolerance that I needed? **Well that code is in Julia, so let's take a look.** (Chris Rackauckas)
+What independent users say:
 
-> While I was originally attracted to the Julia world due to the technology, the welcoming nature of the community, and the lack of ego made me feel right at home. As we like to say, **"Come for the speed, stay for the community"**. It's been a long journey with many good friends, and I can't wait for the next in-person JuliaCon to see the scores of fellow nerdlings that will undoubtedly blow my mind with all the creative, ingenious ways they have been working to make the world a better place. (Elliot Saba)
+> I was doing a lab rotation where I kept trying (unsuccessfully) to convince everybody to ditch MATLAB for Python. At one of these occasions a colleague quipped **"Don't the cool kids use Julia instead of Python anyway?"**. Surprised and slightly embarrassed that I had never heard of this language (and therefore was obviously not a cool kid) I looked online and found the "Why we created Julia" post. (Julius Krumbiegel)
 
-> My first real projects was taking a Matlab code, written by a collaborator, that was too slow and translating it 1:1 to Julia. Since it was using explicit loops, **I immediately got something like a 10x speedup, and further optimizations made it 100x faster.** (Valentin Churavy)
+> I believe my first impressions were: **Unlike Python the syntax for maths is actually nice and first class; and unlike MATLAB it is actually a usable programming language.** (Frames Catherine White)
 
-> With great resentment, I realized that for performance sensitive computing, there can be no such thing as a Python programmer: I could wrap my code in a Python cloak, but I would have to write all the hard stuff in C. A friend who had picked up Julia for theoretical physics taught me that **my frustration was common in scientific computing, and had a name: "The two language problem". Even better, it had a solution: Julia.** (Jakob Nissen)
-
-> By early 2020, I saw the 1.0 release a couple years back and decided to start learning Julia, and I was immediately impressed. By March 2020, I submitted my first pull request to JuliaLang/Julia and soon discovered that **Julia was a language that I could not only use but also help develop.** (Mark Kittisopikul)
-
-> What gives me the deepest satisfaction is **the community that develops and uses Julia to do really cool things that matter** - from climate modeling to drug design to space missions. (Viral B. Shah)
-
-> **We're a bunch of people who believe that you can have your cake and eat it too.** People who see the boundaries of what can currently be done and think to themselves "Nah, we can do better!" (Stefan Karpinski)
+> I tried Numba, Cython and diving into deep Numpy lore, but no solution was satisfactory. With great resentment, I realized that for performance sensitive computing, there can be no such thing as a Python programmer: I could wrap my code in a Python cloak, but I would have to write all the hard stuff in C. A friend who had picked up Julia for theoretical physics taught me that **my frustration was common in scientific computing, and had a name: "The two language problem". Even better, it had a solution: Julia.** (Jakob Nissen)
 
 > I remember working on an R script that needed to loop through 33 million rows of data, doing a complicated lag/join/basket kind of computation that would take 18 hours to run. Literally during one of these 18 hour runs, I saw the Julia announcement post and was immediately desperate for the kind of simple performance it promised. **I read the initial manual over a weekend, rewrote my script the following Monday morning, and it ran in 5 minutes.** (Jacob Quinn)
 
 > What hooked me wasn't the speed (I was using Fortran before, which was more than adequate for that purpose), but **the composability of the whole ecosystem, which lets you easily leverage other people's work.** (Mosè Giordano)
 
-> The Julia community is open, unassuming and inclusive, and works hard everyday to welcome new contributors and **reduce the barrier to entry for students**. It is one of Julia's biggest strengths. (Ranjan Anantharaman)
+> My first interaction with Julia was in early 2019 when I was looking for alternative deep learning ecosystems as an undergrad and came across Flux. Having been scarred by unreliable pip/conda installs of Python and the mess of CUDA/cuDNN installations, **I was amazed by the ease of setup** and how soon I was able to get a network training. (Sharan Yalburgi)
 
-> Sure, when I encountered a bug with a library, I might not have found someone on StackOverflow with the exact same error. But instead, there was readable source code! I've learned so much about language design, HPC, and much more in my use of Julia. Nothing feels like a black box, and I've found myself itching to contribute to the ecosystem. (Gaurav Arya)
+> By early 2020, I saw the 1.0 release a couple years back and decided to start learning Julia, and I was immediately impressed. By March 2020, I submitted my first pull request to JuliaLang/Julia and soon discovered that **Julia was a language that I could not only use but also help develop.** (Mark Kittisopikul)
 
+> The responses mentioned the part of the code that might be responsible, and I was able to quickly pull them up from the language repository, understand the code, and fix the issue in an afternoon. That's when it hit me - the two language problem wasn't just about being able to write new performant code in the same language; it was also about **being able to explore all (well, almost all) parts of the language and its ecosystem** with the same knowledge it took to understand your own code. And being able to use the same tools and thought processes you use in your everyday code to explore, fix, or enhance them, however deep you are in the stack. It put power in the hands of the user (SundaraRaman R)
+
+> Third, I use Julia because it is free, open source and because of its community. This motivates a constant peer reviewing process and **a democratic approach to software development, publicly accessible for anyone to join on GitHub**. The community guidelines and an active and welcoming user base bring together not only great coders but also kind and ambitious people (Elisabeth Roesch)
+
+> What really electrified me about Julia was that at some point Stefan or Jeff responded directly to one of my Discourse posts without calling me an idiot and explained some Julia esoterica with great calm (which was not my average internet forum experience). **That moment felt like lightning in a bottle: The creators of a programming language just hang out? And answer your questions? Online? For free???** That still seems to be a bit of a revolutionary openness to knowledge sharing. (Miguel Raz Guzmán Macedo)
+
+> I still remember this moment where I started the PR and the community began pushing me forward. I need to quote what Jeff wrote: "One cannot help but admire this PR. **This starts as an exercise in crashing the system in every possible way, but tknopp does not care, knowing that fortune favors the bold :)**" Never in my live will I forget this post. I was part of this great community. I had the opportunity to make a difference. (Tobias Knopp)
+"""
+
+# ╔═╡ 5ddfc39f-8190-4e31-b524-8fb4c7aa858e
+md"""
 [Why we use Julia, 10 years later](https://julialang.org/blog/2022/02/10years/) -- The Julia Community
 """
 
@@ -170,7 +180,7 @@ md"""
 
 # ╔═╡ 2ce2824f-52b7-444e-950f-5370b4ba59e0
 md"""
-## Syntactic sugar
+## Some differences with Python
 """
 
 # ╔═╡ 22b1bb59-f0de-4888-9b9c-fbaf0fab773c
@@ -275,6 +285,11 @@ mysqrt(Dual(2, 1))
 # ╔═╡ 8e362a49-fdfe-499d-abf1-40005f25aec8
 1 / 2√2
 
+# ╔═╡ 96bca7e2-c3da-4125-a831-ed0dc024d495
+md"""
+That's literally all it takes. No secret ingredient.
+"""
+
 # ╔═╡ e500f340-b53c-46b2-a3fd-46d563c86df9
 md"""
 ## Funky number types
@@ -351,6 +366,11 @@ v_symb = [1p, 2q, 3r]
 
 # ╔═╡ e6610f5a-e3c1-4954-b7f1-86ecedc045db
 mynorm(v_symb)
+
+# ╔═╡ 24df1732-4cd1-4569-a030-c6ef6901176b
+md"""
+It's important to stress that `mynorm` doesn't "know" about these fancy new types. It just takes them in strides and spits out the right answer: a first example of composability.
+"""
 
 # ╔═╡ 772d1148-5181-425e-b2ca-365aa2b5c2a4
 md"""
@@ -563,25 +583,30 @@ Basic problem: simulating
 ```
 """
 
-# ╔═╡ 7e71ed87-b84a-4974-a3fa-7796c55341fc
-function pendulum!(du, u, p, t)
-	g, L = p
-	θ, dθ = u
-    du[1] = dθ
-    du[2] = -(g / L) * θ
+# ╔═╡ 96c56da2-d922-4c14-a849-3eb788a018de
+function parameterized_lorenz!(du, u, p, t)
+    x, y, z = u
+    σ, ρ, β = p
+    du[1] = dx = σ * (y - x)
+    du[2] = dy = x * (ρ - z) - y
+    du[3] = dz = x * y - β * z
 end
 
-# ╔═╡ 094574b9-954b-4034-995f-7034fce65d63
+# ╔═╡ 8218d800-f69d-4fd1-bc64-6a1f603f61ef
 let
-	g = 9.79  # Gravitational constants
-	L = 1.00  # Length of the pendulum
-	u₀ = [0 ± 0.0, π / 60 ± 0.01]  # Initial speed and angle
-	tspan = (0.0, 6.0)  # Time interval
-	p = (g, L)  # Numerical parameters
-	prob = ODEProblem(pendulum!, u₀, tspan, p)
-	sol = solve(prob, Tsit5(), reltol = 1e-6)
-	plot(sol.t, getindex.(sol.u, 2); label=nothing)
+	u0 = [1.0, 0.0, 0.0]
+	tspan = (0.0, 50.0)
+	p = [10.0, 28.0, 8 / 3]
+	prob = ODEProblem(parameterized_lorenz!, u0, tspan, p)
+	sol = solve(prob)
+	plot(sol, idxs = (1, 2, 3))
 end
+
+# ╔═╡ 7e71ed87-b84a-4974-a3fa-7796c55341fc
+
+
+# ╔═╡ 094574b9-954b-4034-995f-7034fce65d63
+
 
 # ╔═╡ 68bdad76-5be7-4824-8c8b-7412fd5ef7a3
 md"""
@@ -666,6 +691,41 @@ Very efficient libraries, but not everything is fully trustworthy...
 
 Luckily, I'm one of the maintainers! Ask me anything!
 """
+
+# ╔═╡ ddb62c34-eca9-4108-97c4-cacdf3a5de60
+md"""
+## Composability just works$\texttrademark$
+"""
+
+# ╔═╡ 4da69ddd-cff0-4aff-abb7-4e4d5d2bb04a
+md"""
+Packages designed separately, whose developers are unaware of each other, can work together in harmony.
+"""
+
+# ╔═╡ df18c0a3-85dd-42bf-85c1-d190589ea27e
+md"""
+Differential equation with uncertain parameters.
+"""
+
+# ╔═╡ dc22ab5a-bd56-4d20-b1b5-d0409c8add73
+function pendulum!(du, u, p, t)
+	g, L = p
+	θ, dθ = u
+    du[1] = dθ
+    du[2] = -(g / L) * θ
+end
+
+# ╔═╡ e007e52e-82be-439e-be99-76f75cc7108c
+let
+	g = 9.79  # Gravitational constants
+	L = 1.00  # Length of the pendulum
+	u₀ = [0 ± 0.0, π / 60 ± 0.01]  # Initial speed and angle WITH UNCERTAINTY
+	tspan = (0.0, 6.0)  # Time interval
+	p = (g, L)  # Numerical parameters
+	prob = ODEProblem(pendulum!, u₀, tspan, p)
+	sol = solve(prob, Tsit5(), reltol = 1e-6)
+	plot(sol.t, getindex.(sol.u, 2); label=nothing)
+end
 
 # ╔═╡ 05c088e3-572b-4bcd-aa60-5a8265dacfd7
 md"""
@@ -780,7 +840,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "3ffac33dc206c421a3b942febeb4d1bea0d54f9e"
+project_hash = "8f5139380ef79ec88cf4faeaa53382b6efdb4244"
 
 [[deps.AbstractAlgebra]]
 deps = ["GroupsCore", "InteractiveUtils", "LinearAlgebra", "MacroTools", "Random", "RandomExtensions", "SparseArrays", "Test"]
@@ -2823,6 +2883,7 @@ version = "1.4.1+0"
 
 # ╔═╡ Cell order:
 # ╟─56057902-de8d-11ed-1278-971402574480
+# ╟─29ba495d-3d4c-4c77-b65d-97417ce59eeb
 # ╠═8edb1e45-934a-453c-a5e2-4e5a7847767a
 # ╟─6afdd882-b89b-4bad-9aa4-cd4867551b92
 # ╟─85038100-6677-48e3-856c-8222735159ad
@@ -2836,7 +2897,8 @@ version = "1.4.1+0"
 # ╟─7b21340d-e638-4581-afa9-878fc0d3842f
 # ╟─fd55ba42-e17e-47f7-a629-1b0a3f2c2c74
 # ╟─a3ea30b3-0e2a-407d-b5ba-e577e63f9e8f
-# ╟─fd937762-0915-4655-846a-0e6fa735e239
+# ╟─905281d4-ce29-47f1-9ca9-fd9fa76e1808
+# ╟─5ddfc39f-8190-4e31-b524-8fb4c7aa858e
 # ╟─36dcfe6a-d9bc-448f-a359-620261eaa6df
 # ╠═325d8c57-41d2-4fa8-843e-78c34dcfc341
 # ╠═064bec79-f5e3-4841-ac6e-68fddcb9df34
@@ -2868,6 +2930,7 @@ version = "1.4.1+0"
 # ╠═88b5be8c-8b2c-4b04-9f91-c7fe5929ddc2
 # ╠═962eb933-3d01-41ae-898d-2e97553ffa6b
 # ╠═8e362a49-fdfe-499d-abf1-40005f25aec8
+# ╟─96bca7e2-c3da-4125-a831-ed0dc024d495
 # ╟─e500f340-b53c-46b2-a3fd-46d563c86df9
 # ╠═1c2ca520-a2f3-48f4-a983-681c762c1ea9
 # ╟─153164ac-1196-48b1-a484-5be9f79e6088
@@ -2889,6 +2952,7 @@ version = "1.4.1+0"
 # ╠═beda159f-b853-43c7-a087-4d182965ce40
 # ╠═72ba1d12-43be-4910-b16f-9296a556be95
 # ╠═e6610f5a-e3c1-4954-b7f1-86ecedc045db
+# ╟─24df1732-4cd1-4569-a030-c6ef6901176b
 # ╟─772d1148-5181-425e-b2ca-365aa2b5c2a4
 # ╟─e6429073-ffe9-4153-b90f-e55b27e2817d
 # ╠═aa3e7729-3b2e-4824-92af-09d15894b521
@@ -2925,6 +2989,8 @@ version = "1.4.1+0"
 # ╟─01c815ae-f018-425a-995d-fda5892d7ed2
 # ╟─22d20ff6-8cd1-4699-9e5d-303f820c7db1
 # ╟─18214f16-a66c-421b-8254-23180de50ee9
+# ╠═96c56da2-d922-4c14-a849-3eb788a018de
+# ╠═8218d800-f69d-4fd1-bc64-6a1f603f61ef
 # ╠═7e71ed87-b84a-4974-a3fa-7796c55341fc
 # ╠═094574b9-954b-4034-995f-7034fce65d63
 # ╟─68bdad76-5be7-4824-8c8b-7412fd5ef7a3
@@ -2942,6 +3008,11 @@ version = "1.4.1+0"
 # ╠═5cc69255-d611-4fa1-9208-2f7710ddee0c
 # ╠═ab2ad7c9-8b4c-48cf-8055-a10c699fa9f6
 # ╟─3c05acc3-472e-4cf1-ae06-609e92cdaab1
+# ╟─ddb62c34-eca9-4108-97c4-cacdf3a5de60
+# ╟─4da69ddd-cff0-4aff-abb7-4e4d5d2bb04a
+# ╟─df18c0a3-85dd-42bf-85c1-d190589ea27e
+# ╠═dc22ab5a-bd56-4d20-b1b5-d0409c8add73
+# ╠═e007e52e-82be-439e-be99-76f75cc7108c
 # ╟─05c088e3-572b-4bcd-aa60-5a8265dacfd7
 # ╟─109b6045-fdf3-41eb-977c-a6d5717cee8b
 # ╟─ff8beb7f-a458-4b24-bd6b-d4667f88d99b
