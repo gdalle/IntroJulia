@@ -35,6 +35,7 @@ begin
 	using PlutoTeachingTools
 	using PlutoTest
 	using ShortCodes
+	using SparseArrays
 	using Symbolics
 	using Unitful
 	using Zygote
@@ -425,9 +426,6 @@ Two: the compiler generates low-level code that is adapted to the variable types
 # ╔═╡ 16af7868-f4fe-4720-98f7-095f96b0ac7a
 @which 1 + 1
 
-# ╔═╡ 29b05d28-662a-4413-ba9c-bd45e9e50135
-@which 1//1 + 1//1
-
 # ╔═╡ cf12ffe3-42b0-43f7-bf2a-bc13ea12ce05
 @which 1.0 + 1.0
 
@@ -441,6 +439,37 @@ Basic operations like the sum have hundreds of implementations, each designed fo
 
 # ╔═╡ 18a34595-d7ee-4131-939f-a48f197e87f1
 length(methods(+))
+
+# ╔═╡ 304792b9-c05b-421b-bc9c-9e33cb9c77d5
+md"""
+Another example: linear algebra.
+"""
+
+# ╔═╡ 782f7cc9-c2c0-40f8-8a56-15c7266e192b
+let
+	A = rand(3, 3)
+	@which eigen(A)
+end
+
+# ╔═╡ 7942966b-86e3-4695-857f-cc3c72a09f4d
+let
+	A = Symmetric(rand(3, 3))
+	@which eigen(A)
+end
+
+# ╔═╡ 979d4d21-52c3-4441-b682-c43675ad8e3c
+let
+	A = Diagonal(rand(3, 3))
+	@which eigen(A)
+end
+
+# ╔═╡ f95a0986-a5c5-4923-83ee-d3bf78a78720
+length(methods(eigen))
+
+# ╔═╡ 2c9a2afb-3d34-4cc4-8c4e-c91efca24173
+md"""
+You can write generic code using eigendecompositions, and then Julia will specialize depending on the type of matrix it gets.
+"""
 
 # ╔═╡ 65c2d1ed-6fd1-47f1-b51b-269c7941ae2f
 md"""
@@ -496,7 +525,7 @@ Investigate a line of code step by step.
 """
 
 # ╔═╡ ab8ddb6a-b1c2-44f9-9cf7-0933ff66bb9d
-@test 2 * (2^2) in [i ÷ 2 for i in 10:20]
+@test 2 + (2^2) in [i ÷ 2 for i in 10:20]
 
 # ╔═╡ dce6d520-5245-4e09-89c2-5bd43e2dd2f3
 md"""
@@ -584,6 +613,38 @@ let
 	gif(anim,"mandelbrot_zooms.gif", fps=10)
 end
 
+# ╔═╡ 68bdad76-5be7-4824-8c8b-7412fd5ef7a3
+md"""
+## Mathematical programming
+"""
+
+# ╔═╡ a002b72e-b1ec-4c82-8765-2c1470176d47
+md"""
+Reference ecosystem: [JuMP](https://jump.dev/)
+"""
+
+# ╔═╡ d213be62-11c7-4574-bd94-2714af1712ac
+md"""
+Basic problem: solving
+```math
+\min \quad c^\top x \qquad \text{s.t.} \qquad \begin{cases}
+Ax \leq b \\ |x| \leq M \\ x \text{ integer}
+\end{cases}
+```
+"""
+
+# ╔═╡ 3d3f8b79-5e4c-4b3c-b75b-e479692a7bd6
+let
+	n, m = 5, 50
+	M = 10
+	A, b, c = rand(m, n), rand(m), randn(n)  # Numerical parameters
+	model = Model(HiGHS.Optimizer)  # Model creation and solver choice
+	@variable(model, -M <= x[1:n] <= M, Int)  # Variable declaration
+	@constraint(model, A * x .<= b)  # Constraint declaration
+	@objective(model, Min, c'x)
+	optimize!(model)
+end
+
 # ╔═╡ 01c815ae-f018-425a-995d-fda5892d7ed2
 md"""
 ## Numerical analysis
@@ -621,42 +682,31 @@ let
 	plot(sol, idxs = (1, 2, 3))
 end
 
-# ╔═╡ 68bdad76-5be7-4824-8c8b-7412fd5ef7a3
+# ╔═╡ 65c7d910-2e84-4bcd-96e9-217c0ccdf2d1
 md"""
-## Optimization (linear or nonlinear)
+And much more: partial differential equations, integrals, nonlinear optimization, equation systems, computer algebra, etc.
 """
 
-# ╔═╡ a002b72e-b1ec-4c82-8765-2c1470176d47
+# ╔═╡ 7fd990a2-1443-4857-bf95-48f4439fe06b
 md"""
-Reference ecosystem: [JuMP](https://jump.dev/)
+## Automatic differentiation
 """
 
-# ╔═╡ d213be62-11c7-4574-bd94-2714af1712ac
+# ╔═╡ 6044c3a9-45bd-4a35-9a72-f747d9c04f72
 md"""
-Basic problem: solving
-```math
-\min \quad c^\top x \qquad \text{s.t.} \qquad \begin{cases}
-Ax \leq b \\ |x| \leq M \\ x \text{ integer}
-\end{cases}
-```
+Reference ecosystem: [JuliaDiff.org](https://juliadiff.org/)
 """
-
-# ╔═╡ 3d3f8b79-5e4c-4b3c-b75b-e479692a7bd6
-let
-	n, m = 5, 50
-	M = 10
-	A, b, c = rand(m, n), rand(m), randn(n)  # Numerical parameters
-	model = Model(HiGHS.Optimizer)  # Model creation and solver choice
-	@variable(model, -M <= x[1:n] <= M, Int)  # Variable declaration
-	@constraint(model, A * x .<= b)  # Constraint declaration
-	@objective(model, Min, c'x)
-	optimize!(model)
-end
 
 # ╔═╡ ee0f10e1-1e35-47b4-b2bb-2b44d37e626c
 md"""
-Bonus point: the whole language is automatically differentiable. Well, almost. See [JuliaDiff.org](https://juliadiff.org/) for more.
+The whole language is automatically differentiable. Well, almost. Write code, get a gradient for free.
 """
+
+# ╔═╡ 82689995-c85f-4b75-a5cd-fae7d4f0e571
+let
+	v = [1, 2, 3]
+	Zygote.gradient(mynorm, v)[1]
+end
 
 # ╔═╡ 13328cb8-56c3-47bf-a375-0a5758492ebd
 md"""
@@ -671,7 +721,7 @@ Reference ecosystem: [JuliaData](https://github.com/JuliaData)
 # ╔═╡ d20b5ccc-280a-47fe-bf2d-5ece3bf370d7
 DataFrame(
 	"customer age" => [15, 20, 25],
-	 "first name" => ["Rohit", "Rahul", "Akshat"]
+	 "first name" => ["Alice", "Bob", "Charlie"]
 )
 
 # ╔═╡ cb166e16-d822-4537-a1a2-d242658912ae
@@ -710,13 +760,16 @@ Luckily, I'm one of the maintainers! Ask me anything!
 
 # ╔═╡ ddb62c34-eca9-4108-97c4-cacdf3a5de60
 md"""
-## Composability just works$\texttrademark$
+## Composability often works
 """
 
 # ╔═╡ 4da69ddd-cff0-4aff-abb7-4e4d5d2bb04a
 md"""
 Packages designed separately, whose developers are unaware of each other, can work together in harmony.
 """
+
+# ╔═╡ 8f9d1a94-14b8-4566-a763-eefc7cb5c234
+YouTube("kc9HwsxE1OY")
 
 # ╔═╡ df18c0a3-85dd-42bf-85c1-d190589ea27e
 md"""
@@ -742,9 +795,6 @@ begin
 	sol = solve(prob, Tsit5(), reltol = 1e-6)
 	plot(sol.t, getindex.(sol.u, 2); label=nothing)
 end
-
-# ╔═╡ 8f9d1a94-14b8-4566-a763-eefc7cb5c234
-YouTube("kc9HwsxE1OY")
 
 # ╔═╡ 05c088e3-572b-4bcd-aa60-5a8265dacfd7
 md"""
@@ -792,6 +842,16 @@ md"""
 # ╔═╡ f1c177e3-52c8-444e-b24e-9ff149592931
 Resource("https://imgs.xkcd.com/comics/dependency.png")
 
+# ╔═╡ b82fec8a-d1cc-47d2-852e-c7534c385e95
+md"""
+## Composability doesn't always work
+"""
+
+# ╔═╡ 48e811ec-503b-4e45-aedc-3bbfc49beb40
+md"""
+Try to talk to a Julian about OffsetArrays (the [biggest debate in recent memory](https://discourse.julialang.org/t/discussion-on-why-i-no-longer-recommend-julia-by-yuri-vishnevsky/81151))...
+"""
+
 # ╔═╡ 9c250234-9e87-4862-9ad3-7e5d7907f7f4
 md"""
 ## Deep learning is still maturing
@@ -829,6 +889,7 @@ PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoTest = "cb4044da-4d16-4ffa-a6a3-8cad7f73ebdc"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 ShortCodes = "f62ebe17-55c5-4640-972f-b59c0dd11ccf"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
@@ -859,7 +920,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "8f5139380ef79ec88cf4faeaa53382b6efdb4244"
+project_hash = "dad50f0ef9f1151af1f0e0020e2e693a95977211"
 
 [[deps.AbstractAlgebra]]
 deps = ["GroupsCore", "InteractiveUtils", "LinearAlgebra", "MacroTools", "Random", "RandomExtensions", "SparseArrays", "Test"]
@@ -2982,11 +3043,16 @@ version = "1.4.1+0"
 # ╟─c9fe918e-6910-41f8-9042-a35e7fe1fd00
 # ╠═b676581c-a8ec-44ae-a4d3-31efd57ef445
 # ╠═16af7868-f4fe-4720-98f7-095f96b0ac7a
-# ╠═29b05d28-662a-4413-ba9c-bd45e9e50135
 # ╠═cf12ffe3-42b0-43f7-bf2a-bc13ea12ce05
 # ╠═8a1c1942-ec43-452f-9b35-0a99587b26d8
 # ╟─9c024d61-b080-4d33-8bdf-d887daad54a6
 # ╠═18a34595-d7ee-4131-939f-a48f197e87f1
+# ╟─304792b9-c05b-421b-bc9c-9e33cb9c77d5
+# ╠═782f7cc9-c2c0-40f8-8a56-15c7266e192b
+# ╠═7942966b-86e3-4695-857f-cc3c72a09f4d
+# ╠═979d4d21-52c3-4441-b682-c43675ad8e3c
+# ╠═f95a0986-a5c5-4923-83ee-d3bf78a78720
+# ╟─2c9a2afb-3d34-4cc4-8c4e-c91efca24173
 # ╟─65c2d1ed-6fd1-47f1-b51b-269c7941ae2f
 # ╟─f8a0b5ec-1623-4f25-b6dc-c859dab34037
 # ╟─f296fdb3-ae28-434c-9eac-64bb5603758d
@@ -3000,7 +3066,7 @@ version = "1.4.1+0"
 # ╠═ab8ddb6a-b1c2-44f9-9cf7-0933ff66bb9d
 # ╟─dce6d520-5245-4e09-89c2-5bd43e2dd2f3
 # ╠═957ee6e2-25db-41c9-a5a9-8b8efb39e6ff
-# ╟─add00c30-7aa9-47f9-ac3b-4a1e97e23d09
+# ╠═add00c30-7aa9-47f9-ac3b-4a1e97e23d09
 # ╟─8974d32f-4a0c-4ccb-b6c6-ff59b672c9a4
 # ╟─b62b5753-fb75-493e-ae37-75331384a747
 # ╠═1dcc351e-0056-4372-bd4f-e8e7d15227de
@@ -3008,16 +3074,20 @@ version = "1.4.1+0"
 # ╟─d7987ebe-ad03-4b64-b975-572c5f5cbcdb
 # ╠═3a377bf4-518f-46ea-bb18-d433f0a09d04
 # ╠═0e0fac4b-02de-4ec1-b54f-b78a68aaa18e
+# ╟─68bdad76-5be7-4824-8c8b-7412fd5ef7a3
+# ╟─a002b72e-b1ec-4c82-8765-2c1470176d47
+# ╟─d213be62-11c7-4574-bd94-2714af1712ac
+# ╠═3d3f8b79-5e4c-4b3c-b75b-e479692a7bd6
 # ╟─01c815ae-f018-425a-995d-fda5892d7ed2
 # ╟─22d20ff6-8cd1-4699-9e5d-303f820c7db1
 # ╟─18214f16-a66c-421b-8254-23180de50ee9
 # ╠═96c56da2-d922-4c14-a849-3eb788a018de
 # ╠═8218d800-f69d-4fd1-bc64-6a1f603f61ef
-# ╟─68bdad76-5be7-4824-8c8b-7412fd5ef7a3
-# ╟─a002b72e-b1ec-4c82-8765-2c1470176d47
-# ╟─d213be62-11c7-4574-bd94-2714af1712ac
-# ╠═3d3f8b79-5e4c-4b3c-b75b-e479692a7bd6
+# ╟─65c7d910-2e84-4bcd-96e9-217c0ccdf2d1
+# ╟─7fd990a2-1443-4857-bf95-48f4439fe06b
+# ╟─6044c3a9-45bd-4a35-9a72-f747d9c04f72
 # ╟─ee0f10e1-1e35-47b4-b2bb-2b44d37e626c
+# ╠═82689995-c85f-4b75-a5cd-fae7d4f0e571
 # ╟─13328cb8-56c3-47bf-a375-0a5758492ebd
 # ╟─82c6dfe8-080a-4b8d-ae80-a6bfaafd3281
 # ╠═d20b5ccc-280a-47fe-bf2d-5ece3bf370d7
@@ -3029,10 +3099,10 @@ version = "1.4.1+0"
 # ╟─3c05acc3-472e-4cf1-ae06-609e92cdaab1
 # ╟─ddb62c34-eca9-4108-97c4-cacdf3a5de60
 # ╟─4da69ddd-cff0-4aff-abb7-4e4d5d2bb04a
+# ╠═8f9d1a94-14b8-4566-a763-eefc7cb5c234
 # ╟─df18c0a3-85dd-42bf-85c1-d190589ea27e
 # ╠═dc22ab5a-bd56-4d20-b1b5-d0409c8add73
 # ╠═e007e52e-82be-439e-be99-76f75cc7108c
-# ╠═8f9d1a94-14b8-4566-a763-eefc7cb5c234
 # ╟─05c088e3-572b-4bcd-aa60-5a8265dacfd7
 # ╟─109b6045-fdf3-41eb-977c-a6d5717cee8b
 # ╟─ff8beb7f-a458-4b24-bd6b-d4667f88d99b
@@ -3041,6 +3111,8 @@ version = "1.4.1+0"
 # ╟─3e5557d3-4e9f-488b-8725-b396a02fc18a
 # ╟─30d89ed0-f1a5-4537-9085-b133de9c81a4
 # ╠═f1c177e3-52c8-444e-b24e-9ff149592931
+# ╟─b82fec8a-d1cc-47d2-852e-c7534c385e95
+# ╟─48e811ec-503b-4e45-aedc-3bbfc49beb40
 # ╟─9c250234-9e87-4862-9ad3-7e5d7907f7f4
 # ╟─beb4699b-50e6-4e04-b227-f33c87defe46
 # ╠═cf47c9c6-9f88-46ed-be1b-31df5d9506ca
