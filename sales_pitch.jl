@@ -229,6 +229,11 @@ Linear algebra
 # ╔═╡ 21458cb4-1b58-441d-9aec-cd14c59d9332
 eigen(rand(3, 3))
 
+# ╔═╡ c4601f59-d8bc-45f9-ac48-44a632f052f4
+md"""
+Loops are fast, especially if you pay attention to memory allocation
+"""
+
 # ╔═╡ 2f1f1a14-9d95-429e-837b-e09caef99b33
 md"""
 ## Abstraction
@@ -260,6 +265,23 @@ Base.:*(m, a::Dual) = Dual(m * a.x, m * a.δ)
 
 # ╔═╡ b3571522-6d85-4ea9-8a7c-b3fac6b600c3
 Base.:+(a::Dual, b::Dual) = Dual(a.x + b.x, a.δ + b.δ)
+
+# ╔═╡ bee981b7-6d4b-47ed-aee8-b9783de44cd9
+function myadd!(C, A, B)
+	for i in eachindex(A, B)
+		C[i] = A[i] + B[i]
+	end
+end
+
+# ╔═╡ d56ca76f-acfd-4396-a7a6-e521638df07b
+let
+	n = 100
+	A = rand(n, n)
+	B = rand(n, n)
+	C = zeros(n, n)
+	@btime $C .= $A .+ $B
+	@btime myadd!($C, $A, $B)
+end;
 
 # ╔═╡ 88b5be8c-8b2c-4b04-9f91-c7fe5929ddc2
 Base.:/(a::Dual, b::Dual) = Dual(a.x / b.x, (b.x * a.δ - a.x * b.δ) / b.x^2)
@@ -723,6 +745,9 @@ let
 	sol = solve(prob, Tsit5(), reltol = 1e-6)
 	plot(sol.t, getindex.(sol.u, 2); label=nothing)
 end
+
+# ╔═╡ 8f9d1a94-14b8-4566-a763-eefc7cb5c234
+YouTube("kc9HwsxE1OY")
 
 # ╔═╡ 05c088e3-572b-4bcd-aa60-5a8265dacfd7
 md"""
@@ -2916,6 +2941,9 @@ version = "1.4.1+0"
 # ╠═3c3bd174-ac9a-4fb6-8230-2540d6330aee
 # ╟─7ac4238c-e7fe-4039-a89f-4f43fdb98063
 # ╠═21458cb4-1b58-441d-9aec-cd14c59d9332
+# ╟─c4601f59-d8bc-45f9-ac48-44a632f052f4
+# ╠═bee981b7-6d4b-47ed-aee8-b9783de44cd9
+# ╠═d56ca76f-acfd-4396-a7a6-e521638df07b
 # ╟─2f1f1a14-9d95-429e-837b-e09caef99b33
 # ╟─bf54a867-1338-4305-85b7-f39b7db066e9
 # ╠═2ea84a40-f68a-465e-bf76-e8edb2573429
@@ -3010,6 +3038,7 @@ version = "1.4.1+0"
 # ╟─df18c0a3-85dd-42bf-85c1-d190589ea27e
 # ╠═dc22ab5a-bd56-4d20-b1b5-d0409c8add73
 # ╠═e007e52e-82be-439e-be99-76f75cc7108c
+# ╠═8f9d1a94-14b8-4566-a763-eefc7cb5c234
 # ╟─05c088e3-572b-4bcd-aa60-5a8265dacfd7
 # ╟─109b6045-fdf3-41eb-977c-a6d5717cee8b
 # ╟─ff8beb7f-a458-4b24-bd6b-d4667f88d99b
