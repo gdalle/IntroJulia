@@ -381,10 +381,10 @@ Computer algebra (Symbolics.jl)
 """
 
 # ╔═╡ beda159f-b853-43c7-a087-4d182965ce40
-Symbolics.@variables p, q, r
+Symbolics.@variables v₁, v₂, v₃
 
 # ╔═╡ 72ba1d12-43be-4910-b16f-9296a556be95
-v_symb = [1p, 2q, 3r]
+v_symb = [v₁, v₂, v₃]
 
 # ╔═╡ e6610f5a-e3c1-4954-b7f1-86ecedc045db
 mynorm(v_symb)
@@ -621,12 +621,6 @@ let
 	plot(sol, idxs = (1, 2, 3))
 end
 
-# ╔═╡ 7e71ed87-b84a-4974-a3fa-7796c55341fc
-
-
-# ╔═╡ 094574b9-954b-4034-995f-7034fce65d63
-
-
 # ╔═╡ 68bdad76-5be7-4824-8c8b-7412fd5ef7a3
 md"""
 ## Optimization (linear or nonlinear)
@@ -696,13 +690,16 @@ Reference ecosystem: [JuliaGraphs](https://juliagraphs.org/)
 """
 
 # ╔═╡ eb30b743-4991-404f-89ee-1deea96d9609
-g = erdos_renyi(100, 0.05)
-
-# ╔═╡ 5cc69255-d611-4fa1-9208-2f7710ddee0c
-a_star(g, 1, nv(g))
+let
+	g = erdos_renyi(100, 0.05)
+	a_star(g, 1, nv(g))
+end
 
 # ╔═╡ ab2ad7c9-8b4c-48cf-8055-a10c699fa9f6
-kruskal_mst(g)
+let
+	g = stochastic_block_model(3, 1, [100, 200])
+	kruskal_mst(g)
+end
 
 # ╔═╡ 3c05acc3-472e-4cf1-ae06-609e92cdaab1
 md"""
@@ -735,11 +732,11 @@ function pendulum!(du, u, p, t)
 end
 
 # ╔═╡ e007e52e-82be-439e-be99-76f75cc7108c
-let
-	g = 9.79  # Gravitational constants
-	L = 1.00  # Length of the pendulum
-	u₀ = [0 ± 0.0, π / 60 ± 0.01]  # Initial speed and angle WITH UNCERTAINTY
-	tspan = (0.0, 6.0)  # Time interval
+begin
+	g = 9.79  # Gravitational constant
+	L = 1.00 ± 0.01  # Length of the pendulum
+	u₀ = [0 ± 0, (π / 60) ± 0.001]  # Initial speed and angle WITH UNCERTAINTY
+	tspan = (0 ± 0, 6 ± 0)  # Time interval
 	p = (g, L)  # Numerical parameters
 	prob = ODEProblem(pendulum!, u₀, tspan, p)
 	sol = solve(prob, Tsit5(), reltol = 1e-6)
@@ -3016,8 +3013,6 @@ version = "1.4.1+0"
 # ╟─18214f16-a66c-421b-8254-23180de50ee9
 # ╠═96c56da2-d922-4c14-a849-3eb788a018de
 # ╠═8218d800-f69d-4fd1-bc64-6a1f603f61ef
-# ╠═7e71ed87-b84a-4974-a3fa-7796c55341fc
-# ╠═094574b9-954b-4034-995f-7034fce65d63
 # ╟─68bdad76-5be7-4824-8c8b-7412fd5ef7a3
 # ╟─a002b72e-b1ec-4c82-8765-2c1470176d47
 # ╟─d213be62-11c7-4574-bd94-2714af1712ac
@@ -3030,7 +3025,6 @@ version = "1.4.1+0"
 # ╟─b9b896dd-5c35-4711-8885-71af1547d644
 # ╟─98048ed6-a03c-400d-a6a2-3172caa418c7
 # ╠═eb30b743-4991-404f-89ee-1deea96d9609
-# ╠═5cc69255-d611-4fa1-9208-2f7710ddee0c
 # ╠═ab2ad7c9-8b4c-48cf-8055-a10c699fa9f6
 # ╟─3c05acc3-472e-4cf1-ae06-609e92cdaab1
 # ╟─ddb62c34-eca9-4108-97c4-cacdf3a5de60
