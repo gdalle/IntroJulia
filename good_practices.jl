@@ -1,42 +1,98 @@
 ### A Pluto.jl notebook ###
-# v0.19.19
-
-#> [frontmatter]
-#> title = "IntroJulia - package dev"
+# v0.19.14
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ c35189d5-fbe8-4637-b004-2d15b7399af5
-using PlutoUI; TableOfContents()
+# ╔═╡ 80266caa-6066-11ed-0d4e-a3b81a95bc95
+begin
+	using PlutoUI
+	using PlutoTeachingTools
+end
 
-# ╔═╡ 69f4feb4-a170-4a79-a316-8697021770c9
+# ╔═╡ fc5c6cb2-4d06-4922-90ca-553c562a6e16
+TableOfContents()
+
+# ╔═╡ 9604dcf7-b58e-4af5-9ecd-5bd3199c785d
+html"<button onclick=present()>Present</button>"
+
+# ╔═╡ be066ed7-7bd5-4d46-ae2c-4fca40f1cffb
 md"""
-!!! danger "Introduction to Julia - package development"
-	🏠[Course home](https://gdalle.github.io/IntroJulia/)
+# Becoming a Julia developer
 """
 
-# ╔═╡ b42f7153-eb3b-41cf-8447-99b1157f03b9
+# ╔═╡ e1812064-2ef0-46a7-976e-f51c51e72985
 md"""
-# Packages and environments
+# 1. Good coding practices
 """
 
-# ╔═╡ 54de1183-d384-4034-a404-6ea2c9d9745f
+# ╔═╡ 25513b52-d96c-407a-a8a8-746b74eba72b
 md"""
-## Pkg.jl
+## Julia installation
 """
 
-# ╔═╡ 672ad497-a309-4a56-959e-ba6a5af1dc80
+# ╔═╡ 6deb699e-c063-4af5-a67b-8d89397915b3
 md"""
-One of the main assets of Julia is a built-in package manager called [Pkg.jl](https://docs.julialang.org/en/v1/stdlib/Pkg/), which handles installation and updates of every library you may need. It also makes it possible to use separate environments for each one of your projects. The [full documentation](https://pkgdocs.julialang.org/v1/) of this library is a must-read.
+To install Julia, you can [download](https://julialang.org/downloads/) the latest release and follow the [installation instructions](https://julialang.org/downloads/platform/) specific to your platform, but that is not ideal.
+If you go down that road, you will have to reinstall it anew for every release (for instance when the version is bumped from 1.8.2 to 1.8.3).
+Plus the path manipulations are slightly cumbersome.
+
+That is why we recommend you use [juliaup](https://github.com/JuliaLang/juliaup) instead, which will soon be the default installer.
+It easily takes care of path management and updates without bothering the user.
+Of course you should remove any trace of your previous Julia installation before switching to juliaup. 
 """
 
-# ╔═╡ 96f9dcad-579a-411f-a066-f7541f44f0a3
+# ╔═╡ 4be9d59e-6e03-43ee-aeb2-5dc2553f9010
+md"""
+## Editor
+"""
+
+# ╔═╡ febfd7d3-622b-459e-985b-f8ede456673d
+md"""
+To write code comfortably, you need an Integrated Development Environment (IDE).
+We strongly recommend you download [Visual Studio Code](https://code.visualstudio.com/) with the [Julia extension](https://marketplace.visualstudio.com/items?itemName=julialang.language-julia).
+There are plenty of other extensions, and you will find one for whatever language you want to use (like [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) or [LaTeX](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop)).
+If you don't like Microsoft products, try [VSCodium](https://vscodium.com/) instead.
+
+Note that other IDEs also have [Julia support](https://github.com/JuliaEditorSupport).
+"""
+
+# ╔═╡ 2b6a911b-c33b-4ca6-9ead-767b507ee708
+md"""
+## Code storage
+"""
+
+# ╔═╡ ccf7a7fa-ba31-48e3-9c40-f5e4aa8b8509
+md"""
+To write a complete Julia package, version control is essential.
+When developing ambitious projects, you want to be able to reverse some changes or go back to an earlier idea that worked well.
+
+[Git](https://git-scm.com/) is a cross-platform software that allows you to save various versions of your code.
+[GitHub](https://github.com/) is a website that allows you to store and collaborate on your code.
+If you're unfamiliar with these tools, the following [tutorial for beginners](https://product.hubspot.com/blog/git-and-github-tutorial-for-beginners) tells you all you need to know.
+This [quick recap](https://up1.github.io/git-guide/index.html) is also very handy.
+As a student, you are entitled to the [GitHub Student Developer pack](https://education.github.com/pack), which boasts lots of benefits for computer science courses.
+"""
+
+# ╔═╡ 0befc3d1-972d-4467-8f86-eafeb80b6754
+md"""
+## Package manager
+"""
+
+# ╔═╡ 0d7f1cd6-5b95-407f-ae07-8fe6265d4cdc
+md"""
+Unlike Python, the Julia language comes bundled with its own package and environment manager: [Pkg.jl](https://github.com/JuliaLang/Pkg.jl).
+It can be accessed in the REPL by typing `]`.
+Like conda for Python, it allows you to create individual environments for each of your projects, and add a particular set of dependencies to each one.
+Before you start, please read sections 2 through 5 of the [Pkg.jl documentation](https://pkgdocs.julialang.org/v1/).
+"""
+
+# ╔═╡ ef9ca651-e823-4ca6-845a-a0588f79f940
 md"""
 ## Default environment
 """
 
-# ╔═╡ fa4decaa-e06d-413c-aa59-1cec097cdac7
+# ╔═╡ 9fe6028a-44ae-4b22-9b51-4100e23671fb
 md"""
 One thing to keep in mind is that packages installed into your default environment (called `@v1.8` and located at `~/.julia/environments/v1.8`) are accessible in every other environment.
 That is why `@v1.8` be curated carefully, filled only with lightweight packages that are often useful.
@@ -58,31 +114,30 @@ using OhMyREPL
 ```
 """
 
-# ╔═╡ 29e4f7e5-56cd-4c61-8a6f-02d148648848
+# ╔═╡ 7f36a436-1bd6-4b10-8df8-524724966da1
 md"""
-# Your first Julia package
+## Troubleshooting
 """
 
-# ╔═╡ dd1e7c1a-131e-4690-b4ac-275772bec2af
+# ╔═╡ 4ec033b5-d9b1-4b65-9085-30666bd72d0a
 md"""
-## Code storage
-
-To write a complete Julia package, version control is essential.
-When developing ambitious projects, you want to be able to reverse some changes or go back to an earlier idea that worked well.
-
-[Git](https://git-scm.com/) is a cross-platform software that allows you to save various versions of your code.
-[GitHub](https://github.com/) is a website that allows you to store and collaborate on your code.
-If you're unfamiliar with these tools, the following [tutorial for beginners](https://product.hubspot.com/blog/git-and-github-tutorial-for-beginners) tells you all you need to know.
-This [quick recap](https://up1.github.io/git-guide/index.html) is also very handy.
-As a student, you are entitled to the [GitHub Student Developer pack](https://education.github.com/pack), which boasts lots of benefits for computer science courses.
+Here are a few useful reflexes to keep in mind:
+- a quick Google search will solve 95% of your problems
+- the help mode (`?` in the REPL or Pluto) and this [cheat sheet](https://cheatsheet.juliadocs.org/) will solve 4% 
+- for the last 1%, don't hesitate to [ask for help](https://julialang.org/about/help/)
 """
 
-# ╔═╡ aa04c9c4-ba66-4e48-b429-9e5f248b8ded
+# ╔═╡ 9697d7af-b78a-42f1-b562-b0dff837bb1b
 md"""
-## Repository setup
+# 2. Your first package
 """
 
-# ╔═╡ 9e33fe5c-8bf3-4757-9d3a-b086f6a157d2
+# ╔═╡ 5d4122b4-8795-49fc-b282-d064ab4ae5b5
+md"""
+## Git(Hub) boilerplate
+"""
+
+# ╔═╡ f2d70b0c-3fdd-483c-9e15-506d90f380b5
 md"""
 For the rest of this section, we assume that you have created a GitHub account, and gone through the following very short GitHub tutorials:
 1. [Hello World](https://docs.github.com/en/get-started/quickstart/hello-world)
@@ -92,12 +147,12 @@ To get started on a Julia package, create a public repository on your GitHub acc
 The following instructions are given with my own GitHub user name (`gdalle`) and an arbitrary repository name (`MyJuliaPackage.jl`).
 """
 
-# ╔═╡ b653e7a8-8c25-45c8-81c6-5b891af955d3
+# ╔═╡ cbbe4adb-7c40-4675-8b8f-e69a771621d9
 md"""
 ## Package structure
 """
 
-# ╔═╡ 88de7f95-c91a-4249-b11c-beaacb07eaca
+# ╔═╡ c9fece4b-ac3e-4cb0-b83d-4c2603040047
 md"""
 [PkgTemplates.jl](https://github.com/JuliaCI/PkgTemplates.jl) enables you to initialize packages in a standardized way.
 Open a Julia REPL in the parent folder where you want your package to appear, then run these commands.
@@ -111,7 +166,7 @@ Here is our recommendation of boxes to tick (check out the [PkgTemplates.jl docu
 The three dots `...` mean that you shouldn't customize anything (leave the boxes blank).
 """
 
-# ╔═╡ 8793592f-7b63-4b3a-b9ca-a9de48e42c14
+# ╔═╡ d55d4497-372a-4e3a-9587-07a560a5aad2
 md"""
 ```
 Template keywords to customize:
@@ -161,7 +216,7 @@ Documenter deploy style:
 ```
 """
 
-# ╔═╡ b39fdb39-2666-4c3d-a2c9-3502aa9b53e6
+# ╔═╡ d38c9547-2545-439b-ba2c-0e6573e77776
 md"""
 Then, all you need to do is run
 ```julia
@@ -171,14 +226,14 @@ and a folder called `MyJuliaPackage` will appear in the current directory (which
 If you did the setup correctly, it should automatically be linked to your GitHub repository `gdalle/MyJuliaPackage.jl`, and all you have to do is publish the new branch `main` to see everything appear online.
 """
 
-# ╔═╡ 415b700e-c856-4ed2-ae5c-32cc7a5d5688
+# ╔═╡ 94b6676d-6a4f-406d-9595-edf5c659c305
 md"""
-# Continuous integration
+## Continuous integration
 """
 
-# ╔═╡ 91884a2f-3665-4731-8475-acb85d16606e
+# ╔═╡ 7b8de8d7-36d3-477f-b4cc-ee6951c4fccd
 md"""
-PkgTemplates.jl is especially useful because it interfaces with [GitHub Actions](https://docs.github.com/en/actions) to set up continuous integration (CI).
+PkgTemplates.jl is especially useful because it integrates with [GitHub Actions](https://docs.github.com/en/actions) to set up continuous integration (CI).
 Basically, every time you push your code to the remote repository, a series of workflows will run automatically on the GitHub servers.
 The results will be visible on the repository page, in the Actions tab.
 Computation budget for CI workflows is unlimited for public repositories, but limited for private repositories.
@@ -187,12 +242,12 @@ Each workflow is defined by a YAML file located in the `.github/workflows` subfo
 The most important ones are tests and documentation (see more below), both specified in `.github/workflows/CI.yml`.
 """
 
-# ╔═╡ 0c44d611-a84a-4fc8-ab93-bba9a3fbf704
+# ╔═╡ 245b7576-fb4f-4d1d-aa97-a5f23509ad88
 md"""
 ## Code style
 """
 
-# ╔═╡ 574daa2f-cbd4-4e03-b743-639122289d6e
+# ╔═╡ f50e29d2-40ec-4316-91c5-eb1a99bea4f6
 md"""
 Julia has no universally agreed-upon style guide like Python.
 A few official guidelines can be found [here](https://docs.julialang.org/en/v1/manual/style-guide/).
@@ -206,12 +261,12 @@ style = "blue"
 Then JuliaFormatter.jl will be able to format all your files in the style that you chose, and the integrated formatting of VSCode will fall back on it for Julia files.
 """
 
-# ╔═╡ 36de2131-e5c3-408d-9a07-f52420360fe2
+# ╔═╡ c1ebe580-2d37-4de6-b2ff-d30d3a2e7bc9
 md"""
 ## Documentation
 """
 
-# ╔═╡ a4500dc6-4107-4f25-8b6a-7b79cf3949ff
+# ╔═╡ 4f9e4dab-6a23-43ff-a40a-376368089aba
 md"""
 Julia also has built-in support for [documentation](https://docs.julialang.org/en/v1/manual/documentation/), as you might have noticed when querying docstrings in the REPL.
 Writing docstrings for your own functions is a good idea, not only for other users but also for yourself.
@@ -224,16 +279,14 @@ Check their [guide](https://documenter.juliadocs.org/stable/man/guide/) for deta
 With our PkgTemplates.jl setup, a Documenter.jl website will be automatically generated and updated after every push.
 It is stored on a separate branch to avoid cluttering your workspace with HTML files.
 To make it accessible, all you need to do is activate GitHub pages (for the repository settings) and select the `gh-pages` branch as a build source.
-
-[Literate.jl](https://github.com/fredrikekre/Literate.jl) is also useful for long examples and tutorials.
 """
 
-# ╔═╡ 5f2154aa-5520-47e0-ac41-3fd59d7b0ebd
+# ╔═╡ fa40ecc3-b877-467f-b33a-3c3e293907e9
 md"""
 ## Tests
 """
 
-# ╔═╡ eee57762-c550-413e-9874-75c360152dc1
+# ╔═╡ 503e2eaf-3c93-4193-81ab-bb7d8a4facc8
 md"""
 Julia has built-in support for [unit testing](https://docs.julialang.org/en/v1/stdlib/Test/), which allows you to check that your code behaves in the way you expect.
 Package tests are located in the `test/runtests.jl` file.
@@ -241,13 +294,13 @@ Package tests are located in the `test/runtests.jl` file.
 With our PkgTemplates.jl setup, tests are run automatically on each push.
 """
 
-# ╔═╡ 7790bc94-5652-4f62-a889-2cb488e94e3f
+# ╔═╡ 45e6f619-d8f8-4cd8-a2da-1f06f2a83c40
 md"""
 Here is a typical `test/runtests.jl` file which performs a few automated checks in addition to your own handwritten ones.
 It uses Aqua.jl, Documenter.jl and JuliaFormatter.jl in addition to the base module Test, which means all of these must be specified as [test dependencies](https://pkgdocs.julialang.org/v1/creating-packages/#Test-specific-dependencies-in-Julia-1.2-and-above).
 """
 
-# ╔═╡ c5dc0fec-e6e3-4987-ac06-cc85420b8d1c
+# ╔═╡ 0941a61e-529e-4633-aa69-c43e5648a572
 md"""
 ```julia
 using Aqua
@@ -283,22 +336,30 @@ end
 ```
 """
 
+# ╔═╡ 8658cc4c-f121-4449-8c46-384deb72727b
+md"""
+You can also use `JET.report_package(MyJuliaPackage)` to look for possible errors, but I recommend doing it outside of the testing pipeline.
+JET.jl is quite picky, including for things that don't matter much (like structs defined with `Base.@kwdef` or unassigned keyword arguments).
+"""
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-PlutoUI = "~0.7.32"
+PlutoTeachingTools = "~0.2.5"
+PlutoUI = "~0.7.48"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.5"
+julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "843496cd44fbdabc30a5724f73519a3ea6a74f55"
+project_hash = "a084e953ecc8d9d6d85465607b1a1d49f1e47fec"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -316,20 +377,30 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "cc4bd91eba9cdbbb4df4746124c22c0832a460d6"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "1.1.1"
+
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
-git-tree-sha1 = "024fe24d83e4a5bf5fc80501a314ce0d1aa35597"
+git-tree-sha1 = "eb7f0f8307f71fac7c606984ea5fb2817275d6e4"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
-version = "0.11.0"
+version = "0.11.4"
 
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.0.1+0"
+version = "0.5.2+0"
 
 [[deps.Dates]]
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
+
+[[deps.Distributed]]
+deps = ["Random", "Serialization", "Sockets"]
+uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
@@ -345,6 +416,12 @@ git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.4"
 
+[[deps.Formatting]]
+deps = ["Printf"]
+git-tree-sha1 = "8339d61043228fdd3eb658d86c926cb282ae72a8"
+uuid = "59287772-0a20-5a39-b81b-1366585eb4c0"
+version = "0.4.2"
+
 [[deps.Hyperscript]]
 deps = ["Test"]
 git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
@@ -352,9 +429,10 @@ uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
 version = "0.0.4"
 
 [[deps.HypertextLiteral]]
-git-tree-sha1 = "2b078b5a615c6c0396c77810d92ee8c6f470d238"
+deps = ["Tricks"]
+git-tree-sha1 = "c47c5fa4c5308f27ccaac35504858d8914e102f9"
 uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
-version = "0.9.3"
+version = "0.9.4"
 
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
@@ -371,6 +449,23 @@ deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "3c837543ddb02250ef42f4738347454f95079d4e"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.3"
+
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "0f960b1404abb0b244c1ece579a0ec78d056a5d1"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.9.15"
+
+[[deps.LaTeXStrings]]
+git-tree-sha1 = "f2355693d6778a178ade15952b7ac47a4ff97996"
+uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+version = "1.3.0"
+
+[[deps.Latexify]]
+deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
+git-tree-sha1 = "ab9aa169d2160129beb241cb2750ca499b4e90e9"
+uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+version = "0.15.17"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -401,6 +496,23 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
+[[deps.LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "dedbebe234e06e1ddad435f5c6f4b85cd8ce55f7"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "2.2.2"
+
+[[deps.MIMEs]]
+git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
+uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
+version = "0.1.4"
+
+[[deps.MacroTools]]
+deps = ["Markdown", "Random"]
+git-tree-sha1 = "42324d08725e200c23d4dfb549e0d5d89dede2d2"
+uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+version = "0.5.10"
+
 [[deps.Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
@@ -426,22 +538,45 @@ deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
 version = "0.3.20+0"
 
+[[deps.OrderedCollections]]
+git-tree-sha1 = "85f8e6578bf1f9ee0d11e7bb1b1456435479d47c"
+uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+version = "1.4.1"
+
 [[deps.Parsers]]
-deps = ["Dates"]
-git-tree-sha1 = "85b5da0fa43588c75bb1ff986493443f821c70b7"
+deps = ["Dates", "SnoopPrecompile"]
+git-tree-sha1 = "cceb0257b662528ecdf0b4b4302eb00e767b38e7"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.2.3"
+version = "2.5.0"
 
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 version = "1.8.0"
 
+[[deps.PlutoHooks]]
+deps = ["InteractiveUtils", "Markdown", "UUIDs"]
+git-tree-sha1 = "072cdf20c9b0507fdd977d7d246d90030609674b"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0774"
+version = "0.0.5"
+
+[[deps.PlutoLinks]]
+deps = ["FileWatching", "InteractiveUtils", "Markdown", "PlutoHooks", "Revise", "UUIDs"]
+git-tree-sha1 = "0e8bcc235ec8367a8e9648d48325ff00e4b0a545"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0420"
+version = "0.1.5"
+
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "LaTeXStrings", "Latexify", "Markdown", "PlutoLinks", "PlutoUI", "Random"]
+git-tree-sha1 = "ea3e4ac2e49e3438815f8946fa7673b658e35bdb"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.2.5"
+
 [[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "UUIDs"]
-git-tree-sha1 = "bf0a1121af131d9974241ba53f601211e9303a9e"
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "efc140104e6d0ae3e7e30d56c98c4a927154d684"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.37"
+version = "0.7.48"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -460,12 +595,29 @@ git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
 
+[[deps.Requires]]
+deps = ["UUIDs"]
+git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
+uuid = "ae029012-a4dd-5104-9daa-d747884805df"
+version = "1.3.0"
+
+[[deps.Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "dad726963ecea2d8a81e26286f625aee09a91b7c"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.4.0"
+
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+
+[[deps.SnoopPrecompile]]
+git-tree-sha1 = "f604441450a3c0569830946e5b33b78c928e1a85"
+uuid = "66db9d55-30c0-4569-8b51-7e840670fc0c"
+version = "1.0.1"
 
 [[deps.Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
@@ -491,6 +643,16 @@ version = "1.10.1"
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[deps.Tricks]]
+git-tree-sha1 = "6bac775f2d42a611cdfcd1fb217ee719630c4175"
+uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
+version = "0.1.6"
+
+[[deps.URIs]]
+git-tree-sha1 = "e59ecc5a41b000fa94423a578d29290c7266fc10"
+uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
+version = "1.4.0"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
@@ -521,30 +683,40 @@ version = "17.4.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─c35189d5-fbe8-4637-b004-2d15b7399af5
-# ╟─69f4feb4-a170-4a79-a316-8697021770c9
-# ╟─b42f7153-eb3b-41cf-8447-99b1157f03b9
-# ╟─54de1183-d384-4034-a404-6ea2c9d9745f
-# ╟─672ad497-a309-4a56-959e-ba6a5af1dc80
-# ╟─96f9dcad-579a-411f-a066-f7541f44f0a3
-# ╟─fa4decaa-e06d-413c-aa59-1cec097cdac7
-# ╟─29e4f7e5-56cd-4c61-8a6f-02d148648848
-# ╟─dd1e7c1a-131e-4690-b4ac-275772bec2af
-# ╟─aa04c9c4-ba66-4e48-b429-9e5f248b8ded
-# ╟─9e33fe5c-8bf3-4757-9d3a-b086f6a157d2
-# ╟─b653e7a8-8c25-45c8-81c6-5b891af955d3
-# ╟─88de7f95-c91a-4249-b11c-beaacb07eaca
-# ╟─8793592f-7b63-4b3a-b9ca-a9de48e42c14
-# ╟─b39fdb39-2666-4c3d-a2c9-3502aa9b53e6
-# ╟─415b700e-c856-4ed2-ae5c-32cc7a5d5688
-# ╟─91884a2f-3665-4731-8475-acb85d16606e
-# ╟─0c44d611-a84a-4fc8-ab93-bba9a3fbf704
-# ╟─574daa2f-cbd4-4e03-b743-639122289d6e
-# ╟─36de2131-e5c3-408d-9a07-f52420360fe2
-# ╟─a4500dc6-4107-4f25-8b6a-7b79cf3949ff
-# ╟─5f2154aa-5520-47e0-ac41-3fd59d7b0ebd
-# ╟─eee57762-c550-413e-9874-75c360152dc1
-# ╟─7790bc94-5652-4f62-a889-2cb488e94e3f
-# ╟─c5dc0fec-e6e3-4987-ac06-cc85420b8d1c
+# ╠═80266caa-6066-11ed-0d4e-a3b81a95bc95
+# ╠═fc5c6cb2-4d06-4922-90ca-553c562a6e16
+# ╟─9604dcf7-b58e-4af5-9ecd-5bd3199c785d
+# ╟─be066ed7-7bd5-4d46-ae2c-4fca40f1cffb
+# ╟─e1812064-2ef0-46a7-976e-f51c51e72985
+# ╟─25513b52-d96c-407a-a8a8-746b74eba72b
+# ╟─6deb699e-c063-4af5-a67b-8d89397915b3
+# ╟─4be9d59e-6e03-43ee-aeb2-5dc2553f9010
+# ╟─febfd7d3-622b-459e-985b-f8ede456673d
+# ╟─2b6a911b-c33b-4ca6-9ead-767b507ee708
+# ╟─ccf7a7fa-ba31-48e3-9c40-f5e4aa8b8509
+# ╟─0befc3d1-972d-4467-8f86-eafeb80b6754
+# ╟─0d7f1cd6-5b95-407f-ae07-8fe6265d4cdc
+# ╟─ef9ca651-e823-4ca6-845a-a0588f79f940
+# ╟─9fe6028a-44ae-4b22-9b51-4100e23671fb
+# ╟─7f36a436-1bd6-4b10-8df8-524724966da1
+# ╟─4ec033b5-d9b1-4b65-9085-30666bd72d0a
+# ╟─9697d7af-b78a-42f1-b562-b0dff837bb1b
+# ╟─5d4122b4-8795-49fc-b282-d064ab4ae5b5
+# ╟─f2d70b0c-3fdd-483c-9e15-506d90f380b5
+# ╟─cbbe4adb-7c40-4675-8b8f-e69a771621d9
+# ╟─c9fece4b-ac3e-4cb0-b83d-4c2603040047
+# ╟─d55d4497-372a-4e3a-9587-07a560a5aad2
+# ╟─d38c9547-2545-439b-ba2c-0e6573e77776
+# ╟─94b6676d-6a4f-406d-9595-edf5c659c305
+# ╟─7b8de8d7-36d3-477f-b4cc-ee6951c4fccd
+# ╟─245b7576-fb4f-4d1d-aa97-a5f23509ad88
+# ╟─f50e29d2-40ec-4316-91c5-eb1a99bea4f6
+# ╟─c1ebe580-2d37-4de6-b2ff-d30d3a2e7bc9
+# ╟─4f9e4dab-6a23-43ff-a40a-376368089aba
+# ╟─fa40ecc3-b877-467f-b33a-3c3e293907e9
+# ╟─503e2eaf-3c93-4193-81ab-bb7d8a4facc8
+# ╟─45e6f619-d8f8-4cd8-a2da-1f06f2a83c40
+# ╟─0941a61e-529e-4633-aa69-c43e5648a572
+# ╟─8658cc4c-f121-4449-8c46-384deb72727b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

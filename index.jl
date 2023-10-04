@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.19
+# v0.19.29
 
 #> [frontmatter]
 #> title = "IntroJulia"
@@ -8,171 +8,60 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ c35189d5-fbe8-4637-b004-2d15b7399af5
-using PlutoUI; TableOfContents()
+# ╔═╡ 96f82553-2690-4f86-af62-f0089c26bca8
+using PlutoTeachingTools
+
+# ╔═╡ d6e6b36e-7b7e-4e9c-ae3a-db4bed2f63b5
+md"""
+# Julia programming for optimization
+"""
 
 # ╔═╡ 69f4feb4-a170-4a79-a316-8697021770c9
 md"""
-!!! danger "Introduction to Julia"
-	🏠[Course home](https://gdalle.github.io/IntroJulia/)
+This website is an introduction to the Julia programming language, with a focus on optimization.
 
-This website is an introduction to the Julia programming language, written by [Guillaume Dalle](https://gdalle.github.io).
+It was written by [Guillaume Dalle](https://gdalle.github.io) for courses at MIT and École des Ponts.
 """
 
-# ╔═╡ 2ffec8d3-6168-4261-8846-e8269125077d
-md"""
-## What is Julia?
+# ╔═╡ bd00936a-3508-4bc9-9866-d7835baacea1
+TwoColumn(
+	md"""
+## Part I
 
-Maybe the solution to the two-language problem:
-
-- User-friendly syntax for easy programming
-- C-level speed (when done right) for high-performance computing
-
-See the [Julia manifesto](https://julialang.org/blog/2012/02/why-we-created-julia/) or this [Nature article](https://www.nature.com/articles/d41586-019-02310-3) for more details.
-"""
-
-# ╔═╡ 79c1ea6e-112c-47e2-a676-437f24298664
-md"""
-# Getting started
-"""
-
-# ╔═╡ a5430a82-913f-439b-966d-73bad7f17283
-md"""
-## Installation
-
-To install the latest version of Julia, follow the [platform-specific instructions](https://julialang.org/downloads/platform/).
-If you need multiple versions of Julia to coexist on your system, or if you don't want to bother with manual updates, take a look at [juliaup](https://github.com/JuliaLang/juliaup) (which will soon be the default installer), [jill](https://github.com/abelsiqueira/jill) or [jill.py](https://github.com/johnnychen94/jill.py).
-
-If you want to run the notebooks of this course yourself, you will also need to install the [Pluto.jl](https://github.com/fonsp/Pluto.jl) package.
-"""
-
-# ╔═╡ cf6f6e8e-dc13-4473-9cdd-fa8604b6a9e2
-md"""
-## Learning the ropes
-
-The Julia website has a great list of [resources for beginners](https://julialang.org/learning/) and [tutorials](https://julialang.org/learning/tutorials/)., as well as free [MOOCs](https://juliaacademy.com/) contributed by the community.
-The official [Julia YouTube channel](https://www.youtube.com/c/TheJuliaLanguage/playlists) also boasts lots of introductory content.
-
-If you just need a quick refresher about syntax, this [cheat sheet](https://juliadocs.github.io/Julia-Cheat-Sheet/) is the place to go.
-For more involved questions, the primary source of knowledge is the [Julia manual](https://docs.julialang.org/en/v1/).
-And for the ultimate list of Julia resources, go to [Julia.jl](https://svaksha.github.io/Julia.jl/).
-"""
-
-# ╔═╡ c6bfaf1e-61a6-4d48-a169-58359ac8229d
-md"""
-## Getting help
-
-The Julia [community](https://julialang.org/community/) is very active and welcoming, so don't hesitate to [ask for help](https://julialang.org/about/help/)!
-"""
-
-# ╔═╡ 0def1275-d89d-49c1-97bf-2181ff351e52
-md"""
-## Coding environment
-
-When developing in Julia, you need to select a comfortable code editor.
-The usual recommendation is [Visual Studio Code](https://code.visualstudio.com/) with the [Julia extension](https://www.julia-vscode.org/). There are plenty of other extensions for VS Code, and you will find one for whatever language you want to use (like [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) or [LaTeX](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop)).
-If you don't like Microsoft products, try [VS Codium](https://vscodium.com/) instead.
-
-Note that other IDEs also have [Julia support](https://github.com/JuliaEditorSupport).
-If you want something a bit lighter, here are two browser-based options:
-- [Pluto.jl](https://github.com/fonsp/Pluto.jl) is a Julia-based reactive notebook server (which we are using right now)
-- [IJulia.jl](https://github.com/JuliaLang/IJulia.jl) allows you to harness the power of [Jupyter](https://jupyter.org/). By the way, did you know that the "Ju" in "Jupyter" stands for Julia?
-"""
-
-# ╔═╡ b293430c-8ebf-4c0e-9408-18c0bfdf8353
-md"""
-# Course notebooks
-"""
-
-# ╔═╡ b8667519-5a04-48da-ae79-cb2efc51f56d
-md"""
-All the links below point to notebooks that can be visualized in your browser without any prerequisites. To edit or run a notebook, click on `Edit or run this notebook` and follow the instructions given there.
-
-"""
-
-# ╔═╡ 6160429a-6b98-4bfc-ab85-2f8109e99182
-md"""
-## General stuff
-
-1. [Sales pitch](sales_pitch.html)
-1. [Basics of Julia](basics.html)
-1. [Package development](package.html)
+1. [Good practices](good_practices.html)
 1. [Performance](performance.html)
-"""
-
-# ╔═╡ d69818c6-861d-4c86-a9b1-bbeaef2079f9
-md"""
-## Optimization
+""",
+	md"""
+## Part II
 
 1. [Graphs](graphs.html)
 1. [Linear programming](linear_programming.html)
-"""
-
-# ╔═╡ 8f379769-4c9a-4152-aba9-88bc6fc4fae7
-md"""
-# Going further
-"""
-
-# ╔═╡ 67cff2eb-1636-448c-b99f-a93c76571b73
-md"""
-## MIT courses
-
-Since Julia originated at MIT, it is no wonder that MIT researchers are teaching it well.
-Check out [Introduction to Computational Thinking](https://computationalthinking.mit.edu/Spring21/) for your first steps, and [Parallel Computing and Scientific Machine Learning](https://book.sciml.ai/) when you feel more confident.
-"""
-
-# ╔═╡ 5a361b3d-d3e3-4406-a949-f091af1ab566
-md"""
-## Other resources
-
-- [Introducing Julia](https://en.wikibooks.org/wiki/Introducing_Julia) (WikiBooks)
-- [ThinkJulia: How to think like a computer scientist](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html) (Ben Lauwens)
-- [Quantitative economics with Julia](https://julia.quantecon.org/intro.html) (Jesse Perla, Thomas J. Sargent and John Stachurski)
-- [From Zero to Julia](https://techytok.com/from-zero-to-julia/) (Aurelio Amerio)
-- [A Deep Introduction to Julia for Data Science and Scientific Computing](https://ucidatascienceinitiative.github.io/IntroToJulia/) (Chris Rackauckas)
-- [Introduction to the Julia programming language](https://github.com/mfherbst/2022-rwth-julia-workshop) (Michael Herbst)
-"""
-
-# ╔═╡ a4be17de-7154-4788-be2b-5c17ce78b6a9
-md"""
-## Examples of Julia code
-
-- [Algorithms for Optimization & Algorithms for Decision-Making](Algorithms for Optimization) (Mykel J. Kochenderfer)
-- [BeautifulAlgorithms.jl](https://github.com/mossr/BeautifulAlgorithms.jl#newtons-method) (Robert Moss)
-- [TheAlgorithms](https://github.com/TheAlgorithms/Julia) (GitHub community)
-"""
-
-# ╔═╡ 084993b2-062c-42de-a148-fb805cb667f8
-md"""
-## Exploration
-
-Before coding something, you want to make sure that someone else hasn't already coded it. For that, you may need to search for packages on a dedicated database: that's what [JuliaObserver](https://juliaobserver.com/) and [JuliaHub](https://juliahub.com/ui/Home) are here for.
-
-In addition, Julia packages with a common theme are often gathered into GitHub "groups" or organizations. Those are listed [here](https://julialang.org/community/organizations/).
-"""
+1. [Challenge](challenge.html )
+""",
+)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 
 [compat]
-PlutoUI = "~0.7.32"
+PlutoTeachingTools = "~0.2.13"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.5"
+julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "843496cd44fbdabc30a5724f73519a3ea6a74f55"
+project_hash = "7a42974596e9e12c27f0417f760c666a50853d11"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
-git-tree-sha1 = "8eaf9f1b4921132a4cff3f36a1d9ba923b14a481"
+git-tree-sha1 = "91bd53c39b9cbfb5ef4b015e8b582d344532bd0a"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.1.4"
+version = "1.2.0"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -184,20 +73,30 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "a1296f0fe01a4c3f9bf0dc2934efbf4416f5db31"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "1.3.4"
+
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
-git-tree-sha1 = "024fe24d83e4a5bf5fc80501a314ce0d1aa35597"
+git-tree-sha1 = "eb7f0f8307f71fac7c606984ea5fb2817275d6e4"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
-version = "0.11.0"
+version = "0.11.4"
 
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.0.1+0"
+version = "1.0.5+0"
 
 [[deps.Dates]]
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
+
+[[deps.Distributed]]
+deps = ["Random", "Serialization", "Sockets"]
+uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
@@ -213,6 +112,12 @@ git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.4"
 
+[[deps.Formatting]]
+deps = ["Printf"]
+git-tree-sha1 = "8339d61043228fdd3eb658d86c926cb282ae72a8"
+uuid = "59287772-0a20-5a39-b81b-1366585eb4c0"
+version = "0.4.2"
+
 [[deps.Hyperscript]]
 deps = ["Test"]
 git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
@@ -220,15 +125,16 @@ uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
 version = "0.0.4"
 
 [[deps.HypertextLiteral]]
-git-tree-sha1 = "2b078b5a615c6c0396c77810d92ee8c6f470d238"
+deps = ["Tricks"]
+git-tree-sha1 = "c47c5fa4c5308f27ccaac35504858d8914e102f9"
 uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
-version = "0.9.3"
+version = "0.9.4"
 
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
-git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
+git-tree-sha1 = "d75853a0bdbfb1ac815478bacd89cd27b550ace6"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
-version = "0.2.2"
+version = "0.2.3"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -236,9 +142,34 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
-git-tree-sha1 = "3c837543ddb02250ef42f4738347454f95079d4e"
+git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.21.3"
+version = "0.21.4"
+
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "81dc6aefcbe7421bd62cb6ca0e700779330acff8"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.9.25"
+
+[[deps.LaTeXStrings]]
+git-tree-sha1 = "f2355693d6778a178ade15952b7ac47a4ff97996"
+uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+version = "1.3.0"
+
+[[deps.Latexify]]
+deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
+git-tree-sha1 = "f428ae552340899a935973270b8d98e5a31c49fe"
+uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+version = "0.16.1"
+
+    [deps.Latexify.extensions]
+    DataFramesExt = "DataFrames"
+    SymEngineExt = "SymEngine"
+
+    [deps.Latexify.weakdeps]
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -263,11 +194,28 @@ version = "1.10.2+0"
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[deps.LinearAlgebra]]
-deps = ["Libdl", "libblastrampoline_jll"]
+deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
+[[deps.LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "60168780555f3e663c536500aa790b6368adc02a"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "2.3.0"
+
+[[deps.MIMEs]]
+git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
+uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
+version = "0.1.4"
+
+[[deps.MacroTools]]
+deps = ["Markdown", "Random"]
+git-tree-sha1 = "9ee1618cbf5240e6d4e0371d6f24065083f60c48"
+uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+version = "0.5.11"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -276,14 +224,14 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.0+0"
+version = "2.28.2+0"
 
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2022.2.1"
+version = "2022.10.11"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
@@ -292,24 +240,59 @@ version = "1.2.0"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.20+0"
+version = "0.3.21+4"
+
+[[deps.OrderedCollections]]
+git-tree-sha1 = "2e73fe17cac3c62ad1aebe70d44c963c3cfdc3e3"
+uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+version = "1.6.2"
 
 [[deps.Parsers]]
-deps = ["Dates"]
-git-tree-sha1 = "85b5da0fa43588c75bb1ff986493443f821c70b7"
+deps = ["Dates", "PrecompileTools", "UUIDs"]
+git-tree-sha1 = "716e24b21538abc91f6205fd1d8363f39b442851"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.2.3"
+version = "2.7.2"
 
 [[deps.Pkg]]
-deps = ["Artifacts", "Dates", "Downloads", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
+deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.8.0"
+version = "1.9.2"
+
+[[deps.PlutoHooks]]
+deps = ["InteractiveUtils", "Markdown", "UUIDs"]
+git-tree-sha1 = "072cdf20c9b0507fdd977d7d246d90030609674b"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0774"
+version = "0.0.5"
+
+[[deps.PlutoLinks]]
+deps = ["FileWatching", "InteractiveUtils", "Markdown", "PlutoHooks", "Revise", "UUIDs"]
+git-tree-sha1 = "8f5fa7056e6dcfb23ac5211de38e6c03f6367794"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0420"
+version = "0.1.6"
+
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "LaTeXStrings", "Latexify", "Markdown", "PlutoLinks", "PlutoUI", "Random"]
+git-tree-sha1 = "542de5acb35585afcf202a6d3361b430bc1c3fbd"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.2.13"
 
 [[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "UUIDs"]
-git-tree-sha1 = "bf0a1121af131d9974241ba53f601211e9303a9e"
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "e47cd150dbe0443c3a3651bc5b9cbd5576ab75b7"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.37"
+version = "0.7.52"
+
+[[deps.PrecompileTools]]
+deps = ["Preferences"]
+git-tree-sha1 = "03b4c25b43cb84cee5c90aa9b5ea0a78fd848d2f"
+uuid = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+version = "1.2.0"
+
+[[deps.Preferences]]
+deps = ["TOML"]
+git-tree-sha1 = "00805cd429dcb4870060ff49ef443486c262e38e"
+uuid = "21216c6a-2e73-6563-6e65-726566657250"
+version = "1.4.1"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -328,6 +311,18 @@ git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
 
+[[deps.Requires]]
+deps = ["UUIDs"]
+git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
+uuid = "ae029012-a4dd-5104-9daa-d747884805df"
+version = "1.3.0"
+
+[[deps.Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "609c26951d80551620241c3d7090c71a73da75ab"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.5.6"
+
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
@@ -339,26 +334,42 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
 [[deps.SparseArrays]]
-deps = ["LinearAlgebra", "Random"]
+deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+version = "1.9.0"
+
+[[deps.SuiteSparse_jll]]
+deps = ["Artifacts", "Libdl", "Pkg", "libblastrampoline_jll"]
+uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
+version = "5.10.1+6"
 
 [[deps.TOML]]
 deps = ["Dates"]
 uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
-version = "1.0.0"
+version = "1.0.3"
 
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.1"
+version = "1.10.0"
 
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[deps.Tricks]]
+git-tree-sha1 = "aadb748be58b492045b4f56166b5188aa63ce549"
+uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
+version = "0.1.7"
+
+[[deps.URIs]]
+git-tree-sha1 = "b7a5e99f24892b6824a954199a45e9ffcc1c70f0"
+uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
+version = "1.5.0"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
@@ -370,12 +381,12 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.12+3"
+version = "1.2.13+0"
 
 [[deps.libblastrampoline_jll]]
-deps = ["Artifacts", "Libdl", "OpenBLAS_jll"]
+deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.1.1+0"
+version = "5.8.0+0"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -389,22 +400,9 @@ version = "17.4.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─c35189d5-fbe8-4637-b004-2d15b7399af5
+# ╟─96f82553-2690-4f86-af62-f0089c26bca8
+# ╟─d6e6b36e-7b7e-4e9c-ae3a-db4bed2f63b5
 # ╟─69f4feb4-a170-4a79-a316-8697021770c9
-# ╟─2ffec8d3-6168-4261-8846-e8269125077d
-# ╟─79c1ea6e-112c-47e2-a676-437f24298664
-# ╟─a5430a82-913f-439b-966d-73bad7f17283
-# ╟─cf6f6e8e-dc13-4473-9cdd-fa8604b6a9e2
-# ╟─c6bfaf1e-61a6-4d48-a169-58359ac8229d
-# ╟─0def1275-d89d-49c1-97bf-2181ff351e52
-# ╟─b293430c-8ebf-4c0e-9408-18c0bfdf8353
-# ╟─b8667519-5a04-48da-ae79-cb2efc51f56d
-# ╟─6160429a-6b98-4bfc-ab85-2f8109e99182
-# ╟─d69818c6-861d-4c86-a9b1-bbeaef2079f9
-# ╟─8f379769-4c9a-4152-aba9-88bc6fc4fae7
-# ╟─67cff2eb-1636-448c-b99f-a93c76571b73
-# ╟─5a361b3d-d3e3-4406-a949-f091af1ab566
-# ╟─a4be17de-7154-4788-be2b-5c17ce78b6a9
-# ╟─084993b2-062c-42de-a148-fb805cb667f8
+# ╟─bd00936a-3508-4bc9-9866-d7835baacea1
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
