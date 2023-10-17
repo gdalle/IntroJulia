@@ -1,6 +1,13 @@
 ### A Pluto.jl notebook ###
 # v0.19.29
 
+#> [frontmatter]
+#> title = "IntroJulia - Challenge"
+#> 
+#>     [[frontmatter.author]]
+#>     name = "Guillaume Dalle"
+#>     url = "https://gdalle.github.io/"
+
 using Markdown
 using InteractiveUtils
 
@@ -206,8 +213,8 @@ The grading rubric is not defined yet, but the following items will be taken int
 """
 
 # ╔═╡ Cell order:
-# ╠═fb467b58-0f09-4fdf-9fd5-36070ede39ab
-# ╠═fcc41a80-b44a-4eb8-ade6-13f075c5b72f
+# ╟─fb467b58-0f09-4fdf-9fd5-36070ede39ab
+# ╟─fcc41a80-b44a-4eb8-ade6-13f075c5b72f
 # ╟─51d9bad9-aebd-40bb-8682-688a57c876db
 # ╟─633fc28a-6138-11ed-2bf2-9fc45fc9a926
 # ╟─6fdbc050-ed89-48af-9b21-43aeb5bc103a

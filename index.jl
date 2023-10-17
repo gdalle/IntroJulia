@@ -3,7 +3,11 @@
 
 #> [frontmatter]
 #> title = "IntroJulia"
-#> description = "An interactive introduction to the Julia programming language"
+#> description = "An introduction to the Julia programming language, with a focus on optimization"
+#> 
+#>     [[frontmatter.author]]
+#>     name = "Guillaume Dalle"
+#>     url = "https://gdalle.github.io/"
 
 using Markdown
 using InteractiveUtils
@@ -28,15 +32,15 @@ TwoColumn(
 	md"""
 ## Part I
 
-1. [Good practices](good_practices.html)
-1. [Performance](performance.html)
+1. [Good practices](https://modernjuliaworkflows.github.io/)
+1. [Performance](performance.html) ([poll](https://app.wooclap.com/JULIAPERF))
 """,
 	md"""
 ## Part II
 
-1. [Graphs](graphs.html)
-1. [Linear programming](linear_programming.html)
-1. [Challenge](challenge.html )
+1. [Graphs](graphs.html) ([poll](https://app.wooclap.com/JULIAGRAPHS))
+1. [Linear programming](linear_programming.html) ([poll](https://app.wooclap.com/JULIALP))
+1. [Challenge](challenge.html)
 """,
 )
 
