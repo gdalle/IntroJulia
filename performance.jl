@@ -54,12 +54,13 @@ _Writing fast Julia_
 # ╔═╡ 72c0f5c8-fc2b-4b50-9c05-ea8c79990f2a
 SplitTwoColumn(
 	md"""
+> Poll: [Wooclap link](https://app.wooclap.com/JULIAPERF)
 !!! tip "Primary sources"
 	[Performance tips](https://docs.julialang.org/en/v1/manual/performance-tips/) in the Julia manual
 	""",
 	md"""
 !!! tip "Secondary sources"
-	[How to optimise Julia code: A practical guide](https://viralinstruction.com/posts/optimise/) + [What scientists must know about hardware to write fast code](https://viralinstruction.com/posts/hardware/)
+	[How to optimise Julia code: A practical guide](https://viralinstruction.com/posts/optimise/)
 	by Jakob Nybo Nissen
 """
 )
@@ -150,6 +151,14 @@ md"""
 md"""
 # 2. The toolbox
 """
+
+# ╔═╡ 1c91ee42-84a4-421f-a0e3-9a2179f3a9df
+md"""
+## Diagnose first, fix later
+"""
+
+# ╔═╡ fe960fd5-973b-4f34-80bc-691b035ebbc4
+blockquote("Premature optimization is the root of all evil. (Donald Knuth)")
 
 # ╔═╡ 0b4ac025-a4c9-41aa-b659-136e1dcd4cab
 md"""
@@ -313,6 +322,12 @@ let
 	Test.@inferred testfunction(A)
 end
 
+# ╔═╡ f29f7200-a70b-4713-bd92-4d6e1717aea1
+with_terminal() do
+	A = rand(10, 20)
+	InteractiveUtils.@code_warntype testfunction(A)
+end
+
 # ╔═╡ 6c84678c-5d21-4e8e-ad88-c75dd9969d4e
 let
 	A = rand(10, 20)
@@ -373,9 +388,25 @@ md"""
 - The end results should be equal up to numerical accuracy
 """
 
+# ╔═╡ add1e0fe-6655-4a57-9baa-658b010aa154
+md"""
+## Discussion
+"""
+
 # ╔═╡ 0dd724ac-72c2-466d-a5ed-c40e5bc10a79
 md"""
 # 4. The rabbit hole
+"""
+
+# ╔═╡ 745d023f-6487-4aab-b9cd-381aedaaf305
+md"""
+## Hardware
+"""
+
+# ╔═╡ 58e0cc49-bed7-48ad-a6f1-e32047a00e96
+md"""
+!!! tip "Secondary source"
+	[What scientists must know about hardware to write fast code](https://viralinstruction.com/posts/hardware/) by Jakob Nybo Nissen
 """
 
 # ╔═╡ 14d088d5-aa2d-4b6e-a0bc-7a4a24e60231
@@ -1037,6 +1068,8 @@ version = "17.4.0+0"
 # ╟─f00b2d65-0a60-464e-9daa-28b8a8fea1f1
 # ╟─ada53d3e-00d8-45eb-8d79-c1cfe08f8832
 # ╟─75b55303-3c1a-4ce0-8529-a906a32963e7
+# ╟─1c91ee42-84a4-421f-a0e3-9a2179f3a9df
+# ╟─fe960fd5-973b-4f34-80bc-691b035ebbc4
 # ╟─0b4ac025-a4c9-41aa-b659-136e1dcd4cab
 # ╟─e88aa63f-0496-4daf-a1a6-9280d5507d8a
 # ╠═67a3469f-a119-4e30-bbaa-a5ff30b7acfe
@@ -1056,6 +1089,7 @@ version = "17.4.0+0"
 # ╟─dbb15720-af54-4d12-8f51-414fd58e1bfb
 # ╟─f91e3455-5fa4-46c9-aeaa-12d73638beaf
 # ╠═8d63d676-19f5-47b1-a5d6-20576f03de3b
+# ╠═f29f7200-a70b-4713-bd92-4d6e1717aea1
 # ╠═6c84678c-5d21-4e8e-ad88-c75dd9969d4e
 # ╟─83d59131-2638-4e28-9daf-cbe8a14116c6
 # ╟─8df3e36b-942d-49a3-bdf8-a75db1877e34
@@ -1063,7 +1097,10 @@ version = "17.4.0+0"
 # ╟─3b9abb50-72c8-48e7-b815-d8f086c44792
 # ╟─fe38657c-fa30-4575-ad33-0d1571d26a9e
 # ╟─dd888356-90ae-4bf0-8548-3994462af5ef
+# ╟─add1e0fe-6655-4a57-9baa-658b010aa154
 # ╟─0dd724ac-72c2-466d-a5ed-c40e5bc10a79
+# ╟─745d023f-6487-4aab-b9cd-381aedaaf305
+# ╟─58e0cc49-bed7-48ad-a6f1-e32047a00e96
 # ╟─14d088d5-aa2d-4b6e-a0bc-7a4a24e60231
 # ╟─294a64e8-d8fa-4cc5-a514-b82ceb06196e
 # ╟─3b163c22-7f66-495d-b77b-6f7138d17f66
