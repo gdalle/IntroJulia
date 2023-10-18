@@ -70,6 +70,7 @@ md"""
 Open a Julia REPL and install PkgTemplates.jl:
 ```julia
 using Pkg
+
 Pkg.add("PkgTemplates")
 ```
 """
@@ -79,9 +80,18 @@ md"""
 Create a new template with your GitHub username and a carefully selected set of optional plugins:
 ```julia
 using PkgTemplates
+
+plugins=[
+	Codecov(),
+	Documenter{GitHubActions}(),
+	Git(manifest=true, ssh=true),
+	Formatter(style="blue")
+]
+
 templ = Template(
-	user="yourusername", 
-	plugins=[Documenter{GitHubActions}(), Formatter()]
+	user="gdalle",
+	julia=v"1.9",
+	plugins=plugins,
 )
 ```
 """
@@ -99,7 +109,7 @@ md"""
 Open a terminal in your package folder and push it to the repository's main branch.
 ```shell
 cd .julia/dev/MyPackage
-git push --set-upstream origin main
+git push origin main
 ```
 """
 
