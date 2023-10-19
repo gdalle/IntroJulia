@@ -14,7 +14,6 @@ using InteractiveUtils
 # ╔═╡ f4b3ab20-5c8f-11ee-22f7-b3466c0a577e
 begin
 	import BenchmarkTools
-	using Cthulhu
 	using JET
 	using LinearAlgebra
 	using Pluto
@@ -273,25 +272,29 @@ begin
 end
 
 # ╔═╡ a5060ea2-7001-43ab-9201-e7d1cda33dbd
-function testfunction(A)
-	matmul = MatrixMultiplier(A)
-	n, m = length(A[:, 1]), length(A[1, :])
-	b = rand(m)
-	c = matmul(b)
-	l = sum(abs2(c[i]) for i in 1:n)
-	return sqrt(l)
-end
+begin
+	function testfunction(A)
+		matmul = MatrixMultiplier(A)
+		n, m = length(A[:, 1]), length(A[1, :])
+		b = rand(m)
+		c = matmul(b)
+		l = sum(abs2(c[i]) for i in 1:n)
+		return sqrt(l)
+	end
+
+	testfunction(rand(2, 2))
+end;
 
 # ╔═╡ 24f39e1f-da52-4df8-b70d-b11eb58a04fe
 let
-	A = rand(10, 20)
-	ProfileCanvas.@profview for k in 1:10000; testfunction(A); end
+	A = rand(100, 50)
+	ProfileCanvas.@profview for k in 1:10_000; testfunction(A); end
 end
 
 # ╔═╡ fbe7b77e-56b2-4839-9f57-42746a6d2c2c
 let
-	A = rand(10, 20)
-	ProfileCanvas.@profview_allocs for k in 1:10000; testfunction(A); end
+	A = rand(100, 50)
+	ProfileCanvas.@profview_allocs for k in 1:10_000; testfunction(A); end
 end
 
 # ╔═╡ dbb15720-af54-4d12-8f51-414fd58e1bfb
@@ -328,11 +331,44 @@ with_terminal() do
 	InteractiveUtils.@code_warntype testfunction(A)
 end
 
+# ╔═╡ 1f68d003-a2c3-4f30-901d-831ff656a101
+md"""
+Unfortunately, `@inferred` and `@code_warntype` only go one level down: they're blind to what happens deeper in the call stack.
+"""
+
+# ╔═╡ 9f052683-c12a-4439-b1ee-7e5d380656db
+function testfunctionwrapper(A)
+	testfunction(A)
+	return true
+end
+
+# ╔═╡ fb48aea6-0d44-4efb-8412-7c1aad5bc70a
+let
+	A = rand(10, 20)
+	Test.@inferred testfunctionwrapper(A)
+end
+
+# ╔═╡ e13f7d0c-dc6a-493e-8fe8-4507ca60f192
+with_terminal() do
+	A = rand(10, 20)
+	InteractiveUtils.@code_warntype testfunctionwrapper(A)
+end
+
+# ╔═╡ e3990f5a-a5e9-492f-8892-c3a531acf680
+md"""
+On the other hand, JET.jl and Cthulhu.jl inspect the full call stack for type inference issues.
+"""
+
 # ╔═╡ 6c84678c-5d21-4e8e-ad88-c75dd9969d4e
 let
 	A = rand(10, 20)
-	JET.@report_opt testfunction(A)
+	JET.@report_opt testfunctionwrapper(A)
 end
+
+# ╔═╡ 4f101b1e-4932-481f-889f-bf42104a278d
+md"""
+The latest version of Cthulhu.jl is best used in VSCode, cue live demo.
+"""
 
 # ╔═╡ 83d59131-2638-4e28-9daf-cbe8a14116c6
 md"""
@@ -454,7 +490,6 @@ Also relevant:
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-Cthulhu = "f68482b8-f384-11e8-15f7-abe071a5a75f"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
@@ -466,7 +501,6 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 BenchmarkTools = "~1.3.2"
-Cthulhu = "~2.9.3"
 JET = "~0.8.15"
 Pluto = "~0.19.29"
 PlutoTeachingTools = "~0.2.13"
@@ -481,18 +515,13 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "c7f663d767373a90b9eceabbe2b9512a010b1a18"
+project_hash = "afdd2b6617fe2e57e340ff30c9d016784e71c8ab"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
 git-tree-sha1 = "91bd53c39b9cbfb5ef4b015e8b582d344532bd0a"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
 version = "1.2.0"
-
-[[deps.AbstractTrees]]
-git-tree-sha1 = "faa260e4cb5aba097a73fab382dd4b5819d8ec8c"
-uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
-version = "0.4.4"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -550,12 +579,6 @@ git-tree-sha1 = "4358750bb58a3caefd5f37a4a0c5bfdbbf075252"
 uuid = "5218b696-f38b-4ac9-8b61-a12ec717816d"
 version = "0.17.6"
 
-[[deps.Cthulhu]]
-deps = ["CodeTracking", "FoldingTrees", "InteractiveUtils", "JuliaSyntax", "PrecompileTools", "Preferences", "REPL", "TypedSyntax", "UUIDs", "Unicode", "WidthLimitedIO"]
-git-tree-sha1 = "2daf7e844be87b63d9b6d50e2f4d4f0500f6ede8"
-uuid = "f68482b8-f384-11e8-15f7-abe071a5a75f"
-version = "2.9.3"
-
 [[deps.DataAPI]]
 git-tree-sha1 = "8da84edb865b0b5b0100c0666a9bc9a0b71c553c"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
@@ -598,12 +621,6 @@ deps = ["Statistics"]
 git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.4"
-
-[[deps.FoldingTrees]]
-deps = ["AbstractTrees", "REPL"]
-git-tree-sha1 = "d94efd85f2fe192cdf664aa8b7c431592faed59e"
-uuid = "1eca21be-9b9b-4ed8-839a-6d8ae26b1781"
-version = "1.2.1"
 
 [[deps.Formatting]]
 deps = ["Printf"]
@@ -673,11 +690,6 @@ deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
 git-tree-sha1 = "81dc6aefcbe7421bd62cb6ca0e700779330acff8"
 uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
 version = "0.9.25"
-
-[[deps.JuliaSyntax]]
-git-tree-sha1 = "d080fa670adde72509d03d91bf6ce6da2addb4be"
-uuid = "70703baa-626e-46a2-a12c-08ffd08c73b4"
-version = "0.4.6"
 
 [[deps.LaTeXStrings]]
 git-tree-sha1 = "f2355693d6778a178ade15952b7ac47a4ff97996"
@@ -1002,12 +1014,6 @@ git-tree-sha1 = "aadb748be58b492045b4f56166b5188aa63ce549"
 uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
 version = "0.1.7"
 
-[[deps.TypedSyntax]]
-deps = ["CodeTracking", "JuliaSyntax"]
-git-tree-sha1 = "79ea8a4993ed5d341580c4044433e0259fceb4c6"
-uuid = "d265eb64-f81a-44ad-a842-4247ee1503de"
-version = "1.2.3"
-
 [[deps.URIs]]
 git-tree-sha1 = "b7a5e99f24892b6824a954199a45e9ffcc1c70f0"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
@@ -1019,12 +1025,6 @@ uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [[deps.Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
-
-[[deps.WidthLimitedIO]]
-deps = ["Unicode"]
-git-tree-sha1 = "71142739e695823729a335e9bc124ef41ec1433a"
-uuid = "b8c1c048-cf81-46c6-9da0-18c1d99e41f2"
-version = "1.0.1"
 
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
@@ -1090,7 +1090,13 @@ version = "17.4.0+0"
 # ╟─f91e3455-5fa4-46c9-aeaa-12d73638beaf
 # ╠═8d63d676-19f5-47b1-a5d6-20576f03de3b
 # ╠═f29f7200-a70b-4713-bd92-4d6e1717aea1
+# ╟─1f68d003-a2c3-4f30-901d-831ff656a101
+# ╠═9f052683-c12a-4439-b1ee-7e5d380656db
+# ╠═fb48aea6-0d44-4efb-8412-7c1aad5bc70a
+# ╠═e13f7d0c-dc6a-493e-8fe8-4507ca60f192
+# ╟─e3990f5a-a5e9-492f-8892-c3a531acf680
 # ╠═6c84678c-5d21-4e8e-ad88-c75dd9969d4e
+# ╟─4f101b1e-4932-481f-889f-bf42104a278d
 # ╟─83d59131-2638-4e28-9daf-cbe8a14116c6
 # ╟─8df3e36b-942d-49a3-bdf8-a75db1877e34
 # ╟─bfc0b87c-6c05-43ae-88d5-40e10c2a6374
