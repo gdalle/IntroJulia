@@ -52,6 +52,13 @@ md"""
 ## On GitHub
 """
 
+# ╔═╡ 3aa9a8b3-48e5-4f5b-9fd7-8371cd7e35c5
+md"""
+Choose your [GitHub authentication method](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-authentication-to-github#authenticating-with-the-command-line):
+- either with HTTPS and an access token
+- or with SSH and a private/public key pair
+"""
+
 # ╔═╡ da13ac60-a8f4-49f7-9bfe-8d8cec877088
 md"""
 Create a [new repository](https://github.com/new) called MyPackage.jl:
@@ -67,31 +74,48 @@ md"""
 
 # ╔═╡ 7b063eff-9530-49d8-b791-720d6a637295
 md"""
-Open a Julia REPL and install PkgTemplates.jl:
+Open a Julia REPL, install and load PkgTemplates.jl:
 ```julia
 using Pkg
-
 Pkg.add("PkgTemplates")
+using PkgTemplates
 ```
 """
 
 # ╔═╡ 3d7185a0-30c6-4cbe-ae52-05b980c1912a
-md"""
-Create a new template with your GitHub username and a carefully selected set of optional plugins:
+SplitTwoColumn(
+	md"""
+If you authenticate with HTTPS, select these plugins:
 ```julia
-using PkgTemplates
-
+plugins=[
+	Codecov(),
+	Documenter{GitHubActions}(),
+	Git(manifest=true, ssh=false),
+	Formatter(style="blue")
+]
+```
+""",
+	md"""
+If you authenticate with SSH, select these plugins:
+```julia
 plugins=[
 	Codecov(),
 	Documenter{GitHubActions}(),
 	Git(manifest=true, ssh=true),
 	Formatter(style="blue")
 ]
+```
+"""
+)
 
+# ╔═╡ 89df2264-64ce-410e-ac7b-24e8c4940b53
+md"""
+Create a new template with your GitHub username:
+```julia
 templ = Template(
 	user="gdalle",
 	julia=v"1.9",
-	plugins=plugins,
+	plugins=plugins
 )
 ```
 """
@@ -118,11 +142,16 @@ md"""
 ## On GitHub again
 """
 
+# ╔═╡ 5a1e8169-7330-4b68-b451-3a0ece7cf74e
+md"""
+Wait until the first "CI" workflow is complete.
+"""
+
 # ╔═╡ 34d86725-4698-4706-a148-2f5a064d5b1a
 md"""
 Go to the repository settings of MyPackage.jl, and in the "Pages" tab:
 1. select "Build from a branch"
-2. choose the branch called `gh-pages` (root) as the source.
+2. choose the new branch called `gh-pages` (root) as the source
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -175,9 +204,9 @@ version = "1.3.5"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
-git-tree-sha1 = "cd67fc487743b2f0fd4380d4cbd3a24660d0eec8"
+git-tree-sha1 = "02aa26a4cf76381be7f66e020a3eddeb27b0a092"
 uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
-version = "0.7.3"
+version = "0.7.2"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -605,13 +634,10 @@ deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.TranscodingStreams]]
-git-tree-sha1 = "7c9196c8c83802d7b8ca7a6551a0236edd3bf731"
+deps = ["Random", "Test"]
+git-tree-sha1 = "9a6ae7ed916312b41236fcef7e0af564ef934769"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.10.0"
-weakdeps = ["Random", "Test"]
-
-    [deps.TranscodingStreams.extensions]
-    TestExt = ["Test", "Random"]
+version = "0.9.13"
 
 [[deps.Tricks]]
 git-tree-sha1 = "eae1bb484cd63b36999ee58be2de6c178105112f"
@@ -619,9 +645,9 @@ uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
 version = "0.1.8"
 
 [[deps.URIs]]
-git-tree-sha1 = "67db6cc7b3821e19ebe75791a9dd19c9b1188f2b"
+git-tree-sha1 = "b7a5e99f24892b6824a954199a45e9ffcc1c70f0"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.5.1"
+version = "1.5.0"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
@@ -659,13 +685,16 @@ version = "17.4.0+0"
 # ╟─1a996fe9-804e-4e29-ac16-3ec5bb12a592
 # ╟─56ad2d31-82df-4d9a-bb82-20708414f118
 # ╟─4040ff7b-5bdd-4c75-97bb-6c283c467a43
+# ╟─3aa9a8b3-48e5-4f5b-9fd7-8371cd7e35c5
 # ╟─da13ac60-a8f4-49f7-9bfe-8d8cec877088
 # ╟─2e2e40db-12e5-4f9d-85de-bbd3ffc8f61d
 # ╟─7b063eff-9530-49d8-b791-720d6a637295
 # ╟─3d7185a0-30c6-4cbe-ae52-05b980c1912a
+# ╟─89df2264-64ce-410e-ac7b-24e8c4940b53
 # ╟─b06bee6e-9acf-4584-9655-4fbe860e007e
 # ╟─0f8f161a-b062-4653-ab7a-6206bb846d84
 # ╟─603f10ac-c29b-450b-b12c-9764da7dffe2
+# ╟─5a1e8169-7330-4b68-b451-3a0ece7cf74e
 # ╟─34d86725-4698-4706-a148-2f5a064d5b1a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
