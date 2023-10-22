@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.19
+# v0.19.29
 
 #> [frontmatter]
 #> title = "IntroJulia - graphs"
@@ -11,91 +11,142 @@ using InteractiveUtils
 begin
 	using BenchmarkTools
 	using DataStructures
+	import GraphPlot
+	import Graphs
 	using PlutoTeachingTools
 	using PlutoUI
+	using ProfileCanvas
 	using SparseArrays
 end
-
-# ╔═╡ 630db0fa-22c7-4dc4-b85d-695ffed0e110
-md"""
-!!! danger "Introduction to Julia - graphs"
-	🏠[Course home](https://gdalle.github.io/IntroJulia/)
-"""
 
 # ╔═╡ 66106324-994f-4751-8a1e-0b307380bd11
 TableOfContents()
 
+# ╔═╡ 9eb4b899-4b05-4301-9e65-13029b25cdbb
+md"""
+# Graphs in Julia
+"""
+
+# ╔═╡ b84043ea-bb4d-4527-b31f-76cc90ebc7dc
+md"""
+Goals of the lecture:
+- knowing the various graph types and storage modes
+- understanding the role of an interface
+- exploring performance differences between interface implementations
+"""
+
 # ╔═╡ 683da7e5-2794-4766-a026-cb55bd23690f
 html"<button onclick=present()>Present</button>"
 
-# ╔═╡ 4799ca44-7847-41cc-a101-f8ce5c4f255e
+# ╔═╡ bf07f944-19a0-4d3a-bdae-4ef1ed2d9f64
 md"""
-In this notebook, we give an overview of graph optimization problems and explain the fundamental principle behind [Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl), the reference library for graphs in Julia.
+# From theory to implementation
 """
 
-# ╔═╡ 823205a4-170a-4b69-bce4-3ce39d17d469
+# ╔═╡ 07294a71-73a0-4993-b076-671fcc9c8d93
 md"""
-# Graphs as an interface
-"""
-
-# ╔═╡ bec05993-17de-4121-af30-2ae15956c6e1
-md"""
-Most graph algorithms only make use of a few basic subroutines, which can be implemented in lots of different ways depending on our needs.
-That is what allows you to [create your own graph format](https://juliagraphs.org/Graphs.jl/dev/ecosystem/interface/) and make it compatible with the entire ecosystem very easily.
-"""
-
-# ╔═╡ 86d3573e-5ea3-4fd3-a0a9-32e8dd946cc4
-md"""
-## Graph definition
+## One mathematical object
 """
 
 # ╔═╡ c6310180-499a-4dd1-bda3-8d86f791c1b0
 md"""
-A weighted graph $G = (V, E, w)$ is composed of:
+A graph $G = (\mathcal{V}, \mathcal{E})$ is composed of:
 
-- a set $V$ of vertices, often called $u$ or $v$, with $|V|=n$
-- a set $E$ of edges, often denoted by $e = (u, v)$, with $|E|=m$
-- a vector $w$ of weight values $w_e$
+- a set $\mathcal{V}$ of vertices, often called $u$ or $v$, with $|\mathcal{V}|=n$
+- a set $\mathcal{E}$ of edges, often denoted by $e = (u, v)$, with $|\mathcal{E}|=m$
 
-If the edges are directed ($u \to v$) we speak of "nodes" and "arcs" instead.
+A weighted graph $G = (\mathcal{V}, \mathcal{E}, w)$ also has weight values $w_e$ for each edge.
+"""
+
+# ╔═╡ f9290e78-f1e9-44d1-90fc-d7c002623cf4
+md"""
+## Several storage options
+"""
+
+# ╔═╡ cc26831a-fab9-4e65-8e4b-4c89371c6970
+md"""
+- list of edges
+- adjacency list: $$v \in L[u] \iff (u, v) \in \mathcal{E}$$
+- adjacency matrix: $$A_{u,v} = 1 \iff (u, v) \in \mathcal{E}$$
 
 Visualisation: [here](https://visualgo.net/en/graphds)
 """
 
+# ╔═╡ f4059c54-e68b-4004-b3ee-78a7fca03dcc
+md"""
+## In real life...
+"""
+
+# ╔═╡ f07cd793-3570-4b0d-9f8a-f8835304480b
+TwoColumnWideRight(
+	md"""
+- Directed vs. undirected
+- Sparse vs. dense
+- Edge weights?
+- Other metadata?
+	""",
+	md"""
+- Self-loops (non-simple graphs)?
+- Duplicated edges (multigraphs)?
+- Edges with more vertices (hypergraphs)?
+- Infinite graphs?
+"""
+)
+
+# ╔═╡ aee9adf7-92ca-483f-a1b3-744b9a07970d
+md"""
+## Task
+"""
+
+# ╔═╡ 5e0e9565-0798-4a92-bafe-e8e69d4ab7f9
+md"""
+Both graph types need a constructor which accepts a vector of edges (represented as tuples `(u, v)`).
+"""
+
+# ╔═╡ e1520e15-839e-4ff4-8b93-023a1b6a78e3
+md"""
+# The interface abstraction
+"""
+
+# ╔═╡ bec05993-17de-4121-af30-2ae15956c6e1
+md"""
+Most graph algorithms only make use of a few basic functions, which can be implemented in lots of different ways depending on our needs.
+That is what allows you to [create your own graph format](https://juliagraphs.org/Graphs.jl/stable/ecosystem/interface/) and make it compatible with the entire ecosystem.
+
+Here we demonstrate this paradigm with a simple example.
+"""
+
 # ╔═╡ 5230069e-a2aa-40fe-a2e5-aceefe6b6635
 md"""
-## Dijkstra's algorithm
+## Breadth-first search
 """
 
 # ╔═╡ abc30a8b-b728-4936-a9b3-cdbf210a265d
 md"""
-A path $P = (v_1, ..., v_k)$ is a sequence of vertices linked by edges.
-Many concrete problems boil down to finding the shortest path between two vertices $s$ (source) and $d$ (destination) in a weighted graph.
-The most famous algorithm for shortest paths is [Dijkstra's algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm), which works on graphs with nonnegative edge weights.
+A simple graph traversal algorithm.
 
-Visualization: [here](https://visualgo.net/en/sssp)
+Description: [here](https://en.wikipedia.org/wiki/Breadth-first_search) / Visualization: [here](https://visualgo.net/en/dfsbfs)
 """
 
-# ╔═╡ 789c7a0a-870d-4fdb-a11d-4ab314cbbce9
+# ╔═╡ e9f3585c-0b5b-497a-9a5f-55cb5963d7ac
 md"""
-## Necessary methods
-"""
-
-# ╔═╡ 1c6fd34c-80c7-4b8f-b9fb-9ac1aa74db04
-md"""
-For Dijkstra's algorithm, we only need our graph structure to provide a handful of methods.
+## Defining the interface
 """
 
 # ╔═╡ 981d2bc0-3030-4d4a-a2c3-ae6c3819838d
 """
-	AbstractWeightedGraph
+	AbstractGraph
 
-To satisfy this interface, a concrete type must implement the following methods:
+Any subtype must implement the following methods:
 - `nb_vertices(g)`
-- `edge_weight(g, u, v)`
 - `outneighbors(g, u)`
 """
-abstract type AbstractWeightedGraph end
+abstract type AbstractGraph end
+
+# ╔═╡ 789c7a0a-870d-4fdb-a11d-4ab314cbbce9
+md"""
+## Defining the functions
+"""
 
 # ╔═╡ 1de57dcb-85c0-44c0-b225-f81194ffea06
 """
@@ -105,21 +156,41 @@ Count the vertices in `g`.
 """
 function nb_vertices end
 
-# ╔═╡ caa8f63c-ec6c-45c4-9f23-c853bce3a929
-"""
-	edge_weight(g, u, v)
-
-Return the weight of the edge `(u, v)` in `g`.
-"""
-function edge_weight end
-
 # ╔═╡ c4d83106-f940-4c69-bb95-8effe7e8bd50
 """
-	outneighbors(g, u)
+	outgoing_neighbors(g, u)
 
 Return an iterable of the vertices `v` such that `(u, v)` is an edge of `g`.
 """
-function outneighbors end
+function outgoing_neighbors end
+
+# ╔═╡ 7448ed44-0f65-4d4a-b4f4-20b165a34a44
+md"""
+Compatibility with Graphs.jl
+"""
+
+# ╔═╡ 2abd6312-b4f5-4301-8881-d86ddfce66cd
+begin
+	nb_vertices(g::Graphs.AbstractGraph) = Graphs.nv(g)
+	outgoing_neighbors(g::Graphs.AbstractGraph, u) = Graphs.outneighbors(g, u)
+end
+
+# ╔═╡ 3693c497-5420-48cf-ae65-cbed6f60ae36
+md"""
+## Task
+"""
+
+# ╔═╡ 8d31706c-c953-4d96-af97-ff661522f69f
+md"""
+## An alternate view: graphs as matrices
+"""
+
+# ╔═╡ 34cb6e80-43b9-48db-853a-d51ad53164ac
+md"""
+There are deep connections between linear algebra and graph theory.
+
+The package [SuiteSparseGraphBLAS.jl](https://github.com/JuliaSparse/SuiteSparseGraphBLAS.jl): leverages them for fast algorithms.
+"""
 
 # ╔═╡ dbeda7e3-ce02-49c2-93b1-1e2e712c9c09
 md"""
@@ -129,6 +200,11 @@ md"""
 # ╔═╡ f4fc6854-a44d-4bfd-88bd-a3b9eaf95332
 md"""
 For simplicity, we assume that the graph vertices are numbered from $1$ to $n$, i.e. that $V = \{1, ..., n\}$.
+"""
+
+# ╔═╡ d89807e0-612d-4794-b06f-b4a233ef9abe
+md"""
+## Test case
 """
 
 # ╔═╡ 055d49e6-8b2e-462d-abe3-bf3c5c97f61c
@@ -144,14 +220,13 @@ grid_index_to_coord(v; I, J) = ((v-1) % I + 1, (v-1) ÷ I + 1)
 
 # ╔═╡ 3931bfba-cb35-487d-a798-923e8ee454d2
 function grid_edges(I, J)
-	edges = Tuple{Int,Int,Float64}[]
+	edges = Tuple{Int,Int}[]
 	for iᵤ in 1:I, jᵤ in 1:J
 		u = grid_coord_to_index(iᵤ, jᵤ; I, J)
 		for (iᵥ, jᵥ) in ((iᵤ+1, jᵤ), (iᵤ-1, jᵤ), (iᵤ, jᵤ+1), (iᵤ, jᵤ-1))
 			if 1 <= iᵥ <= I && 1 <= jᵥ <= J
 				v = grid_coord_to_index(iᵥ, jᵥ; I, J)
-				wᵤᵥ = rand(Float64)
-				push!(edges, (u, v, wᵤᵥ))
+				push!(edges, (u, v))
 			end
 		end
 	end
@@ -159,10 +234,10 @@ function grid_edges(I, J)
 end
 
 # ╔═╡ 57f66ed6-b4aa-4ab0-9eaa-02f12983594a
-I, J = 50, 100
-
-# ╔═╡ 570f7368-5464-4817-8040-f95dddf8da05
-edges = grid_edges(I, J)
+let
+	I, J = 2, 3
+	edges = grid_edges(I, J)
+end
 
 # ╔═╡ de48b3f3-3cba-45b9-b0ef-eb7cfbb2c7aa
 md"""
@@ -170,151 +245,67 @@ md"""
 """
 
 # ╔═╡ 669c587c-c877-4e9e-a934-2850c4208147
-struct ListGraph <: AbstractWeightedGraph
-	n::Int
-	edges::Vector{Tuple{Int,Int,Float64}}
+struct ListGraph <: AbstractGraph
+	edges::Vector{Tuple{Int,Int}}
 end
 
 # ╔═╡ 55252064-0f58-44ac-a836-981a6cd8227a
-nb_vertices(g::ListGraph) = g.n
-
-# ╔═╡ a1bde286-3806-4203-a461-81fb6c595492
-function edge_weight(g::ListGraph, u, v)
-	for (x, y, w) in g.edges
-		if (x, y) == (u, v)
-			return w
-		end
-	end
-end
+nb_vertices(g::ListGraph) = max(maximum(first, g.edges), maximum(last, g.edges))
 
 # ╔═╡ f775760a-1311-4060-a347-aa2d631be0e4
-function outneighbors(g::ListGraph, u)
-	out = Int[]
-	for (x, y, w) in g.edges
-		if x == u
-			push!(out, y)
-		end
-	end
-	return out
+function outgoing_neighbors(g::ListGraph, u)
+	return (v for (u_bis, v) in g.edges if u_bis == u)
 end
+
+# ╔═╡ 4d38d5dd-6ee7-4847-b3d4-b139c4e52cfb
+md"""
+## Adjacency list
+"""
+
+# ╔═╡ 182a5805-f90d-4b1b-a874-c5da4aaf7c51
+md"""
+Copy-paste code from group 1
+"""
 
 # ╔═╡ db189e71-79af-48d4-bd94-6c30bef943a3
 md"""
-## Dense adjacency matrix
+## Adjacency matrix
 """
 
-# ╔═╡ 971fe1f5-7b9c-477c-9a0e-dd1a574487e5
+# ╔═╡ 7dc96a58-5490-4046-8882-066ceb3c2932
 md"""
-The adjacency matrix $A \in \mathbb{R}^{n \times n}$ of a weighted graph $G = (V, E, w)$ is defined as follows:
-
-$$A_{u,v} = \begin{cases} w_{(u,v)} & \text{if $(u, v) \in E$} \\ 0 & \text{otherwise} \end{cases}$$
+Copy-paste code from group 2
 """
-
-# ╔═╡ 8ad780bf-0a3c-4fff-8a5c-154a576ee45a
-begin
-	struct DenseMatrixGraph <: AbstractWeightedGraph
-		A::Matrix{Float64}
-	end
-	
-	function DenseMatrixGraph(n, edges)
-		A = zeros(Float64, n, n)
-		for (u, v, wᵤᵥ) in edges
-			A[u, v] = wᵤᵥ
-		end
-		return DenseMatrixGraph(A)
-	end
-end
-
-# ╔═╡ 33609b23-0e1d-411d-a950-fbc964727fe7
-nb_vertices(g::DenseMatrixGraph) = size(g.A, 1)
-
-# ╔═╡ 49639fa6-5e65-47ec-ba47-51717e73827c
-edge_weight(g::DenseMatrixGraph, u, v) = g.A[u, v]
-
-# ╔═╡ 37c5bb0b-6fca-45fc-9c3d-8806bf1c2ee6
-md"""
-**What if we transpose?**
-"""
-
-# ╔═╡ 71c5d9e4-2785-406c-8c6d-3d88a541b0f0
-begin
-	struct TransposedDenseMatrixGraph <: AbstractWeightedGraph
-		Aᵀ::Matrix{Float64}
-	end
-	
-	function TransposedDenseMatrixGraph(n, edges)
-		Aᵀ = zeros(Float64, n, n)
-		for (u, v, wᵤᵥ) in edges
-			Aᵀ[v, u] = wᵤᵥ
-		end
-		return TransposedDenseMatrixGraph(Aᵀ)
-	end
-end
-
-# ╔═╡ 6fb680c3-986c-4fd4-b6b3-5164eb73cc30
-nb_vertices(g::TransposedDenseMatrixGraph) = size(g.Aᵀ, 1)
-
-# ╔═╡ 66f24701-1556-4881-a1fb-6f0e41165adf
-edge_weight(g::TransposedDenseMatrixGraph, u, v) = g.Aᵀ[v, u]
 
 # ╔═╡ 778d9984-f09e-4b65-8b6d-07323dc0e39c
 md"""
-## Sparse adjacency matrix
+## Sparse transposed adjacency matrix
 """
 
 # ╔═╡ abb0457d-4201-41df-957e-6d1d18fd29a1
 md"""
-When the average degree of a vertex is small compared to $n$, the adjacency matrix is sparse.
-"""
+Two ideas to make matrices faster:
+- For outgoing neighbors, we want the rows of the adjacency matrix in [contiguous memory slots](https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-column-major)
+- If the average degree of a vertex is small, the adjacency matrix has many zeros we don't need.
 
-# ╔═╡ 2c7772f2-e12a-4c9f-aede-19620d6fa03a
-begin
-	struct SparseMatrixGraph <: AbstractWeightedGraph
-		A::SparseMatrixCSC{Float64,Int}
-	end
-	
-	function SparseMatrixGraph(n, edges)
-		U, V, W = Int[], Int[], Float64[]
-		for (u, v, wᵤᵥ) in edges
-			push!(U, u); push!(V, v); push!(W, wᵤᵥ)
-		end
-		A = sparse(U, V, W, n, n)
-		return SparseMatrixGraph(A)
-	end
-end
-
-# ╔═╡ 0633e202-4ebf-4fdf-b0e9-581b075510fc
-nb_vertices(g::SparseMatrixGraph) = size(g.A, 1)
-
-# ╔═╡ 15cd794b-598c-4066-ae1f-2dd3e40c7eff
-edge_weight(g::SparseMatrixGraph, u, v) = g.A[u, v]
-
-# ╔═╡ 44642265-f22f-4b55-ba31-a5979f386b30
-function outneighbors(g::SparseMatrixGraph, u)
-	return g.A[u, :].nzind
-end
-
-# ╔═╡ 232739d5-f984-4679-a7bb-09f9066df9bf
-md"""
-**What if we transpose?**
-"""
-
-# ╔═╡ 8cf9e88b-ad56-4e9e-93b4-61c99f5fe00a
-md"""
-We can take advantage of the [CSC format](https://docs.julialang.org/en/v1/stdlib/SparseArrays/#man-csc) for sparse matrices by storing the transpose of the adjacency matrix instead.
+The associated tweaks:
+- Store the transpose of the adjacency matrix
+- Use a [sparse matrix format](https://docs.julialang.org/en/v1/stdlib/SparseArrays/#man-csc)
 """
 
 # ╔═╡ e35d80c1-043b-4152-b005-c579f2c1557d
 begin
-	struct TransposedSparseMatrixGraph <: AbstractWeightedGraph
-		Aᵀ::SparseMatrixCSC{Float64,Int}
+	struct TransposedSparseMatrixGraph <: AbstractGraph
+		Aᵀ::SparseMatrixCSC{Bool,Int}
 	end
 	
-	function TransposedSparseMatrixGraph(n, edges)
-		U, V, W = Int[], Int[], Float64[]
-		for (u, v, wᵤᵥ) in edges
-			push!(U, u); push!(V, v); push!(W, wᵤᵥ)
+	function TransposedSparseMatrixGraph(edges)
+		n = max(maximum(first, edges), maximum(last, edges))
+		U, V = Int[], Int[]
+		for (u, v) in edges
+			push!(U, u); push!(V, v)
 		end
+		W = ones(Bool, length(edges))
 		Aᵀ = sparse(V, U, W, n, n)
 		return TransposedSparseMatrixGraph(Aᵀ)
 	end
@@ -323,144 +314,105 @@ end
 # ╔═╡ 1f8b678c-dbb5-4155-806c-fd072846bf56
 nb_vertices(g::TransposedSparseMatrixGraph) = size(g.Aᵀ, 1)
 
-# ╔═╡ 0e48f9d6-04e9-4d88-9949-43066c31d0c2
-edge_weight(g::TransposedSparseMatrixGraph, u, v) = g.Aᵀ[v, u]
-
 # ╔═╡ 5ca4bfab-13a5-4455-92cf-289ebfbb61a9
-function outneighbors(g::TransposedSparseMatrixGraph, u)
+function outgoing_neighbors(g::TransposedSparseMatrixGraph, u)
     return @view g.Aᵀ.rowval[nzrange(g.Aᵀ, u)]
-end
-
-# ╔═╡ d99f2290-bd32-4737-b2c2-e33c679be313
-md"""
-## Adjacency lists
-"""
-
-# ╔═╡ e9d703a4-de01-4417-a9ef-464d29149937
-begin
-	struct AdjacencyGraph <: AbstractWeightedGraph
-		outneighbors::Vector{Vector{Int}}
-		weights::Vector{Vector{Float64}}
-	end
-	
-	function AdjacencyGraph(n, edges)
-		outneighbors = [Int[] for v in 1:n]
-		weights = [Float64[] for v in 1:n]
-		for (u, v, w) in sort(edges)
-			push!(outneighbors[u], v)
-			push!(weights[u], w)
-		end
-		return AdjacencyGraph(outneighbors, weights)
-	end
-end
-
-# ╔═╡ 52a26992-2ea7-404b-bf18-299fabfa8038
-nb_vertices(g::AdjacencyGraph) = length(g.outneighbors)
-
-# ╔═╡ 417566e9-b377-4e2a-811c-84b019f7e157
-function edge_weight(g::AdjacencyGraph, u, v)
-	k = searchsortedfirst(g.outneighbors[u], v)
-	return g.weights[u][k]
-end
-
-# ╔═╡ ae582e38-7b70-4ae2-bb98-ec43a24f4bfd
-function outneighbors(g::DenseMatrixGraph, u)
-	return (v for v in 1:nb_vertices(g) if edge_weight(g, u, v) > 0)
-end
-
-# ╔═╡ 03c46a8e-a10a-4754-8136-421927f8d911
-function outneighbors(g::TransposedDenseMatrixGraph, u)
-	return (v for v in 1:nb_vertices(g) if edge_weight(g, u, v) > 0)
-end
-
-# ╔═╡ f8daa411-9ec2-4789-adf9-d3a3017d9a78
-function outneighbors(g::AdjacencyGraph, u)
-	return g.outneighbors[u]
 end
 
 # ╔═╡ 755b8709-4a86-4b79-a61c-605ba8ecdd8b
 """
-	dijkstra(g, s)
+	bfs(g, s)
 
-Return the lengths of shortest paths from `s` to all other vertices in the weighted graph `g`.
+Take an unweighted graph `g` and return the shortest path tree from `s` to all other vertices, represented as a vector of `parents`.
 """
-function dijkstra(g::AbstractWeightedGraph, s)
-    dist = fill(Inf, nb_vertices(g))  # here
-	queue = PriorityQueue{Int,Float64}()
-    enqueue!(queue, s => 0.0)
-	while !isempty(queue)
-        u, dist[u] = dequeue_pair!(queue)
-        for v in outneighbors(g, u)  # here
-            dist_v = dist[u] + edge_weight(g, u, v)  # here
-            if dist_v < dist[v]
-                dist[v] = dist_v
-                queue[v] = dist_v
-            end
-        end
-    end
-    return dist
+function bfs(g, s)
+	# initialize storage
+	n = nb_vertices(g)  # here
+	explored = fill(false, n)
+	parents = fill(0, n)
+	q = Queue{Int}()
+	# visit source
+	explored[s] = true
+	parents[s] = s
+	enqueue!(q, s)
+	# go through the queue
+	while !isempty(q)
+		u = dequeue!(q)
+		for v in outgoing_neighbors(g, u)  # here
+			if !explored[v]
+				explored[v] = true
+				parents[v] = u 
+				enqueue!(q, v)
+			end
+		end
+	end
+    return parents
 end
 
 # ╔═╡ 643c4cd5-6a96-4859-8a91-142946c880e4
 let
-	g = ListGraph(I*J, edges)
-	dijkstra(g, 1)
+	g = ListGraph(grid_edges(2, 3))
+	bfs(g, 1)
 end
 
 # ╔═╡ caba823b-2cb8-4760-9d18-31ab7a065d82
 let
-	g = ListGraph(I*J, edges)
-	@benchmark dijkstra($g, 1)
+	g = ListGraph(grid_edges(100, 100))
+	@benchmark bfs($g, 1)
 end
 
-# ╔═╡ 04a938be-c786-42c1-bcdd-45d8e714adcd
+# ╔═╡ 4904034d-d259-44f9-b194-95f18f952887
 let
-	g = DenseMatrixGraph(I*J, edges)
-	@assert dijkstra(g, 1) ≈ dijkstra(ListGraph(I*J, edges), 1)
-	@benchmark dijkstra($g, 1)
-end
-
-# ╔═╡ 3ac9e1f0-15aa-4d51-8449-130755ce16b1
-let
-	g = TransposedDenseMatrixGraph(I*J, edges)
-	@assert dijkstra(g, 1) ≈ dijkstra(ListGraph(I*J, edges), 1)
-	@benchmark dijkstra($g, 1)
-end
-
-# ╔═╡ 47850682-5d83-4cd2-bf9b-4dcbffc999bb
-let
-	g = SparseMatrixGraph(I*J, edges)
-	@assert dijkstra(g, 1) ≈ dijkstra(ListGraph(I*J, edges), 1)
-	@benchmark dijkstra($g, 1)
+	edges = grid_edges(2, 3)
+	g = TransposedSparseMatrixGraph(edges)
+	@assert bfs(g, 1) ≈ bfs(ListGraph(edges), 1)
 end
 
 # ╔═╡ c4c2597b-08a5-4806-aeb2-a083ce6db5be
 let
-	g = TransposedSparseMatrixGraph(I*J, edges)
-	@assert dijkstra(g, 1) ≈ dijkstra(ListGraph(I*J, edges), 1)
-	@benchmark dijkstra($g, 1)
+	edges = grid_edges(100, 100)
+	g = TransposedSparseMatrixGraph(edges)
+	@benchmark bfs($g, 1)
 end
 
-# ╔═╡ e8a84b3b-bb63-4aec-9c9d-3e6657d15703
-let
-	g = AdjacencyGraph(I*J, edges)
-	@assert dijkstra(g, 1) ≈ dijkstra(ListGraph(I*J, edges), 1)
-	@benchmark dijkstra($g, 1)
-end
-
-# ╔═╡ fd13066b-35f0-4c5c-91fe-fbacbfdb6bb7
+# ╔═╡ 79cd1553-4407-49dd-a3d3-be624bf44bee
 md"""
-## The trouble with metadata
+# The graphs ecosystem
 """
 
-# ╔═╡ 652eb695-e549-417d-8085-65d8276dd479
+# ╔═╡ b7208479-cb4d-485e-bbe0-e50b84408beb
 md"""
-There are plenty of concurrent packages for graphs with metadata:
-- [SimpleWeightedGraphs.jl](https://github.com/JuliaGraphs/SimpleWeightedGraphs.jl)
-- [MetaGraphs.jl](https://github.com/JuliaGraphs/MetaGraphs.jl)
-- [MetaGraphsNext.jl](https://github.com/JuliaGraphs/MetaGraphsNext.jl)
+## JuliaGraphs organization
+"""
 
-An intense discussion is ongoing regarding the future of the Graphs.jl interface for version 2.0 (see [issue 35](https://github.com/JuliaGraphs/Graphs.jl/issues/35) or [issue 128](https://github.com/JuliaGraphs/Graphs.jl/issues/128))
+# ╔═╡ 49e7c89e-219a-43eb-ac0f-7ca0c675ed86
+md"""
+[Group of volunteers](https://juliagraphs.org/) maintaining a set of useful packages, including:
+
+- [Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl): interface and algorithms + unweighted graphs
+- [SimpleWeightedGraphs.jl](https://github.com/JuliaGraphs/SimpleWeightedGraphs.jl): weighted graphs
+- [MetaGraphsNext.jl](https://github.com/JuliaGraphs/MetaGraphsNext.jl): graphs with arbitrary metadata
+"""
+
+# ╔═╡ d3b6841b-3764-4a39-adf0-f5a4d03f8b15
+md"""
+## The great census of 2023
+"""
+
+# ╔═╡ 2a1814cd-dd77-4b00-8aee-7623ad3f024c
+md"""
+## An ambitious overhaul
+"""
+
+# ╔═╡ 7eda4d40-46e3-4192-b152-135c80495435
+md"""
+[GraphsBase.jl](https://github.com/JuliaGraphs/GraphsBase.jl) is an attempt to generalize the existing interface:
+
+- contiguous integer vertices $\longrightarrow$ arbitrary vertex types
+- edge weights $\longrightarrow$ edge and vertex metadata
+- simple edges $\longrightarrow$ multiple edges
+
+Still very much a work in progress
 """
 
 # ╔═╡ 3d2673e1-d1af-44d3-8441-7825504102be
@@ -483,29 +435,88 @@ md"""
 - [WilliamFiset](https://www.youtube.com/channel/UCD8yeTczadqdARzQUp29PJw): A YouTube channel with a great series of short videos on graph theory
 """
 
+# ╔═╡ ad2a7440-dc91-43cf-9fa5-ea49cf79f543
+struct SplitTwoColumn{L, R}
+	left::L
+	right::R
+end
+
+# ╔═╡ 48b97a84-20c4-4660-949e-047152b374c8
+SplitTwoColumn(
+	md"""
+!!! warning "Group 1"
+	Write a `struct` for a directed unweighted graph stored as an **adjacency list**.
+	""",
+	md"""
+!!! warning "Group 2"
+	Write a `struct` for a directed unweighted graph stored as an **adjacency matrix**.
+	"""
+)
+
+# ╔═╡ 984533f4-b473-414d-a240-676c83351814
+SplitTwoColumn(
+	md"""
+!!! warning "Group 1"
+	Make your adjacency list graph type a subtype of `AbstractGraph` and implement the required methods.
+""",
+	md"""
+!!! warning "Group 2"
+	Make your adjacency matrix graph type a subtype of `AbstractGraph` and implement the required methods.
+"""
+)
+
+# ╔═╡ 617845d0-993f-4dd7-a640-f5b59f2df452
+SplitTwoColumn(
+	md"""
+[The graphs ecosystem](https://discourse.julialang.org/t/the-graphs-ecosystem/99463) contains
+
+- 3 packages defining a broad interface
+- 15 packages for graphs with metadata
+- 4 packages for multigraphs and hypergraphs
+- 8 packages for graphs with special structure
+""",
+	Resource("https://i.imgur.com/afI4sp8.jpg", :width => "100%")
+)
+
+# ╔═╡ fc8c32e8-2509-403a-b624-741b223d3702
+function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
+	write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
+	show(io, mime, tc.left)
+	write(io, """</div><div style="flex: 6%;">""")
+	write(io, """</div><div style="flex: 47%;">""")
+	show(io, mime, tc.right)
+	write(io, """</div></div>""")
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+GraphPlot = "a2cc645c-3eea-5389-862e-a155d0052231"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+ProfileCanvas = "efd6af41-a80b-495e-886c-e51b0c7d77a3"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
 BenchmarkTools = "~1.3.2"
-DataStructures = "~0.18.13"
+DataStructures = "~0.18.15"
+GraphPlot = "~0.5.2"
+Graphs = "~1.9.0"
 PlutoTeachingTools = "~0.2.5"
 PlutoUI = "~0.7.48"
+ProfileCanvas = "~0.1.6"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.5"
+julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "e1214ca6559f10c9284c988db8157654cf5b8a62"
+project_hash = "06c2f076354b7a3f0c1d4d7be79e26c72f521b36"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -516,6 +527,12 @@ version = "1.1.4"
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.1"
+
+[[deps.ArnoldiMethod]]
+deps = ["LinearAlgebra", "Random", "StaticArrays"]
+git-tree-sha1 = "62e51b39331de8911e4a7ff6f5aaf38a5f4cc0ae"
+uuid = "ec485272-7323-5ecc-a04f-4719b315124d"
+version = "0.2.0"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -541,22 +558,38 @@ git-tree-sha1 = "eb7f0f8307f71fac7c606984ea5fb2817275d6e4"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 version = "0.11.4"
 
+[[deps.Colors]]
+deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
+git-tree-sha1 = "fc08e5930ee9a4e03f84bfb5211cb54e7769758a"
+uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
+version = "0.12.10"
+
 [[deps.Compat]]
-deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
-git-tree-sha1 = "78bee250c6826e1cf805a88b7f1e86025275d208"
+deps = ["UUIDs"]
+git-tree-sha1 = "8a62af3e248a8c4bad6b32cbbe663ae02275e32c"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "3.46.0"
+version = "4.10.0"
+weakdeps = ["Dates", "LinearAlgebra"]
+
+    [deps.Compat.extensions]
+    CompatLinearAlgebraExt = "LinearAlgebra"
 
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.0.1+0"
+version = "1.0.5+0"
+
+[[deps.Compose]]
+deps = ["Base64", "Colors", "DataStructures", "Dates", "IterTools", "JSON", "LinearAlgebra", "Measures", "Printf", "Random", "Requires", "Statistics", "UUIDs"]
+git-tree-sha1 = "bf6570a34c850f99407b494757f5d7ad233a7257"
+uuid = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
+version = "0.9.5"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "d1fff3a548102f48987a52a2e0d114fa97d730f0"
+git-tree-sha1 = "3dbd312d370723b6bb43ba9d02fc36abade4518d"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.18.13"
+version = "0.18.15"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -564,7 +597,9 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
 [[deps.DelimitedFiles]]
 deps = ["Mmap"]
+git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+version = "1.9.1"
 
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -590,6 +625,18 @@ git-tree-sha1 = "8339d61043228fdd3eb658d86c926cb282ae72a8"
 uuid = "59287772-0a20-5a39-b81b-1366585eb4c0"
 version = "0.4.2"
 
+[[deps.GraphPlot]]
+deps = ["ArnoldiMethod", "ColorTypes", "Colors", "Compose", "DelimitedFiles", "Graphs", "LinearAlgebra", "Random", "SparseArrays"]
+git-tree-sha1 = "5cd479730a0cb01f880eff119e9803c13f214cab"
+uuid = "a2cc645c-3eea-5389-862e-a155d0052231"
+version = "0.5.2"
+
+[[deps.Graphs]]
+deps = ["ArnoldiMethod", "Compat", "DataStructures", "Distributed", "Inflate", "LinearAlgebra", "Random", "SharedArrays", "SimpleTraits", "SparseArrays", "Statistics"]
+git-tree-sha1 = "899050ace26649433ef1af25bc17a815b3db52b7"
+uuid = "86223c79-3864-5bf0-83f7-82e725a168b6"
+version = "1.9.0"
+
 [[deps.Hyperscript]]
 deps = ["Test"]
 git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
@@ -608,9 +655,19 @@ git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
 version = "0.2.2"
 
+[[deps.Inflate]]
+git-tree-sha1 = "ea8031dea4aff6bd41f1df8f2fdfb25b33626381"
+uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
+version = "0.1.4"
+
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+
+[[deps.IterTools]]
+git-tree-sha1 = "4ced6667f9974fc5c5943fa5e2ef1ca43ea9e450"
+uuid = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
+version = "1.8.0"
 
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
@@ -658,7 +715,7 @@ version = "1.10.2+0"
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[deps.LinearAlgebra]]
-deps = ["Libdl", "libblastrampoline_jll"]
+deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.Logging]]
@@ -688,14 +745,19 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.0+0"
+version = "2.28.2+0"
+
+[[deps.Measures]]
+git-tree-sha1 = "c13304c81eec1ed3af7fc20e75fb6b26092a1102"
+uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
+version = "0.3.2"
 
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2022.2.1"
+version = "2022.10.11"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
@@ -704,7 +766,7 @@ version = "1.2.0"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.20+0"
+version = "0.3.21+4"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "85f8e6578bf1f9ee0d11e7bb1b1456435479d47c"
@@ -718,9 +780,9 @@ uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "2.5.0"
 
 [[deps.Pkg]]
-deps = ["Artifacts", "Dates", "Downloads", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
+deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.8.0"
+version = "1.9.2"
 
 [[deps.PlutoHooks]]
 deps = ["InteractiveUtils", "Markdown", "UUIDs"]
@@ -753,6 +815,12 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 [[deps.Profile]]
 deps = ["Printf"]
 uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
+
+[[deps.ProfileCanvas]]
+deps = ["Base64", "JSON", "Pkg", "Profile", "REPL"]
+git-tree-sha1 = "e42571ce9a614c2fbebcaa8aab23bbf8865c624e"
+uuid = "efd6af41-a80b-495e-886c-e51b0c7d77a3"
+version = "0.1.6"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
@@ -790,6 +858,12 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
 uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 
+[[deps.SimpleTraits]]
+deps = ["InteractiveUtils", "MacroTools"]
+git-tree-sha1 = "5d7e3f4e11935503d3ecaf7186eac40602e7d231"
+uuid = "699a6c99-e7fa-54fc-8d76-47d257e15c1d"
+version = "0.9.4"
+
 [[deps.SnoopPrecompile]]
 git-tree-sha1 = "f604441450a3c0569830946e5b33b78c928e1a85"
 uuid = "66db9d55-30c0-4569-8b51-7e840670fc0c"
@@ -799,22 +873,43 @@ version = "1.0.1"
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
 [[deps.SparseArrays]]
-deps = ["LinearAlgebra", "Random"]
+deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[[deps.StaticArrays]]
+deps = ["LinearAlgebra", "Random", "StaticArraysCore"]
+git-tree-sha1 = "0adf069a2a490c47273727e029371b31d44b72b2"
+uuid = "90137ffa-7385-5640-81b9-e52037218182"
+version = "1.6.5"
+weakdeps = ["Statistics"]
+
+    [deps.StaticArrays.extensions]
+    StaticArraysStatisticsExt = "Statistics"
+
+[[deps.StaticArraysCore]]
+git-tree-sha1 = "36b3d696ce6366023a0ea192b4cd442268995a0d"
+uuid = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
+version = "1.4.2"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+version = "1.9.0"
+
+[[deps.SuiteSparse_jll]]
+deps = ["Artifacts", "Libdl", "Pkg", "libblastrampoline_jll"]
+uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
+version = "5.10.1+6"
 
 [[deps.TOML]]
 deps = ["Dates"]
 uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
-version = "1.0.0"
+version = "1.0.3"
 
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.1"
+version = "1.10.0"
 
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
@@ -840,12 +935,12 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.12+3"
+version = "1.2.13+0"
 
 [[deps.libblastrampoline_jll]]
-deps = ["Artifacts", "Libdl", "OpenBLAS_jll"]
+deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.1.1+0"
+version = "5.8.0+0"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -859,75 +954,72 @@ version = "17.4.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─630db0fa-22c7-4dc4-b85d-695ffed0e110
 # ╠═510bdffa-6367-11ed-23ca-9d49e3f3543f
 # ╠═66106324-994f-4751-8a1e-0b307380bd11
+# ╟─9eb4b899-4b05-4301-9e65-13029b25cdbb
+# ╟─b84043ea-bb4d-4527-b31f-76cc90ebc7dc
 # ╟─683da7e5-2794-4766-a026-cb55bd23690f
-# ╟─4799ca44-7847-41cc-a101-f8ce5c4f255e
-# ╟─823205a4-170a-4b69-bce4-3ce39d17d469
-# ╟─bec05993-17de-4121-af30-2ae15956c6e1
-# ╟─86d3573e-5ea3-4fd3-a0a9-32e8dd946cc4
+# ╟─bf07f944-19a0-4d3a-bdae-4ef1ed2d9f64
+# ╟─07294a71-73a0-4993-b076-671fcc9c8d93
 # ╟─c6310180-499a-4dd1-bda3-8d86f791c1b0
+# ╟─f9290e78-f1e9-44d1-90fc-d7c002623cf4
+# ╟─cc26831a-fab9-4e65-8e4b-4c89371c6970
+# ╟─f4059c54-e68b-4004-b3ee-78a7fca03dcc
+# ╟─f07cd793-3570-4b0d-9f8a-f8835304480b
+# ╟─aee9adf7-92ca-483f-a1b3-744b9a07970d
+# ╟─48b97a84-20c4-4660-949e-047152b374c8
+# ╟─5e0e9565-0798-4a92-bafe-e8e69d4ab7f9
+# ╟─e1520e15-839e-4ff4-8b93-023a1b6a78e3
+# ╟─bec05993-17de-4121-af30-2ae15956c6e1
 # ╟─5230069e-a2aa-40fe-a2e5-aceefe6b6635
 # ╟─abc30a8b-b728-4936-a9b3-cdbf210a265d
 # ╠═755b8709-4a86-4b79-a61c-605ba8ecdd8b
-# ╟─789c7a0a-870d-4fdb-a11d-4ab314cbbce9
-# ╟─1c6fd34c-80c7-4b8f-b9fb-9ac1aa74db04
+# ╟─e9f3585c-0b5b-497a-9a5f-55cb5963d7ac
 # ╠═981d2bc0-3030-4d4a-a2c3-ae6c3819838d
+# ╟─789c7a0a-870d-4fdb-a11d-4ab314cbbce9
 # ╠═1de57dcb-85c0-44c0-b225-f81194ffea06
-# ╠═caa8f63c-ec6c-45c4-9f23-c853bce3a929
 # ╠═c4d83106-f940-4c69-bb95-8effe7e8bd50
+# ╟─7448ed44-0f65-4d4a-b4f4-20b165a34a44
+# ╠═2abd6312-b4f5-4301-8881-d86ddfce66cd
+# ╟─3693c497-5420-48cf-ae65-cbed6f60ae36
+# ╟─984533f4-b473-414d-a240-676c83351814
+# ╟─8d31706c-c953-4d96-af97-ff661522f69f
+# ╟─34cb6e80-43b9-48db-853a-d51ad53164ac
 # ╟─dbeda7e3-ce02-49c2-93b1-1e2e712c9c09
 # ╟─f4fc6854-a44d-4bfd-88bd-a3b9eaf95332
+# ╟─d89807e0-612d-4794-b06f-b4a233ef9abe
 # ╟─055d49e6-8b2e-462d-abe3-bf3c5c97f61c
 # ╠═24722797-ae00-4066-8838-43e9eb4b5ee3
 # ╠═95df5658-24d0-440d-b157-e4cf54c11d1a
 # ╠═3931bfba-cb35-487d-a798-923e8ee454d2
 # ╠═57f66ed6-b4aa-4ab0-9eaa-02f12983594a
-# ╠═570f7368-5464-4817-8040-f95dddf8da05
 # ╟─de48b3f3-3cba-45b9-b0ef-eb7cfbb2c7aa
 # ╠═669c587c-c877-4e9e-a934-2850c4208147
 # ╠═55252064-0f58-44ac-a836-981a6cd8227a
-# ╠═a1bde286-3806-4203-a461-81fb6c595492
 # ╠═f775760a-1311-4060-a347-aa2d631be0e4
 # ╠═643c4cd5-6a96-4859-8a91-142946c880e4
 # ╠═caba823b-2cb8-4760-9d18-31ab7a065d82
+# ╟─4d38d5dd-6ee7-4847-b3d4-b139c4e52cfb
+# ╟─182a5805-f90d-4b1b-a874-c5da4aaf7c51
 # ╟─db189e71-79af-48d4-bd94-6c30bef943a3
-# ╟─971fe1f5-7b9c-477c-9a0e-dd1a574487e5
-# ╠═8ad780bf-0a3c-4fff-8a5c-154a576ee45a
-# ╠═33609b23-0e1d-411d-a950-fbc964727fe7
-# ╠═49639fa6-5e65-47ec-ba47-51717e73827c
-# ╠═ae582e38-7b70-4ae2-bb98-ec43a24f4bfd
-# ╠═04a938be-c786-42c1-bcdd-45d8e714adcd
-# ╟─37c5bb0b-6fca-45fc-9c3d-8806bf1c2ee6
-# ╠═71c5d9e4-2785-406c-8c6d-3d88a541b0f0
-# ╠═6fb680c3-986c-4fd4-b6b3-5164eb73cc30
-# ╠═66f24701-1556-4881-a1fb-6f0e41165adf
-# ╠═03c46a8e-a10a-4754-8136-421927f8d911
-# ╠═3ac9e1f0-15aa-4d51-8449-130755ce16b1
+# ╟─7dc96a58-5490-4046-8882-066ceb3c2932
 # ╟─778d9984-f09e-4b65-8b6d-07323dc0e39c
 # ╟─abb0457d-4201-41df-957e-6d1d18fd29a1
-# ╠═2c7772f2-e12a-4c9f-aede-19620d6fa03a
-# ╠═0633e202-4ebf-4fdf-b0e9-581b075510fc
-# ╠═15cd794b-598c-4066-ae1f-2dd3e40c7eff
-# ╠═44642265-f22f-4b55-ba31-a5979f386b30
-# ╠═47850682-5d83-4cd2-bf9b-4dcbffc999bb
-# ╟─232739d5-f984-4679-a7bb-09f9066df9bf
-# ╟─8cf9e88b-ad56-4e9e-93b4-61c99f5fe00a
 # ╠═e35d80c1-043b-4152-b005-c579f2c1557d
 # ╠═1f8b678c-dbb5-4155-806c-fd072846bf56
-# ╠═0e48f9d6-04e9-4d88-9949-43066c31d0c2
 # ╠═5ca4bfab-13a5-4455-92cf-289ebfbb61a9
+# ╠═4904034d-d259-44f9-b194-95f18f952887
 # ╠═c4c2597b-08a5-4806-aeb2-a083ce6db5be
-# ╟─d99f2290-bd32-4737-b2c2-e33c679be313
-# ╠═e9d703a4-de01-4417-a9ef-464d29149937
-# ╠═52a26992-2ea7-404b-bf18-299fabfa8038
-# ╠═417566e9-b377-4e2a-811c-84b019f7e157
-# ╠═f8daa411-9ec2-4789-adf9-d3a3017d9a78
-# ╠═e8a84b3b-bb63-4aec-9c9d-3e6657d15703
-# ╟─fd13066b-35f0-4c5c-91fe-fbacbfdb6bb7
-# ╟─652eb695-e549-417d-8085-65d8276dd479
+# ╟─79cd1553-4407-49dd-a3d3-be624bf44bee
+# ╟─b7208479-cb4d-485e-bbe0-e50b84408beb
+# ╟─49e7c89e-219a-43eb-ac0f-7ca0c675ed86
+# ╟─d3b6841b-3764-4a39-adf0-f5a4d03f8b15
+# ╟─617845d0-993f-4dd7-a640-f5b59f2df452
+# ╟─2a1814cd-dd77-4b00-8aee-7623ad3f024c
+# ╟─7eda4d40-46e3-4192-b152-135c80495435
 # ╟─3d2673e1-d1af-44d3-8441-7825504102be
 # ╟─7eb7606b-2f65-41c8-a510-6e40f4c306cf
+# ╟─ad2a7440-dc91-43cf-9fa5-ea49cf79f543
+# ╟─fc8c32e8-2509-403a-b624-741b223d3702
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -85,44 +85,48 @@ using PkgTemplates
 # ╔═╡ 3d7185a0-30c6-4cbe-ae52-05b980c1912a
 SplitTwoColumn(
 	md"""
-If you authenticate with HTTPS, select these plugins:
+If you authenticate with HTTPS:
 ```julia
-plugins=[
-	Codecov(),
-	Documenter{GitHubActions}(),
-	Git(manifest=true, ssh=false),
-	Formatter(style="blue")
-]
+ssh = false
 ```
 """,
 	md"""
-If you authenticate with SSH, select these plugins:
+If you authenticate with SSH:
 ```julia
-plugins=[
-	Codecov(),
-	Documenter{GitHubActions}(),
-	Git(manifest=true, ssh=true),
-	Formatter(style="blue")
-]
+ssh = true
 ```
 """
 )
 
+# ╔═╡ 264f0895-02b9-4734-92b3-ed2f1c830984
+md"""
+Select the right plugins (in addition to the defaults picked by PkgTemplates.jl):
+```julia
+plugins=[
+	Codecov(),
+	Documenter{GitHubActions}(),
+	Git(manifest=true, ssh=ssh),
+	Formatter(style="blue")
+]
+```
+"""
+
 # ╔═╡ 89df2264-64ce-410e-ac7b-24e8c4940b53
 md"""
-Create a new template with your GitHub username:
+Create a new template (that is, a package factory):
 ```julia
 templ = Template(
-	user="gdalle",
-	julia=v"1.9",
-	plugins=plugins
+	user="gdalle",  # GitHub username
+	julia=v"1.9",  # latest Julia version
+	dir=".",  # create the new package in the current directory
+	plugins=plugins,  # list of plugins
 )
 ```
 """
 
 # ╔═╡ b06bee6e-9acf-4584-9655-4fbe860e007e
 md"""
-Generate your package from that template by passing it the package name (without `.jl`).
+Generate your package from that template by passing the package name (without `.jl`).
 ```julia
 templ("MyPackage")
 ```
@@ -130,9 +134,9 @@ templ("MyPackage")
 
 # ╔═╡ 0f8f161a-b062-4653-ab7a-6206bb846d84
 md"""
-Open a terminal in your package folder and push it to the repository's main branch.
-```shell
-cd .julia/dev/MyPackage
+Now open a standard terminal (or switch your Julia REPL to shell mode with a semicolon `;`) and push the resulting files to the repository's main branch.
+```bash
+cd MyPackage
 git push origin main
 ```
 """
@@ -678,10 +682,6 @@ version = "17.4.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═03085746-6dae-11ee-00f0-3b46d0959047
-# ╠═669f3826-747e-489c-97cf-7cde72a10294
-# ╟─f948a98c-f778-4af2-8d2d-4bc45f6a639b
-# ╟─573d4ff9-c6f1-4b37-b695-1659511f9246
 # ╟─1a996fe9-804e-4e29-ac16-3ec5bb12a592
 # ╟─56ad2d31-82df-4d9a-bb82-20708414f118
 # ╟─4040ff7b-5bdd-4c75-97bb-6c283c467a43
@@ -690,11 +690,16 @@ version = "17.4.0+0"
 # ╟─2e2e40db-12e5-4f9d-85de-bbd3ffc8f61d
 # ╟─7b063eff-9530-49d8-b791-720d6a637295
 # ╟─3d7185a0-30c6-4cbe-ae52-05b980c1912a
+# ╟─264f0895-02b9-4734-92b3-ed2f1c830984
 # ╟─89df2264-64ce-410e-ac7b-24e8c4940b53
 # ╟─b06bee6e-9acf-4584-9655-4fbe860e007e
 # ╟─0f8f161a-b062-4653-ab7a-6206bb846d84
 # ╟─603f10ac-c29b-450b-b12c-9764da7dffe2
 # ╟─5a1e8169-7330-4b68-b451-3a0ece7cf74e
 # ╟─34d86725-4698-4706-a148-2f5a064d5b1a
+# ╟─03085746-6dae-11ee-00f0-3b46d0959047
+# ╟─669f3826-747e-489c-97cf-7cde72a10294
+# ╠═f948a98c-f778-4af2-8d2d-4bc45f6a639b
+# ╠═573d4ff9-c6f1-4b37-b695-1659511f9246
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

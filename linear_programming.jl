@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.19
+# v0.19.29
 
 #> [frontmatter]
 #> title = "IntroJulia - LP"
@@ -19,6 +19,9 @@ end
 
 # ╔═╡ 7b87b7c8-6442-11ed-371a-87f5a11b2fab
 begin
+	using GraphPlot
+	using Graphs
+	using GridGraphs
 	using HiGHS
 	using JuMP
 	using LaTeXStrings
@@ -27,29 +30,31 @@ begin
 	using PlutoTeachingTools
 	using PlutoUI
 	using Polyhedra
+	using SparseArrays
 end
-
-# ╔═╡ 1812b334-3d6b-4129-bf26-326d85e74fa6
-md"""
-!!! danger "Introduction to Julia - linear programming"
-	🏠[Course home](https://gdalle.github.io/IntroJulia/)
-"""
 
 # ╔═╡ 4249a0c2-a780-4422-9e9b-b6799dd8efa5
 TableOfContents()
 
+# ╔═╡ 3816b1fb-c7f3-4b3b-8f11-614e6a7dd4bd
+md"""
+# Optimization
+"""
+
+# ╔═╡ bb1e3beb-7f16-48bf-ab5f-27d80e751f09
+md"""
+Goals of the lecture:
+- being able to use Integer Linear Programs as a modeling tool
+- knowing various methods to solve them
+- being able to express them in JuMP.jl
+"""
+
 # ╔═╡ bea5deba-2a27-4a69-aaf8-400c4dc04675
 html"<button onclick=present()>Present</button>"
 
-# ╔═╡ 6821789e-761c-4a19-bbb2-42afd0456bc5
-md"""
-In this notebook, we present an optimization framework which encompasses numerous questions of huge practical interest.
-We also demonstrate the use of [JuMP.jl](https://github.com/jump-dev/JuMP.jl) to model and solve such optimization problems.
-"""
-
 # ╔═╡ 7335dcd2-bbef-464f-b88a-ad7d2a3c01da
 md"""
-# Problem zoo
+# The basics
 """
 
 # ╔═╡ 9e8cb5f5-6def-40db-bfd8-7e4693fcce25
@@ -80,75 +85,129 @@ Solving the problem means finding
 Instance of a problem = one particular input with its numerical values.
 """
 
-# ╔═╡ eafd6112-50e1-41ca-a8ef-d70ff9b923a4
+# ╔═╡ 3e1520af-f119-4620-8d28-baa29cc88c6a
 md"""
-## Formulating optimization problems
+## Integer Linear Programs
 """
 
-# ╔═╡ d8ddc081-595f-4ffe-8a79-1aca945fe14e
+# ╔═╡ ddc30da9-2b66-4c66-b32c-f6513134199f
 md"""
-**Knapsack**
+The optimization problem $(\mathrm{P})$ is called an Integer Linear Program (ILP) if:
+1. The objective $f(x) = c^\top x$ is linear
+2. The feasible set $\mathcal{X} = \{x \in \mathbb{Z}^d: Ax \leq b\}$ is defined by affine constraints and integrality requirements.
+
+> Many problems of interest can be formulated as ILPs.
 """
 
-# ╔═╡ 8308c1c0-a1f3-4d2d-a63c-431744e49f81
+# ╔═╡ b1225ca4-4215-4956-a1af-55f65bffc568
 md"""
-Set of $I$ items with value $v_i$ and a weight $w_i$. Maximize the value while keeping the total weight under $W$
-
-- Decision variable: $x_i = 1$ if we put item $i$ in the bag, $0$ otherwise
-- Objective function: total value $\sum_{i=1}^{I} v_i x_i$
-- Constraint: total weight bound $\sum_{i=1}^{I} w_i x_i \leq W$
-
-This is an Integer Linear Program:
-
-```math
-\min_{x \in \mathbb{R}^I} \sum_{i=1}^{I} v_i x_i \quad \text{s.t.} \quad \begin{cases} x_i \in \{0, 1\} ~ \forall i \in [I] \\ \sum_{i=1}^{I} w_i x_i \leq W \end{cases}
-```
+## Example 1: maximum flow
 """
 
-# ╔═╡ 1be613ed-6dbf-4a1f-969c-b18317918cd9
+# ╔═╡ 0b2bee0a-8d1f-4a86-855d-28346b782b34
 md"""
-**Bin packing**
+Maximizing the number of items sent from a source to a destination, in a graph where edges have maximum capacities.
 """
 
-# ╔═╡ 7acb80e5-52ce-4f4a-8f25-eab05a6bce3f
+# ╔═╡ f894861e-5710-4531-88e0-c1f840e0471c
 md"""
-**Coloring**
+!!! warning "Group 1"
+	Model this optimization problem using an integer flow variable $x_{u,v}$ for each pair of vertices in the graph (it will be zero if the edge does not exist).
 """
 
-# ╔═╡ a4a4db0c-3b3a-49f0-8358-2dea09957ccd
+# ╔═╡ 5c1b588e-b185-451e-835c-e3d62262a149
 md"""
-Train platforming problem: trains as graph vertices, incompatibilities as edges
-
-Given a graph $G = (V, E)$, assign a color to each vertex so that no two adjacent vertices share the same color. We have $C$ colors in total
-
-- Decision variable:
-  - ``x_v \in [C]`` is the color of the vertex $\implies$ constraint programming model, not linear
-  - ``x_{v, c} = 1`` if vertex $v$ gets color $c$
-  - ``y_c = 1`` if the color $c$ is used, and $0$ otherwise, i.e. $y_c = \max\{x_{v, c}: v \in V\}$
-- Objective function: number of colors... $\sum_{c=1}^{C} y_c$
-- Constraints:
-  - For all vertices $u$ and $v$ such that $(u, v) \in E$, for all colors $c$, we impose $x_{u, v} + x_{v, c} \leq 1$
-  - For all colors $c$, we impose $\frac{1}{\lvert V \rvert} \sum_{v \in V} x_{v, c} \leq y_c$ and for all $v \in V$, $y_c \leq x_{v, c}$
+## Example 2: minimum coloring
 """
 
-# ╔═╡ fdeccf04-b336-481e-bde3-c29138f1f824
+# ╔═╡ c5cabbe9-38eb-4a5f-93c9-70e6e0931b78
 md"""
-**Shortest path**
+Minimizing the number of colors necessary to color vertices of a graph such that adjacent vertices have different colors.
 """
 
-# ╔═╡ da436d05-8ba3-410e-a00b-5dbf29795771
+# ╔═╡ 53030d62-e802-4f5f-94c2-c26f6b1f0d96
 md"""
-**Network flow**
+!!! warning "Group 2"
+	Model this optimization problem using a binary variable $x_{v,c}$ for each vertex $v$ and color $c$, as well as a binary variable $y_c$ indicating if color $c$ is used.
 """
 
-# ╔═╡ b408eed8-0533-4e68-82c9-9c037a840b4b
+# ╔═╡ a6c87b54-4f16-4f33-bda8-9a53f3bca951
 md"""
-**Quadratic assignment**
+## Complexity theory
+"""
+
+# ╔═╡ b32e5ef1-501e-4879-85a6-f53fe1f0dc35
+md"""
+So what do we do when we face a hard problem?
+"""
+
+# ╔═╡ efe0206e-2270-48a3-ab94-4a88575aa0a5
+md"""
+# Heuristics
+"""
+
+# ╔═╡ 0fadff07-decd-4c9f-a6a7-a6fc7310a2bc
+md"""
+## Greedy algorithms
+"""
+
+# ╔═╡ 21c4487c-1b85-4510-897d-75f251f51dc3
+md"""
+Make [good decisions for the short term](https://en.wikipedia.org/wiki/Greedy_algorithm), hope that it pans out in the long term
+"""
+
+# ╔═╡ 7ab65071-33eb-4143-a791-56b795e81d7f
+md"""
+## Local search
+"""
+
+# ╔═╡ 31c8c59e-0f87-4cc7-a9dd-da26388c61f7
+md"""
+Start from a solution and [improve it iteratively](https://en.wikipedia.org/wiki/Local_search_(optimization)): at each step,
+1. define a set of neighboring solutions by making small changes
+2. pick one of the neighbors according to some objective
+"""
+
+# ╔═╡ a4d1c2ad-d352-4fcc-a708-a11d3f79c6b9
+md"""
+## Approximation
+"""
+
+# ╔═╡ 1a8845b1-8b1e-4764-beec-1bfe0d0f9e61
+md"""
+Modify the objective function or the constraints to get an easier problem.
+
+This might require a post-processing phase to repair the solution with respect to the initial constraints.
+"""
+
+# ╔═╡ 74e41561-7002-422d-9137-cb8c8494298f
+md"""
+## Metaheuristics
+"""
+
+# ╔═╡ c8034094-c941-4e75-9a59-4663144a96aa
+md"""
+In many situations, always picking the best neighbor quickly traps the search at a local optimum.
+Several strategies have been designed to enhance exploration, mostly thanks to randomness.
+These strategies take a heuristic and tweak it, which is why they are called [metaheuristics](https://en.wikipedia.org/wiki/Metaheuristic).
+The most famous ones are probably [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing) and evolutionary / generic algorithms.
 """
 
 # ╔═╡ 5423ae84-54f7-4685-b130-08cb938c3e56
 md"""
-# Theoretical background
+# Exact algorithms
+"""
+
+# ╔═╡ 4d6745e1-f61d-4ffe-b637-4cf1e9055ef0
+md"""
+## Linear Programs
+"""
+
+# ╔═╡ 588c18f2-ee3b-495d-b71c-d9987fcf286f
+md"""
+The optimization problem $(\mathrm{P})$ is called a Linear Program (LP) if:
+1. The objective $f(x) = c^\top x$ is linear
+2. The feasible set $\mathcal{X} = \{x \in \mathbb{R}^d: Ax \leq b\}$ is defined by affine constraints and no integrality requirement.
 """
 
 # ╔═╡ 560d047c-ae49-43ba-bd82-7bb9cc4504c9
@@ -169,11 +228,6 @@ m_choice = md"""
 m = $(@bind m Slider(1:20, default=10, show_value=true))
 """
 
-# ╔═╡ 130f58cb-86c3-4f56-9f7d-07fe74ef8988
-legend_choice = md"""
-	legend = $(@bind display_legend CheckBox(true))
-	"""
-
 # ╔═╡ 4985e6b2-5def-416e-8616-87e7052834ee
 random_A, random_b = randn(m, 2), ones(m);
 
@@ -192,7 +246,7 @@ let
 		)
 	end
 	plot!(intersect(P, square), ratio=:equal, color=:blue, alpha=0.3, label="polyhedron")
-	plot!(title="Intersection of $m half-spaces", legend=display_legend)
+	plot!(title="Intersection of $m half-spaces", legend=true)
 end
 
 # ╔═╡ f18f72d7-79c8-41ac-ba54-db0021773d70
@@ -204,9 +258,6 @@ The Minkowski-Weyl theorem gives another possible representation of a polyhedron
 n_choice = md"""
 ``n = `` $(@bind n Slider(1:20, default=10, show_value=true))
 """
-
-# ╔═╡ 009fd841-932f-4c13-853b-577c04d462c2
-legend_choice
 
 # ╔═╡ 520dabd5-edef-4356-b0c3-0809dcbfe32c
 random_points = [randn(2) for k = 1:n];
@@ -222,7 +273,7 @@ let
 		ratio=:equal, color=:blue, label="points"
 	)
 	plot!(P, color=:blue, alpha=0.3, label="polyhedron")
-	plot!(title="Convex hull of $n points", legend=display_legend)
+	plot!(title="Convex hull of $n points", legend=true)
 end
 
 # ╔═╡ 911e5476-c6a6-4b9c-887f-cfc86a790c06
@@ -245,21 +296,9 @@ let
 	"""
 end
 
-# ╔═╡ 4d6745e1-f61d-4ffe-b637-4cf1e9055ef0
-md"""
-## Linear Programs
-"""
-
-# ╔═╡ 588c18f2-ee3b-495d-b71c-d9987fcf286f
-md"""
-The optimization problem $(\mathrm{P})$ is called a Linear Program (LP) if:
-1. The objective $f(x) = c^\top x$ is linear
-2. The feasible set $\mathcal{X} = \{x \in \mathbb{R}^d: Ax \leq b\}$ is a _polyhedron_
-"""
-
 # ╔═╡ b6eb9f03-d9df-40d2-8dd4-b6818bfcd18f
 md"""
-### The simplex algorithm
+## The simplex algorithm
 """
 
 # ╔═╡ 0cc01ce5-3f94-4bc0-9c21-0b78a189d584
@@ -267,16 +306,13 @@ md"""
 If an LP has an optimal solution, then at least one of the vertices of the polyhedron is also an optimal solution.
 """
 
-# ╔═╡ f4497538-926b-4469-bb73-01215dcfedd3
-n_choice
-
-# ╔═╡ 18785e7c-79a9-4b2d-914a-f88f93c3e096
-legend_choice
-
 # ╔═╡ 2e0a8059-5021-48e5-91bc-1061ac4692dd
 theta_choice = md"""
 ``\theta = `` $(@bind angle Slider(0:360, default=180, show_value=true))
-"""
+""";
+
+# ╔═╡ 2b59d26b-8cff-4e73-a5cf-be501ec52500
+TwoColumn(n_choice, theta_choice)
 
 # ╔═╡ 6719c6a0-a12b-481a-8698-561d73d5a80d
 let
@@ -302,7 +338,7 @@ let
 		color=:red, markershape=:square, markersize=5, label="optimum"
 	)
 	
-	plot!(title="Solving a Linear Program", legend=display_legend)
+	plot!(title="Solving a Linear Program", legend=true)
 end
 
 # ╔═╡ c52707fa-e636-42eb-8374-184783afb310
@@ -314,31 +350,18 @@ Although its worst-case complexity is exponential, it is extremely fast on avera
 In other words, LPs are easy to solve both in theory and in practice.
 """
 
-# ╔═╡ 3e1520af-f119-4620-8d28-baa29cc88c6a
+# ╔═╡ 2860aec8-77a9-4f50-bb66-88f54615fb63
 md"""
-## Integer Linear Programs
+## The notion of relaxation
 """
-
-# ╔═╡ ddc30da9-2b66-4c66-b32c-f6513134199f
-md"""
-The optimization problem $(\mathrm{P})$ is called an Integer Linear Program (ILP) if:
-1. The objective $f(x) = c^\top x$ is linear
-2. The feasible set $\mathcal{X} = \{x \in \mathbb{Z}^d: Ax \leq b\}$ is the intersection of a polyhedron with the integer lattice
-"""
-
-# ╔═╡ c2c93acc-3464-448f-a289-fc3459ca654b
-n_choice
-
-# ╔═╡ f0bdf06d-41bc-4d60-b773-c6de357dd025
-legend_choice
-
-# ╔═╡ 8032f005-c043-4180-ab58-78e7df9fc85a
-theta_choice
 
 # ╔═╡ 7a77dec7-2df3-4ac1-96ff-c7aba714fb60
 scale_choice = md"""
 scale = $(@bind scale Slider(1:6; default=3, show_value=true))
-"""
+""";
+
+# ╔═╡ ee57cfca-26dd-4177-998e-7318ccbcf0be
+ThreeColumn(n_choice, theta_choice, scale_choice)
 
 # ╔═╡ 20941d80-614a-40e9-9a90-7931fc076d49
 let
@@ -382,17 +405,12 @@ let
 		)
 	end
 	
-	plot!(title="Solving an Integer Linear Program", legend=display_legend)
+	plot!(title="Solving an Integer Linear Program", legend=true)
 end
 
 # ╔═╡ 9545e44c-3451-4b98-98fa-22621ab04974
 md"""
 Unlike LPs, ILPs are not easy to solve in theory: they are NP-hard, which means it is likely that no polynomial algorithm exists.
-"""
-
-# ╔═╡ 2860aec8-77a9-4f50-bb66-88f54615fb63
-md"""
-### The notion of relaxation
 """
 
 # ╔═╡ 5da62499-8f00-4424-9fde-e260b551291c
@@ -414,7 +432,7 @@ It is much faster to solve and provides a lower bound on the value of the origin
 
 # ╔═╡ ad833a42-52ca-4c7a-a79b-a80aac1c4fd1
 md"""
-### The Branch & Bound algorithm
+## Branch & Bound algorithm
 """
 
 # ╔═╡ 9337cc5c-47b2-4429-928c-adc74997aacc
@@ -426,7 +444,7 @@ Its success depends heavily on the quality of the relaxation (how close it is to
 
 # ╔═╡ 3b7279a2-fedb-40f4-88de-360d9ba762ec
 md"""
-### Total unimodularity
+## Perfect formulations
 """
 
 # ╔═╡ d1e89f1c-b76e-4443-876c-4fd162677125
@@ -446,8 +464,11 @@ The following types of constraints display this kind of behavior:
 # ╔═╡ 7433d1d8-3c9b-44b8-9d78-4392ea08739f
 md"""
 ## Key takeaways
+"""
 
-!!! danger "In theory"
+# ╔═╡ a24a5251-58fb-4768-b5ee-4b03f8cf7bd7
+md"""
+!!! info "In theory"
 	- Linear Programs are easy to solve
 	- Most Integer Linear Programs are hard to solve
 	- Some ILPs are easy to solve thanks to special structure
@@ -465,6 +486,11 @@ md"""
 # The JuMP.jl ecosystem
 """
 
+# ╔═╡ daa949a2-71e5-4c60-a9f4-064ab8cc00fa
+md"""
+## One language, tens of solvers
+"""
+
 # ╔═╡ 79e62b31-920a-4e3b-af2c-acdf0919a569
 md"""
 JuMP.jl is a modeling language that provides a common interface to many different mathematical optimization solvers.
@@ -474,38 +500,28 @@ The package [documentation](https://jump.dev/) is a very useful read.
 
 # ╔═╡ 7b16eb29-0034-47d9-a5d0-30de5943fbeb
 md"""
-## A simple example
+## A simple model
 """
 
 # ╔═╡ a54b93ca-48f1-49b2-af34-a1d8d7f7c415
 md"""
-To tackle an (I)LP using JuMP.jl, we first have to initialize the model and define which solver will be used.
+To use JuMP.jl, we first have to initialize the model and define which solver will be used.
 We then add variables, constraints and an objective (in any order).
 
 Since this is Pluto, we need to create and modify the model in a single cell to avoid confusing its cell dependency tracker.
-"""
-
-# ╔═╡ 0afb035d-da9b-4d36-a7db-bedd10a3dbbb
-integer_variables_choice = md"""
-integer variables = $(@bind integer_variables CheckBox())
 """
 
 # ╔═╡ f66442b9-18da-4917-8536-8403f13d8b59
 simple_model = let
 	model = Model()
 
-	@variable(model, x >= 0)
-	@variable(model, y >= 0)
+	@variable(model, x >= 0, Int)
+	@variable(model, y >= 0, Int)
 	
-	@constraint(model, -x + y <= 2)
-	@constraint(model, 8x + 2y <= 17)
+	@constraint(model, -x + y <= 3)
+	@constraint(model, 3x + 2y <= 10)
 
-	@objective(model, Max, 5.5x + 2.1y)
-
-	if integer_variables
-		set_integer(x)
-		set_integer(y)
-	end
+	@objective(model, Max, 5x + 6y)
 
 	set_optimizer(model, HiGHS.Optimizer)
 	set_silent(model)
@@ -526,12 +542,6 @@ termination_status(simple_model)
 # ╔═╡ 4a5dad31-466a-4ec6-a2e9-e81f2471aa26
 value(simple_model[:x]), value(simple_model[:y])
 
-# ╔═╡ a6fd3819-2fd4-4e65-8b48-e01d83baea88
-legend_choice
-
-# ╔═╡ 4f897915-9045-42f3-bbc7-44efbf5d5522
-integer_variables_choice
-
 # ╔═╡ 3092ff36-abc2-4702-8977-06ec23565a44
 let
 	plot(
@@ -549,24 +559,112 @@ let
 		[value(simple_model[:y])],
 		color=:red, markershape=:square, markersize=5, label="optimum"
 	)
-	plot!(title="Plotting a JuMP model and its solution", legend=display_legend)
+	plot!(title="Plotting a JuMP model and its solution", legend=true)
+end
+
+# ╔═╡ fcf16e20-7227-4baa-8611-7e76881d015b
+md"""
+## Solving maximum flow
+"""
+
+# ╔═╡ 6d378c9a-1d61-4fca-89a3-fbd616c51333
+md"""
+The input graph will be an undirected graph from Graphs.jl.
+You can use the following functions:
+- `nv(g)`, `ne(g)` (number of vertices / edges)
+- `vertices(g)`, `edges(g)` (list vertices / edges)
+- `outneighbors(g, u)`, `inneighbors(g, v)`, `has_edge(g, u, v)`
+"""
+
+# ╔═╡ 56b00572-6244-4859-9457-7771aaa82b69
+md"""
+!!! warning "Group 1"
+	Implement the maximum flow problem with the following template:
+"""
+
+# ╔═╡ 85cc31ce-7556-4a18-9bde-83902b650c55
+function maximum_flow(g::AbstractGraph, s::Integer, d::Integer, capa::Matrix)
+	# return a matrix of flow values
+end
+
+# ╔═╡ a9799472-2a81-4c9d-98dc-2ec53ff7b70d
+md"""
+You can test it on this graph:
+"""
+
+# ╔═╡ ed2c8c95-9a55-4111-ade3-4d6048229f9f
+let
+	g1 = Graphs.grid((4, 4))
+	s = 1
+	d = nv(g1)
+	capa = Symmetric(sparse([
+		(has_edge(g1, u, v) ? rand(1:5) : 0)
+		for u in vertices(g1), v in vertices(g1)
+	]))
+	gplot(
+		g1,
+		nodelabel=vertices(g1),
+		edgelabel=[capa[src(e), dst(e)] for e in edges(g1)]
+	)
+end
+
+# ╔═╡ bd77a703-da82-49d3-9e43-9f915f3e40b7
+
+
+# ╔═╡ ad523c5b-a021-408b-9aec-ca196eb22559
+md"""
+## Solving minimum coloring
+"""
+
+# ╔═╡ a4155219-a7e1-452c-925c-3357056e853f
+md"""
+The input graph will be an undirected graph from Graphs.jl (see above).
+"""
+
+# ╔═╡ 06215f94-5499-4f1a-9910-5d3e86ab1afe
+md"""
+!!! warning "Group 2"
+	Implement the maximum flow problem with the following template:
+"""
+
+# ╔═╡ 58971c49-3ae5-4ed5-8f4b-9ef5493f8092
+function minimum_coloring(g::AbstractGraph)
+	# return a vector of color choices
+end
+
+# ╔═╡ 8f51a18b-d472-4b8c-acde-0cb023d2a290
+md"""
+You can test it on this graph:
+"""
+
+# ╔═╡ aca4f95f-fb3b-4cc1-94d7-05dfa6212ea2
+all_colors = distinguishable_colors(100);
+
+# ╔═╡ d6256e03-4e6e-4156-ab56-0693ab10f210
+let
+	g2 = Graphs.barabasi_albert(10, 3)
+	gplot(
+		g2,
+		nodelabel=vertices(g2),
+		nodefillc=all_colors[1:nv(g2)],
+	)
 end
 
 # ╔═╡ b4082060-e48c-49e4-bf42-8f1d3664afd0
 md"""
-## The role of macros
+# Under the hood: metaprogramming
 """
 
 # ╔═╡ 968401ab-7763-4dd0-b45b-1ec916ba2b13
 md"""
-In the model above, variables, constraints and objectives are added with macros.
+In the models above, all variables, constraints and objectives are added with macros.
 This is an illustration of [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/): using Julia to interact with your code itself.
 This [tutorial](https://en.wikibooks.org/wiki/Introducing_Julia/Metaprogramming) is perhaps clearer than the official docs.
 """
 
 # ╔═╡ ff17fdb2-da29-48dc-9ca3-02d87d7053cb
 md"""
-### Looking under the hood
+## Expanding macros
 """
 
 # ╔═╡ e0477bbd-c279-4fb9-8420-df4c9a7e74df
@@ -595,7 +693,7 @@ Let's take a look at what they do with `@macroexpand`.
 
 # ╔═╡ a8f80d4f-428f-4a37-97bb-0b0d78afad27
 md"""
-### Expressions
+## Expressions
 """
 
 # ╔═╡ 06592404-aa03-411f-98f9-c9d4ec521063
@@ -621,16 +719,19 @@ let
 	dump(ex)
 end
 
+# ╔═╡ 3df43e84-71aa-4d67-a1d0-ec67393247f4
+md"""
+Macros are nothing but functions that take arguments and generate expressions based on them.
+Their output is generated before runtime, which gives it the same status as any other code that you could write.
+"""
+
 # ╔═╡ 14314c03-3fd7-40bf-9f5e-8c2c640628ee
 md"""
-### Why macros?
+## Why is it useful?
 """
 
 # ╔═╡ 99f141e0-6eec-48b9-9bff-f55a5c77b3d7
 md"""
-Macros are nothing but functions that take arguments and generate expressions based on them.
-They are necessary because their output is generated before runtime, which gives it the same status as run of the mill code that you could write.
-
 In the case of JuMP.jl, macros save the user a lot of boilerplate. 
 """
 
@@ -653,26 +754,6 @@ But in general macros make it possible to do things that would be impossible wit
 For instance, `@show` displays both the expression and the result of evaluating it, which requires interacting with the code itself (a function cannot do that).
 """
 
-# ╔═╡ 65f2cdb7-80ff-43cf-82cb-9106d26627b1
-md"""
-## A more advanced example
-"""
-
-# ╔═╡ a7e23cfe-5604-4b29-ac5f-0f8ca750e34b
-md"""
-### Network flow with JuMP.jl and Graphs.jl
-"""
-
-# ╔═╡ 415c49e2-b972-4764-a24b-87856cdf3a6b
-md"""
-See [GraphsOptim.jl](https://github.com/gdalle/GraphsOptim.jl).
-"""
-
-# ╔═╡ 4f12214b-25ff-4947-ba1e-75b768c73c0d
-md"""
-### The flow polytope
-"""
-
 # ╔═╡ e97e0b7e-d95d-430d-b0bb-8fda6b0dcc90
 md"""
 # References
@@ -685,9 +766,50 @@ md"""
 - Kochenderfer, M. J., Wheeler, T. A. and Wray, K. H. (2022), *[Algorithms for decision-making](https://algorithmsbook.com/)*
 """
 
+# ╔═╡ 8835fa0f-0634-457a-a553-10f27acae9f5
+struct SplitTwoColumn{L, R}
+	left::L
+	right::R
+end
+
+# ╔═╡ 67e65ccd-c6ed-41a1-a10a-939c8a644ee4
+SplitTwoColumn(
+	md"""
+!!! tip "Easy problems: P"
+	Can be solved in polynomial time with respect to the size of the input.
+""",
+	md"""
+!!! danger "Difficult problems: NP-hard" 
+	Probably cannot be solved in polynomial time with respect to the size of the input.
+	"""
+)
+
+# ╔═╡ c9c066ae-f4f0-4088-857b-2b8250978db6
+SplitTwoColumn(
+	md"""
+Example: maximum flow
+""",
+	md"""
+Example: minimum coloring
+"""
+)
+
+# ╔═╡ 77abad8b-2517-4e75-b16d-278a48b1c289
+function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
+	write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
+	show(io, mime, tc.left)
+	write(io, """</div><div style="flex: 6%;">""")
+	write(io, """</div><div style="flex: 47%;">""")
+	show(io, mime, tc.right)
+	write(io, """</div></div>""")
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+GraphPlot = "a2cc645c-3eea-5389-862e-a155d0052231"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+GridGraphs = "dd2b58c7-5af7-4f17-9e46-57c68ac813fb"
 HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
@@ -696,8 +818,12 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Polyhedra = "67491407-f73d-577b-9b50-8179a7c68029"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
+GraphPlot = "~0.5.2"
+Graphs = "~1.9.0"
+GridGraphs = "~0.9.1"
 HiGHS = "~1.2.0"
 JuMP = "~1.4.0"
 LaTeXStrings = "~1.3.0"
@@ -711,9 +837,9 @@ Polyhedra = "~0.7.5"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.5"
+julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "1436da2614f78dc0d3475123a6ef51084c5bb010"
+project_hash = "53b10e177976d168463b7cb4071297cf7968572e"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -730,6 +856,12 @@ version = "3.4.0"
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.1"
+
+[[deps.ArnoldiMethod]]
+deps = ["LinearAlgebra", "Random", "StaticArrays"]
+git-tree-sha1 = "62e51b39331de8911e4a7ff6f5aaf38a5f4cc0ae"
+uuid = "ec485272-7323-5ecc-a04f-4719b315124d"
+version = "0.2.0"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -829,7 +961,13 @@ version = "4.5.0"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.0.1+0"
+version = "1.0.5+0"
+
+[[deps.Compose]]
+deps = ["Base64", "Colors", "DataStructures", "Dates", "IterTools", "JSON", "LinearAlgebra", "Measures", "Printf", "Random", "Requires", "Statistics", "UUIDs"]
+git-tree-sha1 = "bf6570a34c850f99407b494757f5d7ad233a7257"
+uuid = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
+version = "0.9.5"
 
 [[deps.Contour]]
 git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
@@ -858,7 +996,9 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
 [[deps.DelimitedFiles]]
 deps = ["Mmap"]
+git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+version = "1.9.1"
 
 [[deps.DiffResults]]
 deps = ["StaticArraysCore"]
@@ -893,6 +1033,12 @@ git-tree-sha1 = "e3290f2d49e661fbd94046d7e3726ffcb2d41053"
 uuid = "5ae413db-bbd1-5e63-b57d-d24a61df00f5"
 version = "2.2.4+0"
 
+[[deps.EpollShim_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "8e9441ee83492030ace98f9789a654a6d0b1f643"
+uuid = "2702e6a9-849d-5ed8-8c21-79e8b8f9ee43"
+version = "0.0.20230411+0"
+
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "bad72f730e9e91c08d9427d5e8db95478a3c323d"
@@ -918,6 +1064,12 @@ version = "4.4.2+2"
 
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
+
+[[deps.FillArrays]]
+deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
+git-tree-sha1 = "7072f1e3e5a8be51d525d64f63d3ec1287ff2790"
+uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
+version = "0.13.11"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -1009,11 +1161,29 @@ git-tree-sha1 = "d3b3624125c1474292d0d8ed0f65554ac37ddb23"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.74.0+2"
 
+[[deps.GraphPlot]]
+deps = ["ArnoldiMethod", "ColorTypes", "Colors", "Compose", "DelimitedFiles", "Graphs", "LinearAlgebra", "Random", "SparseArrays"]
+git-tree-sha1 = "5cd479730a0cb01f880eff119e9803c13f214cab"
+uuid = "a2cc645c-3eea-5389-862e-a155d0052231"
+version = "0.5.2"
+
 [[deps.Graphite2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "344bf40dcab1073aca04aa0df4fb092f920e4011"
 uuid = "3b182d85-2403-5c21-9c21-1e1f0cc25472"
 version = "1.3.14+0"
+
+[[deps.Graphs]]
+deps = ["ArnoldiMethod", "Compat", "DataStructures", "Distributed", "Inflate", "LinearAlgebra", "Random", "SharedArrays", "SimpleTraits", "SparseArrays", "Statistics"]
+git-tree-sha1 = "899050ace26649433ef1af25bc17a815b3db52b7"
+uuid = "86223c79-3864-5bf0-83f7-82e725a168b6"
+version = "1.9.0"
+
+[[deps.GridGraphs]]
+deps = ["DataStructures", "FillArrays", "Graphs", "SparseArrays"]
+git-tree-sha1 = "858b2a7a7798e649dc5612792969541e3a88379a"
+uuid = "dd2b58c7-5af7-4f17-9e46-57c68ac813fb"
+version = "0.9.1"
 
 [[deps.Grisu]]
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
@@ -1061,6 +1231,11 @@ deps = ["Logging", "Random"]
 git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
 version = "0.2.2"
+
+[[deps.Inflate]]
+git-tree-sha1 = "ea8031dea4aff6bd41f1df8f2fdfb25b33626381"
+uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
+version = "0.1.4"
 
 [[deps.IniFile]]
 git-tree-sha1 = "f550e6e32074c939295eb5ea6de31849ac2c9625"
@@ -1228,7 +1403,7 @@ uuid = "38a345b3-de98-5d2b-a5d3-14cd9215e700"
 version = "2.36.0+0"
 
 [[deps.LinearAlgebra]]
-deps = ["Libdl", "libblastrampoline_jll"]
+deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.LogExpFunctions]]
@@ -1282,7 +1457,7 @@ version = "1.1.7"
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.0+0"
+version = "2.28.2+0"
 
 [[deps.Measures]]
 git-tree-sha1 = "c13304c81eec1ed3af7fc20e75fb6b26092a1102"
@@ -1300,7 +1475,7 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2022.2.1"
+version = "2022.10.11"
 
 [[deps.MutableArithmetics]]
 deps = ["LinearAlgebra", "SparseArrays", "Test"]
@@ -1327,7 +1502,7 @@ version = "1.3.5+1"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.20+0"
+version = "0.3.21+4"
 
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1366,7 +1541,7 @@ version = "1.4.1"
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
-version = "10.40.0+0"
+version = "10.42.0+0"
 
 [[deps.Parsers]]
 deps = ["Dates", "SnoopPrecompile"]
@@ -1386,9 +1561,9 @@ uuid = "30392449-352a-5448-841d-b1acce4e97dc"
 version = "0.40.1+0"
 
 [[deps.Pkg]]
-deps = ["Artifacts", "Dates", "Downloads", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
+deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.8.0"
+version = "1.9.2"
 
 [[deps.PlotThemes]]
 deps = ["PlotUtils", "Statistics"]
@@ -1514,6 +1689,10 @@ version = "1.1.1"
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
+[[deps.SharedArrays]]
+deps = ["Distributed", "Mmap", "Random", "Serialization"]
+uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
+
 [[deps.Showoff]]
 deps = ["Dates", "Grisu"]
 git-tree-sha1 = "91eddf657aca81df9ae6ceb20b959ae5653ad1de"
@@ -1524,6 +1703,12 @@ version = "1.0.3"
 git-tree-sha1 = "874e8867b33a00e784c8a7e4b60afe9e037b74e1"
 uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
 version = "1.1.0"
+
+[[deps.SimpleTraits]]
+deps = ["InteractiveUtils", "MacroTools"]
+git-tree-sha1 = "5d7e3f4e11935503d3ecaf7186eac40602e7d231"
+uuid = "699a6c99-e7fa-54fc-8d76-47d257e15c1d"
+version = "0.9.4"
 
 [[deps.SnoopPrecompile]]
 deps = ["Preferences"]
@@ -1541,7 +1726,7 @@ uuid = "a2af1166-a08f-5f64-846c-94a0d3cef48c"
 version = "1.1.0"
 
 [[deps.SparseArrays]]
-deps = ["LinearAlgebra", "Random"]
+deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[deps.SpecialFunctions]]
@@ -1564,6 +1749,7 @@ version = "1.4.0"
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+version = "1.9.0"
 
 [[deps.StatsAPI]]
 deps = ["LinearAlgebra"]
@@ -1583,10 +1769,15 @@ git-tree-sha1 = "b03a3b745aa49b566f128977a7dd1be8711c5e71"
 uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
 version = "0.6.14"
 
+[[deps.SuiteSparse_jll]]
+deps = ["Artifacts", "Libdl", "Pkg", "libblastrampoline_jll"]
+uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
+version = "5.10.1+6"
+
 [[deps.TOML]]
 deps = ["Dates"]
 uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
-version = "1.0.0"
+version = "1.0.3"
 
 [[deps.TableTraits]]
 deps = ["IteratorInterfaceExtensions"]
@@ -1603,7 +1794,7 @@ version = "1.10.0"
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.1"
+version = "1.10.0"
 
 [[deps.TensorCore]]
 deps = ["LinearAlgebra"]
@@ -1650,7 +1841,7 @@ uuid = "41fe7b60-77ed-43a1-b4f0-825fd5a5650d"
 version = "0.2.0"
 
 [[deps.Wayland_jll]]
-deps = ["Artifacts", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg", "XML2_jll"]
+deps = ["Artifacts", "EpollShim_jll", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg", "XML2_jll"]
 git-tree-sha1 = "ed8d92d9774b077c53e1da50fd81a36af3744c1c"
 uuid = "a2964d1f-97da-50d4-b82a-358c7fce9d89"
 version = "1.21.0+0"
@@ -1802,7 +1993,7 @@ version = "1.4.0+3"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.12+3"
+version = "1.2.13+0"
 
 [[deps.Zstd_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1829,9 +2020,9 @@ uuid = "0ac62f75-1d6f-5e53-bd7c-93b484bb37c0"
 version = "0.15.1+0"
 
 [[deps.libblastrampoline_jll]]
-deps = ["Artifacts", "Libdl", "OpenBLAS_jll"]
+deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.1.1+0"
+version = "5.8.0+0"
 
 [[deps.libfdk_aac_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1881,77 +2072,95 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─1812b334-3d6b-4129-bf26-326d85e74fa6
 # ╠═7b87b7c8-6442-11ed-371a-87f5a11b2fab
 # ╠═4249a0c2-a780-4422-9e9b-b6799dd8efa5
+# ╟─3816b1fb-c7f3-4b3b-8f11-614e6a7dd4bd
+# ╟─bb1e3beb-7f16-48bf-ab5f-27d80e751f09
 # ╟─bea5deba-2a27-4a69-aaf8-400c4dc04675
-# ╟─6821789e-761c-4a19-bbb2-42afd0456bc5
 # ╟─7335dcd2-bbef-464f-b88a-ad7d2a3c01da
 # ╟─9e8cb5f5-6def-40db-bfd8-7e4693fcce25
 # ╟─9cbf2977-a5de-4e4a-b5c8-1e9e1c156704
 # ╟─cf5e0bb0-46ab-4d62-b30a-3a1c6b110924
-# ╟─eafd6112-50e1-41ca-a8ef-d70ff9b923a4
-# ╟─d8ddc081-595f-4ffe-8a79-1aca945fe14e
-# ╟─8308c1c0-a1f3-4d2d-a63c-431744e49f81
-# ╟─1be613ed-6dbf-4a1f-969c-b18317918cd9
-# ╟─7acb80e5-52ce-4f4a-8f25-eab05a6bce3f
-# ╟─a4a4db0c-3b3a-49f0-8358-2dea09957ccd
-# ╟─fdeccf04-b336-481e-bde3-c29138f1f824
-# ╟─da436d05-8ba3-410e-a00b-5dbf29795771
-# ╟─b408eed8-0533-4e68-82c9-9c037a840b4b
+# ╟─3e1520af-f119-4620-8d28-baa29cc88c6a
+# ╟─ddc30da9-2b66-4c66-b32c-f6513134199f
+# ╟─b1225ca4-4215-4956-a1af-55f65bffc568
+# ╟─0b2bee0a-8d1f-4a86-855d-28346b782b34
+# ╟─f894861e-5710-4531-88e0-c1f840e0471c
+# ╟─5c1b588e-b185-451e-835c-e3d62262a149
+# ╟─c5cabbe9-38eb-4a5f-93c9-70e6e0931b78
+# ╟─53030d62-e802-4f5f-94c2-c26f6b1f0d96
+# ╟─a6c87b54-4f16-4f33-bda8-9a53f3bca951
+# ╟─67e65ccd-c6ed-41a1-a10a-939c8a644ee4
+# ╟─c9c066ae-f4f0-4088-857b-2b8250978db6
+# ╟─b32e5ef1-501e-4879-85a6-f53fe1f0dc35
+# ╟─efe0206e-2270-48a3-ab94-4a88575aa0a5
+# ╟─0fadff07-decd-4c9f-a6a7-a6fc7310a2bc
+# ╟─21c4487c-1b85-4510-897d-75f251f51dc3
+# ╟─7ab65071-33eb-4143-a791-56b795e81d7f
+# ╟─31c8c59e-0f87-4cc7-a9dd-da26388c61f7
+# ╟─a4d1c2ad-d352-4fcc-a708-a11d3f79c6b9
+# ╟─1a8845b1-8b1e-4764-beec-1bfe0d0f9e61
+# ╟─74e41561-7002-422d-9137-cb8c8494298f
+# ╟─c8034094-c941-4e75-9a59-4663144a96aa
 # ╟─5423ae84-54f7-4685-b130-08cb938c3e56
+# ╟─4d6745e1-f61d-4ffe-b637-4cf1e9055ef0
+# ╟─588c18f2-ee3b-495d-b71c-d9987fcf286f
 # ╟─560d047c-ae49-43ba-bd82-7bb9cc4504c9
 # ╟─67dacadf-59be-46bf-9ab0-86f2e193e11e
 # ╟─0f8afcba-a835-4c5d-a538-891f3585b2a4
-# ╟─130f58cb-86c3-4f56-9f7d-07fe74ef8988
 # ╠═4985e6b2-5def-416e-8616-87e7052834ee
 # ╟─471d1b01-8bb7-4b4e-aab0-a4b2726c9bf6
 # ╟─f18f72d7-79c8-41ac-ba54-db0021773d70
 # ╟─9a86b424-5799-418f-98bc-302a3474ebab
-# ╟─009fd841-932f-4c13-853b-577c04d462c2
 # ╠═520dabd5-edef-4356-b0c3-0809dcbfe32c
 # ╟─5d7d7a26-1ac6-460d-84c7-423d828c8640
 # ╟─911e5476-c6a6-4b9c-887f-cfc86a790c06
 # ╟─d8c97227-d897-4b35-83a4-04befa9a9200
 # ╟─c0f3355a-b68f-448d-b885-04ba6f9cba06
-# ╟─4d6745e1-f61d-4ffe-b637-4cf1e9055ef0
-# ╟─588c18f2-ee3b-495d-b71c-d9987fcf286f
 # ╟─b6eb9f03-d9df-40d2-8dd4-b6818bfcd18f
 # ╟─0cc01ce5-3f94-4bc0-9c21-0b78a189d584
-# ╟─f4497538-926b-4469-bb73-01215dcfedd3
-# ╟─18785e7c-79a9-4b2d-914a-f88f93c3e096
 # ╟─2e0a8059-5021-48e5-91bc-1061ac4692dd
+# ╠═2b59d26b-8cff-4e73-a5cf-be501ec52500
 # ╟─6719c6a0-a12b-481a-8698-561d73d5a80d
 # ╟─c52707fa-e636-42eb-8374-184783afb310
-# ╟─3e1520af-f119-4620-8d28-baa29cc88c6a
-# ╟─ddc30da9-2b66-4c66-b32c-f6513134199f
-# ╟─c2c93acc-3464-448f-a289-fc3459ca654b
-# ╟─f0bdf06d-41bc-4d60-b773-c6de357dd025
-# ╟─8032f005-c043-4180-ab58-78e7df9fc85a
+# ╟─2860aec8-77a9-4f50-bb66-88f54615fb63
 # ╟─7a77dec7-2df3-4ac1-96ff-c7aba714fb60
+# ╟─ee57cfca-26dd-4177-998e-7318ccbcf0be
 # ╟─20941d80-614a-40e9-9a90-7931fc076d49
 # ╟─9545e44c-3451-4b98-98fa-22621ab04974
-# ╟─2860aec8-77a9-4f50-bb66-88f54615fb63
 # ╟─5da62499-8f00-4424-9fde-e260b551291c
 # ╟─ad833a42-52ca-4c7a-a79b-a80aac1c4fd1
 # ╟─9337cc5c-47b2-4429-928c-adc74997aacc
 # ╟─3b7279a2-fedb-40f4-88de-360d9ba762ec
 # ╟─d1e89f1c-b76e-4443-876c-4fd162677125
 # ╟─7433d1d8-3c9b-44b8-9d78-4392ea08739f
+# ╟─a24a5251-58fb-4768-b5ee-4b03f8cf7bd7
 # ╟─ebb7978d-7e5c-4692-99c1-2df75c8cc301
 # ╟─1bfb3dd8-4a50-4a89-b9bc-19126de7f095
+# ╟─daa949a2-71e5-4c60-a9f4-064ab8cc00fa
 # ╟─79e62b31-920a-4e3b-af2c-acdf0919a569
 # ╟─7b16eb29-0034-47d9-a5d0-30de5943fbeb
 # ╟─a54b93ca-48f1-49b2-af34-a1d8d7f7c415
-# ╟─0afb035d-da9b-4d36-a7db-bedd10a3dbbb
 # ╠═f66442b9-18da-4917-8536-8403f13d8b59
 # ╠═8b3bcac2-7942-4749-9dd2-d930687cf407
 # ╠═dddb8989-7e6b-4e3c-9748-604034d26409
 # ╠═5f29131d-ba5e-4bbd-af6e-e02eab7f39c4
 # ╠═4a5dad31-466a-4ec6-a2e9-e81f2471aa26
-# ╟─a6fd3819-2fd4-4e65-8b48-e01d83baea88
-# ╟─4f897915-9045-42f3-bbc7-44efbf5d5522
 # ╟─3092ff36-abc2-4702-8977-06ec23565a44
+# ╟─fcf16e20-7227-4baa-8611-7e76881d015b
+# ╟─6d378c9a-1d61-4fca-89a3-fbd616c51333
+# ╟─56b00572-6244-4859-9457-7771aaa82b69
+# ╠═85cc31ce-7556-4a18-9bde-83902b650c55
+# ╟─a9799472-2a81-4c9d-98dc-2ec53ff7b70d
+# ╠═ed2c8c95-9a55-4111-ade3-4d6048229f9f
+# ╠═bd77a703-da82-49d3-9e43-9f915f3e40b7
+# ╟─ad523c5b-a021-408b-9aec-ca196eb22559
+# ╟─a4155219-a7e1-452c-925c-3357056e853f
+# ╟─06215f94-5499-4f1a-9910-5d3e86ab1afe
+# ╠═58971c49-3ae5-4ed5-8f4b-9ef5493f8092
+# ╟─8f51a18b-d472-4b8c-acde-0cb023d2a290
+# ╠═aca4f95f-fb3b-4cc1-94d7-05dfa6212ea2
+# ╠═d6256e03-4e6e-4156-ab56-0693ab10f210
 # ╟─b4082060-e48c-49e4-bf42-8f1d3664afd0
 # ╟─968401ab-7763-4dd0-b45b-1ec916ba2b13
 # ╟─ff17fdb2-da29-48dc-9ca3-02d87d7053cb
@@ -1967,15 +2176,14 @@ version = "1.4.1+0"
 # ╠═20d68b54-5c6d-4ba3-bd2a-1b71c4c31b66
 # ╟─af560292-243e-4bea-907d-e8bb4658093b
 # ╠═6e84c401-2c73-4193-ae2f-27a6530a6aca
+# ╟─3df43e84-71aa-4d67-a1d0-ec67393247f4
 # ╟─14314c03-3fd7-40bf-9f5e-8c2c640628ee
 # ╟─99f141e0-6eec-48b9-9bff-f55a5c77b3d7
 # ╠═76a742b0-842f-441a-bb42-6fbc3f5488d2
 # ╠═67337333-4ac9-4708-bf61-80b9fee557d2
 # ╟─47be698b-c86b-4997-9ce7-8fdec47d49f7
-# ╟─65f2cdb7-80ff-43cf-82cb-9106d26627b1
-# ╟─a7e23cfe-5604-4b29-ac5f-0f8ca750e34b
-# ╟─415c49e2-b972-4764-a24b-87856cdf3a6b
-# ╟─4f12214b-25ff-4947-ba1e-75b768c73c0d
 # ╟─e97e0b7e-d95d-430d-b0bb-8fda6b0dcc90
+# ╟─8835fa0f-0634-457a-a553-10f27acae9f5
+# ╟─77abad8b-2517-4e75-b16d-278a48b1c289
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
