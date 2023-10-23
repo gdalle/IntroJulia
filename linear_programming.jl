@@ -42,12 +42,17 @@ md"""
 """
 
 # ╔═╡ bb1e3beb-7f16-48bf-ab5f-27d80e751f09
-md"""
+TwoColumnWideLeft(
+	md"""
 Goals of the lecture:
 - being able to use Integer Linear Programs as a modeling tool
 - knowing various methods to solve them
 - being able to express them in JuMP.jl
+""",
+	md"""
+> Poll: [Wooclap link](https://app.wooclap.com/JULIALP)
 """
+)
 
 # ╔═╡ bea5deba-2a27-4a69-aaf8-400c4dc04675
 html"<button onclick=present()>Present</button>"
@@ -608,9 +613,6 @@ let
 	)
 end
 
-# ╔═╡ bd77a703-da82-49d3-9e43-9f915f3e40b7
-
-
 # ╔═╡ ad523c5b-a021-408b-9aec-ca196eb22559
 md"""
 ## Solving minimum coloring
@@ -767,9 +769,20 @@ md"""
 """
 
 # ╔═╡ 8835fa0f-0634-457a-a553-10f27acae9f5
-struct SplitTwoColumn{L, R}
-	left::L
-	right::R
+begin
+	struct SplitTwoColumn{L, R}
+		left::L
+		right::R
+	end
+	
+	function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
+		write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
+		show(io, mime, tc.left)
+		write(io, """</div><div style="flex: 6%;">""")
+		write(io, """</div><div style="flex: 47%;">""")
+		show(io, mime, tc.right)
+		write(io, """</div></div>""")
+	end
 end
 
 # ╔═╡ 67e65ccd-c6ed-41a1-a10a-939c8a644ee4
@@ -793,16 +806,6 @@ Example: maximum flow
 Example: minimum coloring
 """
 )
-
-# ╔═╡ 77abad8b-2517-4e75-b16d-278a48b1c289
-function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
-	write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
-	show(io, mime, tc.left)
-	write(io, """</div><div style="flex: 6%;">""")
-	write(io, """</div><div style="flex: 47%;">""")
-	show(io, mime, tc.right)
-	write(io, """</div></div>""")
-end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2153,7 +2156,6 @@ version = "1.4.1+0"
 # ╠═85cc31ce-7556-4a18-9bde-83902b650c55
 # ╟─a9799472-2a81-4c9d-98dc-2ec53ff7b70d
 # ╠═ed2c8c95-9a55-4111-ade3-4d6048229f9f
-# ╠═bd77a703-da82-49d3-9e43-9f915f3e40b7
 # ╟─ad523c5b-a021-408b-9aec-ca196eb22559
 # ╟─a4155219-a7e1-452c-925c-3357056e853f
 # ╟─06215f94-5499-4f1a-9910-5d3e86ab1afe
@@ -2184,6 +2186,5 @@ version = "1.4.1+0"
 # ╟─47be698b-c86b-4997-9ce7-8fdec47d49f7
 # ╟─e97e0b7e-d95d-430d-b0bb-8fda6b0dcc90
 # ╟─8835fa0f-0634-457a-a553-10f27acae9f5
-# ╟─77abad8b-2517-4e75-b16d-278a48b1c289
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

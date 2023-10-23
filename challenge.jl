@@ -164,7 +164,24 @@ This challenge can be tackled individually, or in teams of up to 3 students.
 # ╔═╡ f7cb667c-bc7a-4a41-93a4-54d1e46611d2
 md"""
 To make things more fun, we encourage teams to compete against each other.
-We will thus create a Google Sheets where you can enter your team information and your current best performance.
+We have thus created a Google Sheets where you can enter your team information and your current best performance.
+"""
+
+# ╔═╡ e6648004-4e02-4490-88a3-02c99209bea1
+md"""
+> <https://docs.google.com/spreadsheets/d/1ZIlY3XCDXl7TMssk1ibN8bRk073RHepLTd_r5uoA-ok/edit?usp=sharing>
+"""
+
+# ╔═╡ 54fb4a7f-a261-4a3e-a1dd-17a02749941d
+md"""
+You will find two sets of columns:
+- one for the original problem instance with 54000 seconds = 15 hours
+- one for a smaller instance with 18000 seconds = 5 hours (just create a new `City` object with a different `total_duration`)
+
+The reason is that Google screwed up in their problem creation: it is possible (but very difficult) to cross every street within 15 hours, so the upper bound will not be informative in this scenario.
+On the other hand, for 5 hours it will be useful to compare your solution to an overestimate of the optimal one.
+
+The CPU time should be reported for the solution finding, not the upper bound computation.
 """
 
 # ╔═╡ cdb75786-4fc0-491f-bbd7-fdf59d36b668
@@ -241,6 +258,8 @@ The grading rubric is not defined yet, but the following items will be taken int
 # ╟─cd6d305e-f5fb-46f7-abbc-3b175f42a325
 # ╟─1e0f6c1a-694c-4802-91b2-45c67baa0305
 # ╟─f7cb667c-bc7a-4a41-93a4-54d1e46611d2
+# ╟─e6648004-4e02-4490-88a3-02c99209bea1
+# ╟─54fb4a7f-a261-4a3e-a1dd-17a02749941d
 # ╟─cdb75786-4fc0-491f-bbd7-fdf59d36b668
 # ╟─6802a897-1be1-4d93-a432-b783ca648830
 # ╟─3cc76524-62e7-4476-9a62-02ad93915172

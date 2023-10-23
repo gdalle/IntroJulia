@@ -11,41 +11,10 @@ begin
 	using PlutoTeachingTools
 end
 
-# ╔═╡ 669f3826-747e-489c-97cf-7cde72a10294
-TableOfContents()
-
-# ╔═╡ f948a98c-f778-4af2-8d2d-4bc45f6a639b
-struct SplitTwoColumn{L, R}
-	left::L
-	right::R
-end
-
-# ╔═╡ 573d4ff9-c6f1-4b37-b695-1659511f9246
-function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
-	write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
-	show(io, mime, tc.left)
-	write(io, """</div><div style="flex: 6%;">""")
-	write(io, """</div><div style="flex: 47%;">""")
-	show(io, mime, tc.right)
-	write(io, """</div></div>""")
-end
-
 # ╔═╡ 1a996fe9-804e-4e29-ac16-3ec5bb12a592
 md"""
 # Package creation
 """
-
-# ╔═╡ 56ad2d31-82df-4d9a-bb82-20708414f118
-SplitTwoColumn(
-	md"""
-!!! tip "Primary source"
-	PkgTemplates.jl [documentation](https://juliaci.github.io/PkgTemplates.jl/dev/user/)
-""",
-	md"""
-!!! tip "Secondary source"
-	[JuliaNotes](https://m3g.github.io/JuliaNotes.jl/stable/new_package/) by the Martínez Molecular Modeling Group
-"""
-)
 
 # ╔═╡ 4040ff7b-5bdd-4c75-97bb-6c283c467a43
 md"""
@@ -81,22 +50,6 @@ Pkg.add("PkgTemplates")
 using PkgTemplates
 ```
 """
-
-# ╔═╡ 3d7185a0-30c6-4cbe-ae52-05b980c1912a
-SplitTwoColumn(
-	md"""
-If you authenticate with HTTPS:
-```julia
-ssh = false
-```
-""",
-	md"""
-If you authenticate with SSH:
-```julia
-ssh = true
-```
-"""
-)
 
 # ╔═╡ 264f0895-02b9-4734-92b3-ed2f1c830984
 md"""
@@ -157,6 +110,54 @@ Go to the repository settings of MyPackage.jl, and in the "Pages" tab:
 1. select "Build from a branch"
 2. choose the new branch called `gh-pages` (root) as the source
 """
+
+# ╔═╡ 669f3826-747e-489c-97cf-7cde72a10294
+TableOfContents()
+
+# ╔═╡ 573d4ff9-c6f1-4b37-b695-1659511f9246
+begin
+	struct SplitTwoColumn{L, R}
+		left::L
+		right::R
+	end
+	
+	function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
+		write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
+		show(io, mime, tc.left)
+		write(io, """</div><div style="flex: 6%;">""")
+		write(io, """</div><div style="flex: 47%;">""")
+		show(io, mime, tc.right)
+		write(io, """</div></div>""")
+	end
+end
+
+# ╔═╡ 56ad2d31-82df-4d9a-bb82-20708414f118
+SplitTwoColumn(
+	md"""
+!!! tip "Primary source"
+	PkgTemplates.jl [documentation](https://juliaci.github.io/PkgTemplates.jl/dev/user/)
+""",
+	md"""
+!!! tip "Secondary source"
+	[JuliaNotes](https://m3g.github.io/JuliaNotes.jl/stable/new_package/) by the Martínez Molecular Modeling Group
+"""
+)
+
+# ╔═╡ 3d7185a0-30c6-4cbe-ae52-05b980c1912a
+SplitTwoColumn(
+	md"""
+If you authenticate with HTTPS:
+```julia
+ssh = false
+```
+""",
+	md"""
+If you authenticate with SSH:
+```julia
+ssh = true
+```
+"""
+)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -699,7 +700,6 @@ version = "17.4.0+0"
 # ╟─34d86725-4698-4706-a148-2f5a064d5b1a
 # ╟─03085746-6dae-11ee-00f0-3b46d0959047
 # ╟─669f3826-747e-489c-97cf-7cde72a10294
-# ╟─f948a98c-f778-4af2-8d2d-4bc45f6a639b
 # ╟─573d4ff9-c6f1-4b37-b695-1659511f9246
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

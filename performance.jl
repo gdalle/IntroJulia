@@ -27,20 +27,21 @@ end
 # ╔═╡ 99466829-a9d9-4f1e-b35e-0a6a0d26b0a2
 TableOfContents()
 
-# ╔═╡ 46d7f0d8-cf41-4fcf-a5c2-baa85e8afcb1
-struct SplitTwoColumn{L, R}
-	left::L
-	right::R
-end
-
 # ╔═╡ b2a160c0-2c38-4484-afd4-a917d6065eaa
-function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
-	write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
-	show(io, mime, tc.left)
-	write(io, """</div><div style="flex: 6%;">""")
-	write(io, """</div><div style="flex: 47%;">""")
-	show(io, mime, tc.right)
-	write(io, """</div></div>""")
+begin
+	struct SplitTwoColumn{L, R}
+		left::L
+		right::R
+	end
+	
+	function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
+		write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
+		show(io, mime, tc.left)
+		write(io, """</div><div style="flex: 6%;">""")
+		write(io, """</div><div style="flex: 47%;">""")
+		show(io, mime, tc.right)
+		write(io, """</div></div>""")
+	end
 end
 
 # ╔═╡ e49d8681-e1eb-4c5e-91f2-605b4d1a91b7
@@ -1050,7 +1051,6 @@ version = "17.4.0+0"
 # ╔═╡ Cell order:
 # ╠═f4b3ab20-5c8f-11ee-22f7-b3466c0a577e
 # ╠═99466829-a9d9-4f1e-b35e-0a6a0d26b0a2
-# ╟─46d7f0d8-cf41-4fcf-a5c2-baa85e8afcb1
 # ╟─b2a160c0-2c38-4484-afd4-a917d6065eaa
 # ╟─e49d8681-e1eb-4c5e-91f2-605b4d1a91b7
 # ╟─72c0f5c8-fc2b-4b50-9c05-ea8c79990f2a

@@ -28,12 +28,17 @@ md"""
 """
 
 # ╔═╡ b84043ea-bb4d-4527-b31f-76cc90ebc7dc
-md"""
+TwoColumnWideLeft(
+	md"""
 Goals of the lecture:
 - knowing the various graph types and storage modes
 - understanding the role of an interface
 - exploring performance differences between interface implementations
+""",
+	md"""
+> Poll: [Wooclap link](https://app.wooclap.com/JULIAGRAPHS)
 """
+)
 
 # ╔═╡ 683da7e5-2794-4766-a026-cb55bd23690f
 html"<button onclick=present()>Present</button>"
@@ -436,9 +441,20 @@ md"""
 """
 
 # ╔═╡ ad2a7440-dc91-43cf-9fa5-ea49cf79f543
-struct SplitTwoColumn{L, R}
-	left::L
-	right::R
+begin
+	struct SplitTwoColumn{L, R}
+		left::L
+		right::R
+	end
+	
+	function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
+		write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
+		show(io, mime, tc.left)
+		write(io, """</div><div style="flex: 6%;">""")
+		write(io, """</div><div style="flex: 47%;">""")
+		show(io, mime, tc.right)
+		write(io, """</div></div>""")
+	end
 end
 
 # ╔═╡ 48b97a84-20c4-4660-949e-047152b374c8
@@ -477,16 +493,6 @@ SplitTwoColumn(
 """,
 	Resource("https://i.imgur.com/afI4sp8.jpg", :width => "100%")
 )
-
-# ╔═╡ fc8c32e8-2509-403a-b624-741b223d3702
-function Base.show(io, mime::MIME"text/html", tc::SplitTwoColumn)
-	write(io, """<div style="display: flex;"><div style="flex: 47%;">""")
-	show(io, mime, tc.left)
-	write(io, """</div><div style="flex: 6%;">""")
-	write(io, """</div><div style="flex: 47%;">""")
-	show(io, mime, tc.right)
-	write(io, """</div></div>""")
-end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1020,6 +1026,5 @@ version = "17.4.0+0"
 # ╟─3d2673e1-d1af-44d3-8441-7825504102be
 # ╟─7eb7606b-2f65-41c8-a510-6e40f4c306cf
 # ╟─ad2a7440-dc91-43cf-9fa5-ea49cf79f543
-# ╟─fc8c32e8-2509-403a-b624-741b223d3702
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
