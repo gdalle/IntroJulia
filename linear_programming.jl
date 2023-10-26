@@ -674,7 +674,7 @@ function minimum_coloring(g::AbstractGraph, max_colors::Integer)
 	model = Model()
 
 	@variable(model, x[1:nv(g), 1:max_colors], Bin)
-	@variable(model, y[1:nv(g)], Bin)
+	@variable(model, y[1:max_colors], Bin)
 
 	# add objective
 
