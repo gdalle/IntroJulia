@@ -133,6 +133,36 @@ A simple graph traversal algorithm.
 Description: [here](https://en.wikipedia.org/wiki/Breadth-first_search) / Visualization: [here](https://visualgo.net/en/dfsbfs)
 """
 
+# ╔═╡ 755b8709-4a86-4b79-a61c-605ba8ecdd8b
+"""
+	bfs(g, s)
+
+Take an unweighted graph `g` and return the shortest path tree from `s` to all other vertices, represented as a vector of `parents`.
+"""
+function bfs(g, s)
+	# initialize storage
+	n = nb_vertices(g)  # here
+	explored = fill(false, n)
+	parents = fill(0, n)
+	q = Queue{Int}()
+	# visit source
+	explored[s] = true
+	parents[s] = s
+	enqueue!(q, s)
+	# go through the queue
+	while !isempty(q)
+		u = dequeue!(q)
+		for v in outgoing_neighbors(g, u)  # here
+			if !explored[v]
+				explored[v] = true
+				parents[v] = u 
+				enqueue!(q, v)
+			end
+		end
+	end
+    return parents
+end
+
 # ╔═╡ e9f3585c-0b5b-497a-9a5f-55cb5963d7ac
 md"""
 ## Defining the interface
@@ -262,6 +292,18 @@ function outgoing_neighbors(g::ListGraph, u)
 	return (v for (u_bis, v) in g.edges if u_bis == u)
 end
 
+# ╔═╡ 643c4cd5-6a96-4859-8a91-142946c880e4
+let
+	g = ListGraph(grid_edges(2, 3))
+	bfs(g, 1)
+end
+
+# ╔═╡ caba823b-2cb8-4760-9d18-31ab7a065d82
+let
+	g = ListGraph(grid_edges(100, 100))
+	@benchmark bfs($g, 1)
+end
+
 # ╔═╡ 4d38d5dd-6ee7-4847-b3d4-b139c4e52cfb
 md"""
 ## Adjacency list
@@ -322,48 +364,6 @@ nb_vertices(g::TransposedSparseMatrixGraph) = size(g.Aᵀ, 1)
 # ╔═╡ 5ca4bfab-13a5-4455-92cf-289ebfbb61a9
 function outgoing_neighbors(g::TransposedSparseMatrixGraph, u)
     return @view g.Aᵀ.rowval[nzrange(g.Aᵀ, u)]
-end
-
-# ╔═╡ 755b8709-4a86-4b79-a61c-605ba8ecdd8b
-"""
-	bfs(g, s)
-
-Take an unweighted graph `g` and return the shortest path tree from `s` to all other vertices, represented as a vector of `parents`.
-"""
-function bfs(g, s)
-	# initialize storage
-	n = nb_vertices(g)  # here
-	explored = fill(false, n)
-	parents = fill(0, n)
-	q = Queue{Int}()
-	# visit source
-	explored[s] = true
-	parents[s] = s
-	enqueue!(q, s)
-	# go through the queue
-	while !isempty(q)
-		u = dequeue!(q)
-		for v in outgoing_neighbors(g, u)  # here
-			if !explored[v]
-				explored[v] = true
-				parents[v] = u 
-				enqueue!(q, v)
-			end
-		end
-	end
-    return parents
-end
-
-# ╔═╡ 643c4cd5-6a96-4859-8a91-142946c880e4
-let
-	g = ListGraph(grid_edges(2, 3))
-	bfs(g, 1)
-end
-
-# ╔═╡ caba823b-2cb8-4760-9d18-31ab7a065d82
-let
-	g = ListGraph(grid_edges(100, 100))
-	@benchmark bfs($g, 1)
 end
 
 # ╔═╡ 4904034d-d259-44f9-b194-95f18f952887
