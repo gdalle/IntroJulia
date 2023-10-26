@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.29
+# v0.19.30
 
 #> [frontmatter]
 #> title = "IntroJulia - Performance"
@@ -264,39 +264,36 @@ Color code:
 # ╔═╡ 19783972-7674-48ef-b6f9-887dbac379ce
 begin
 	struct MatrixMultiplier
-		A
+		M
 	end
 	
 	function (mm::MatrixMultiplier)(b::Vector)
-		return mm.A * b
+		return mm.M * b
 	end
 end
 
 # ╔═╡ a5060ea2-7001-43ab-9201-e7d1cda33dbd
 begin
-	function testfunction(A)
-		matmul = MatrixMultiplier(A)
-		n, m = length(A[:, 1]), length(A[1, :])
-		b = rand(m)
-		c = matmul(b)
-		l = sum(abs2(c[i]) for i in 1:n)
+	function testfunction(M)
+		matmul = MatrixMultiplier(M)
+		n, m = length(M[:, 1]), length(M[1, :])
+		x = rand(m)
+		y = matmul(x)
+		l = sum(abs2(y[i]) for i in 1:n)
 		return sqrt(l)
 	end
 
 	testfunction(rand(2, 2))
 end;
 
+# ╔═╡ 64d23e04-2d77-40f1-b548-d54493d56d4d
+M = rand(100, 50)
+
 # ╔═╡ 24f39e1f-da52-4df8-b70d-b11eb58a04fe
-let
-	A = rand(100, 50)
-	ProfileCanvas.@profview for k in 1:10_000; testfunction(A); end
-end
+ProfileCanvas.@profview for k in 1:10_000; testfunction(M); end
 
 # ╔═╡ fbe7b77e-56b2-4839-9f57-42746a6d2c2c
-let
-	A = rand(100, 50)
-	ProfileCanvas.@profview_allocs for k in 1:10_000; testfunction(A); end
-end
+ProfileCanvas.@profview_allocs for k in 1:10_000; testfunction(M); end
 
 # ╔═╡ dbb15720-af54-4d12-8f51-414fd58e1bfb
 md"""
@@ -321,15 +318,11 @@ Also relevant:
 )
 
 # ╔═╡ 8d63d676-19f5-47b1-a5d6-20576f03de3b
-let
-	A = rand(10, 20)
-	Test.@inferred testfunction(A)
-end
+Test.@inferred testfunction(M)
 
 # ╔═╡ f29f7200-a70b-4713-bd92-4d6e1717aea1
 with_terminal() do
-	A = rand(10, 20)
-	InteractiveUtils.@code_warntype testfunction(A)
+	InteractiveUtils.@code_warntype testfunction(M)
 end
 
 # ╔═╡ 1f68d003-a2c3-4f30-901d-831ff656a101
@@ -338,21 +331,17 @@ Unfortunately, `@inferred` and `@code_warntype` only go one level down: they're 
 """
 
 # ╔═╡ 9f052683-c12a-4439-b1ee-7e5d380656db
-function testfunctionwrapper(A)
-	testfunction(A)
+function testfunctionwrapper(M)
+	testfunction(M)
 	return true
 end
 
 # ╔═╡ fb48aea6-0d44-4efb-8412-7c1aad5bc70a
-let
-	A = rand(10, 20)
-	Test.@inferred testfunctionwrapper(A)
-end
+Test.@inferred testfunctionwrapper(M)
 
 # ╔═╡ e13f7d0c-dc6a-493e-8fe8-4507ca60f192
 with_terminal() do
-	A = rand(10, 20)
-	InteractiveUtils.@code_warntype testfunctionwrapper(A)
+	InteractiveUtils.@code_warntype testfunctionwrapper(M)
 end
 
 # ╔═╡ e3990f5a-a5e9-492f-8892-c3a531acf680
@@ -361,10 +350,7 @@ On the other hand, JET.jl and Cthulhu.jl inspect the full call stack for type in
 """
 
 # ╔═╡ 6c84678c-5d21-4e8e-ad88-c75dd9969d4e
-let
-	A = rand(10, 20)
-	JET.@report_opt testfunctionwrapper(A)
-end
+JET.@report_opt testfunctionwrapper(M)
 
 # ╔═╡ 4f101b1e-4932-481f-889f-bf42104a278d
 md"""
@@ -398,6 +384,9 @@ We study the following gradient descent algorithm:
 We use these values for the parameters: $x_0 = 0$, $n = 100$ and $\gamma = 10^{-3}$.
 """
 
+# ╔═╡ 4c171bfb-021c-4f8f-900b-f7a7a1270012
+A, b = randn(200, 100), randn(200)
+
 # ╔═╡ 3b9abb50-72c8-48e7-b815-d8f086c44792
 md"""
 ## Implementation
@@ -427,8 +416,91 @@ md"""
 
 # ╔═╡ add1e0fe-6655-4a57-9baa-658b010aa154
 md"""
-## Discussion
+## The bad version
 """
+
+# ╔═╡ 8949ab5b-4523-4010-84e6-4d16cf82a30a
+function matvec(M, v)
+	n, p = size(M)
+	res = []
+	for i in 1:n
+		y = sum(M[i, :] .* v)
+		push!(res, y)
+	end
+	return res
+end
+
+# ╔═╡ 4cf68bf6-94f5-4c6f-9911-82c94e3f1b80
+∇f(x, A, b) = matvec(2A', (matvec(A, x) - b))
+
+# ╔═╡ 66321ebc-1dd6-443b-b399-14fa365336ee
+function bad_descent(A, b)
+	x = zeros(size(A, 2))
+	for t in 1:100
+		x -= 1e-3 * ∇f(x, A, b)
+	end
+	return x
+end
+
+# ╔═╡ 44ff95b4-7967-40f2-9724-c972414e716e
+md"""
+## The good version
+"""
+
+# ╔═╡ eaf0efcb-c3fe-4279-a892-d48336d7cdab
+function matvec_fast!(res, M, v)
+	T = eltype(res)
+	n, p = size(M)
+	for i in 1:n
+		y = zero(T)
+		for j in 1:p
+			y += M[i, j] * v[j]
+		end
+		res[i] = y
+	end
+	return nothing
+end
+
+# ╔═╡ 10e656be-e7e9-4a7e-bce0-a42e1acd7dbb
+function ∇f!(e, g, x, A, b)
+	matvec_fast!(e, A, x)
+	e .-= b
+	matvec_fast!(g, A', e)
+	g .*= 2
+	return nothing
+end
+
+# ╔═╡ e32be2ca-c822-43e7-9cf6-6fa4c5b0f476
+function good_descent(A, b)
+	x = zeros(size(A, 2))
+	e = similar(b)
+	g = similar(x)
+	for t in 1:100
+		∇f!(e, g, x, A, b)
+		x .-= 1e-3 .* g
+	end
+	return x
+end
+
+# ╔═╡ 9ec495b2-0cb3-47ef-909a-c2aae603e4b9
+md"""
+## Comparison
+"""
+
+# ╔═╡ 9eecef20-c854-4eab-a826-98c78636cb99
+Test.@test bad_descent(A, b) ≈ good_descent(A, b)
+
+# ╔═╡ c5c23188-4ac9-48b8-9af1-3524db2d9957
+begin
+	BenchmarkTools.@btime bad_descent($A, $b)
+	BenchmarkTools.@btime good_descent($A, $b)
+end
+
+# ╔═╡ ab219996-8927-404d-aacf-4159376fbb23
+ProfileCanvas.@profview for k in 1:100; bad_descent(A, b); end
+
+# ╔═╡ 200342fc-0933-4743-840c-bb1fd7eda52a
+ProfileCanvas.@profview for k in 1:100; good_descent(A, b); end
 
 # ╔═╡ 0dd724ac-72c2-466d-a5ed-c40e5bc10a79
 md"""
@@ -1084,6 +1156,7 @@ version = "17.4.0+0"
 # ╟─9e9c7ea3-9dd2-4c40-b16b-d6dbcd8c3dd2
 # ╠═19783972-7674-48ef-b6f9-887dbac379ce
 # ╠═a5060ea2-7001-43ab-9201-e7d1cda33dbd
+# ╠═64d23e04-2d77-40f1-b548-d54493d56d4d
 # ╠═24f39e1f-da52-4df8-b70d-b11eb58a04fe
 # ╠═fbe7b77e-56b2-4839-9f57-42746a6d2c2c
 # ╟─dbb15720-af54-4d12-8f51-414fd58e1bfb
@@ -1100,10 +1173,23 @@ version = "17.4.0+0"
 # ╟─83d59131-2638-4e28-9daf-cbe8a14116c6
 # ╟─8df3e36b-942d-49a3-bdf8-a75db1877e34
 # ╟─bfc0b87c-6c05-43ae-88d5-40e10c2a6374
+# ╠═4c171bfb-021c-4f8f-900b-f7a7a1270012
 # ╟─3b9abb50-72c8-48e7-b815-d8f086c44792
 # ╟─fe38657c-fa30-4575-ad33-0d1571d26a9e
 # ╟─dd888356-90ae-4bf0-8548-3994462af5ef
 # ╟─add1e0fe-6655-4a57-9baa-658b010aa154
+# ╠═8949ab5b-4523-4010-84e6-4d16cf82a30a
+# ╠═4cf68bf6-94f5-4c6f-9911-82c94e3f1b80
+# ╠═66321ebc-1dd6-443b-b399-14fa365336ee
+# ╟─44ff95b4-7967-40f2-9724-c972414e716e
+# ╠═eaf0efcb-c3fe-4279-a892-d48336d7cdab
+# ╠═10e656be-e7e9-4a7e-bce0-a42e1acd7dbb
+# ╠═e32be2ca-c822-43e7-9cf6-6fa4c5b0f476
+# ╟─9ec495b2-0cb3-47ef-909a-c2aae603e4b9
+# ╠═9eecef20-c854-4eab-a826-98c78636cb99
+# ╠═c5c23188-4ac9-48b8-9af1-3524db2d9957
+# ╠═ab219996-8927-404d-aacf-4159376fbb23
+# ╠═200342fc-0933-4743-840c-bb1fd7eda52a
 # ╟─0dd724ac-72c2-466d-a5ed-c40e5bc10a79
 # ╟─745d023f-6487-4aab-b9cd-381aedaaf305
 # ╟─58e0cc49-bed7-48ad-a6f1-e32047a00e96

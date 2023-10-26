@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.29
+# v0.19.30
 
 #> [frontmatter]
 #> title = "IntroJulia - LP"
@@ -111,14 +111,20 @@ md"""
 
 # ╔═╡ 0b2bee0a-8d1f-4a86-855d-28346b782b34
 md"""
-Maximizing the number of items sent from a source to a destination, in a graph where edges have maximum capacities.
+Maximizing the number of items sent from a source vertex $s$ to a destination $d$, in a directed graph $G$ where edges $e$ have maximum capacities $c_e$.
 """
 
 # ╔═╡ f894861e-5710-4531-88e0-c1f840e0471c
 md"""
 !!! warning "Group 1"
-	Model this optimization problem using an integer flow variable $x_{u,v}$ for each pair of vertices in the graph (it will be zero if the edge does not exist).
+	Model the maximum flow problem using an integer linear program.
 """
+
+# ╔═╡ 6cc5e371-4fc3-49ea-9a98-c31db67e79fc
+hint(md"""
+Define an integer flow variable $x_{u,v}$ for each edge $(u, v)$ in the graph.
+Remember the Kirchoff conservation laws from electrical engineering.
+""")
 
 # ╔═╡ 5c1b588e-b185-451e-835c-e3d62262a149
 md"""
@@ -127,14 +133,20 @@ md"""
 
 # ╔═╡ c5cabbe9-38eb-4a5f-93c9-70e6e0931b78
 md"""
-Minimizing the number of colors necessary to color vertices of a graph such that adjacent vertices have different colors.
+Minimizing the number of colors necessary to color the vertices of an undirected graph $G$ such that adjacent vertices $\{u, v\}$ have different colors.
 """
 
 # ╔═╡ 53030d62-e802-4f5f-94c2-c26f6b1f0d96
 md"""
 !!! warning "Group 2"
-	Model this optimization problem using a binary variable $x_{v,c}$ for each vertex $v$ and color $c$, as well as a binary variable $y_c$ indicating if color $c$ is used.
+	Model the minimum coloring problem as an integer linear program.
 """
+
+# ╔═╡ fa490c2b-a867-444e-ba9e-a61cbc0e5875
+hint(md"""
+Define a binary variable $x_{v,c}$ for each vertex $v$ and color $c$, as well as a binary variable $y_c$ indicating if color $c$ is used.
+You can assume no more than $C$ colors are necessary.
+""")
 
 # ╔═╡ a6c87b54-4f16-4f33-bda8-9a53f3bca951
 md"""
@@ -574,7 +586,7 @@ md"""
 
 # ╔═╡ 6d378c9a-1d61-4fca-89a3-fbd616c51333
 md"""
-The input graph will be an undirected graph from Graphs.jl.
+The input graph will be a **directed** graph from Graphs.jl.
 You can use the following functions:
 - `nv(g)`, `ne(g)` (number of vertices / edges)
 - `vertices(g)`, `edges(g)` (list vertices / edges)
@@ -587,9 +599,30 @@ md"""
 	Implement the maximum flow problem with the following template:
 """
 
+# ╔═╡ 2b146ba2-0288-4d75-9526-e7c5169a3259
+function edges_as_tuples(g)
+	sources = src.(edges(g))
+	destinations = dst.(edges(g))
+	return collect(zip(sources, destinations))
+end
+
 # ╔═╡ 85cc31ce-7556-4a18-9bde-83902b650c55
-function maximum_flow(g::AbstractGraph, s::Integer, d::Integer, capa::Matrix)
-	# return a matrix of flow values
+function maximum_flow(g::AbstractGraph, s::Integer, d::Integer, capa::AbstractMatrix)
+	model = Model()
+
+	@variable(model, x[edges_as_tuples(g)] >= 0, Int)
+
+	# add objective
+
+	# add constraints
+
+	# resolution
+	set_optimizer(model, HiGHS.Optimizer)
+	set_silent(model)
+	optimize!(model)
+	
+	# return a tuple-indexed dict of flow values
+	return round.(Int, value.(x))
 end
 
 # ╔═╡ a9799472-2a81-4c9d-98dc-2ec53ff7b70d
@@ -600,16 +633,16 @@ You can test it on this graph:
 # ╔═╡ ed2c8c95-9a55-4111-ade3-4d6048229f9f
 let
 	g1 = Graphs.grid((4, 4))
-	s = 1
-	d = nv(g1)
 	capa = Symmetric(sparse([
 		(has_edge(g1, u, v) ? rand(1:5) : 0)
 		for u in vertices(g1), v in vertices(g1)
 	]))
+	f = maximum_flow(g1, 1, nv(g1), capa)
+	
 	gplot(
 		g1,
 		nodelabel=vertices(g1),
-		edgelabel=[capa[src(e), dst(e)] for e in edges(g1)]
+		edgelabel=["$(f[(src(e), dst(e))])/$(capa[src(e), dst(e)])" for e in edges(g1)]
 	)
 end
 
@@ -620,7 +653,11 @@ md"""
 
 # ╔═╡ a4155219-a7e1-452c-925c-3357056e853f
 md"""
-The input graph will be an undirected graph from Graphs.jl (see above).
+The input graph will be an **undirected** graph from Graphs.jl.
+You can use the following functions:
+- `nv(g)`, `ne(g)` (number of vertices / edges)
+- `vertices(g)`, `edges(g)` (list vertices / edges)
+- `outneighbors(g, u)`, `inneighbors(g, v)`, `has_edge(g, u, v)`
 """
 
 # ╔═╡ 06215f94-5499-4f1a-9910-5d3e86ab1afe
@@ -629,9 +666,28 @@ md"""
 	Implement the maximum flow problem with the following template:
 """
 
+# ╔═╡ aca4f95f-fb3b-4cc1-94d7-05dfa6212ea2
+all_colors = distinguishable_colors(100);
+
 # ╔═╡ 58971c49-3ae5-4ed5-8f4b-9ef5493f8092
-function minimum_coloring(g::AbstractGraph)
-	# return a vector of color choices
+function minimum_coloring(g::AbstractGraph, max_colors::Integer)
+	model = Model()
+
+	@variable(model, x[1:nv(g), 1:max_colors], Bin)
+	@variable(model, y[1:nv(g)], Bin)
+
+	# add objective
+
+	# add constraints
+
+	# resolution
+	set_optimizer(model, HiGHS.Optimizer)
+	set_silent(model)
+	optimize!(model)
+	
+	# return a vector of color indices
+	c = [argmax(value.(x[v, :])) for v in 1:nv(g)]
+	return c
 end
 
 # ╔═╡ 8f51a18b-d472-4b8c-acde-0cb023d2a290
@@ -639,16 +695,14 @@ md"""
 You can test it on this graph:
 """
 
-# ╔═╡ aca4f95f-fb3b-4cc1-94d7-05dfa6212ea2
-all_colors = distinguishable_colors(100);
-
 # ╔═╡ d6256e03-4e6e-4156-ab56-0693ab10f210
 let
-	g2 = Graphs.barabasi_albert(10, 3)
+	g2 = Graphs.barabasi_albert(20, 3)
+	c = minimum_coloring(g2, 20)
 	gplot(
 		g2,
 		nodelabel=vertices(g2),
-		nodefillc=all_colors[1:nv(g2)],
+		nodefillc=all_colors[c],
 	)
 end
 
@@ -2089,9 +2143,11 @@ version = "1.4.1+0"
 # ╟─b1225ca4-4215-4956-a1af-55f65bffc568
 # ╟─0b2bee0a-8d1f-4a86-855d-28346b782b34
 # ╟─f894861e-5710-4531-88e0-c1f840e0471c
+# ╟─6cc5e371-4fc3-49ea-9a98-c31db67e79fc
 # ╟─5c1b588e-b185-451e-835c-e3d62262a149
 # ╟─c5cabbe9-38eb-4a5f-93c9-70e6e0931b78
 # ╟─53030d62-e802-4f5f-94c2-c26f6b1f0d96
+# ╟─fa490c2b-a867-444e-ba9e-a61cbc0e5875
 # ╟─a6c87b54-4f16-4f33-bda8-9a53f3bca951
 # ╟─67e65ccd-c6ed-41a1-a10a-939c8a644ee4
 # ╟─c9c066ae-f4f0-4088-857b-2b8250978db6
@@ -2153,15 +2209,16 @@ version = "1.4.1+0"
 # ╟─fcf16e20-7227-4baa-8611-7e76881d015b
 # ╟─6d378c9a-1d61-4fca-89a3-fbd616c51333
 # ╟─56b00572-6244-4859-9457-7771aaa82b69
+# ╠═2b146ba2-0288-4d75-9526-e7c5169a3259
 # ╠═85cc31ce-7556-4a18-9bde-83902b650c55
 # ╟─a9799472-2a81-4c9d-98dc-2ec53ff7b70d
 # ╠═ed2c8c95-9a55-4111-ade3-4d6048229f9f
 # ╟─ad523c5b-a021-408b-9aec-ca196eb22559
 # ╟─a4155219-a7e1-452c-925c-3357056e853f
 # ╟─06215f94-5499-4f1a-9910-5d3e86ab1afe
+# ╠═aca4f95f-fb3b-4cc1-94d7-05dfa6212ea2
 # ╠═58971c49-3ae5-4ed5-8f4b-9ef5493f8092
 # ╟─8f51a18b-d472-4b8c-acde-0cb023d2a290
-# ╠═aca4f95f-fb3b-4cc1-94d7-05dfa6212ea2
 # ╠═d6256e03-4e6e-4156-ab56-0693ab10f210
 # ╟─b4082060-e48c-49e4-bf42-8f1d3664afd0
 # ╟─968401ab-7763-4dd0-b45b-1ec916ba2b13
