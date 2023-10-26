@@ -104,6 +104,13 @@ The optimization problem $(\mathrm{P})$ is called an Integer Linear Program (ILP
 > Many problems of interest can be formulated as ILPs.
 """
 
+# ╔═╡ dbcf43aa-204a-40c9-b1be-7feac1d7e049
+md"""
+with $A$ a matrix, $b$ a vector
+
+for all rows $i$, $A_i^\top x \leq b_i$
+"""
+
 # ╔═╡ b1225ca4-4215-4956-a1af-55f65bffc568
 md"""
 ## Example 1: maximum flow
@@ -126,6 +133,18 @@ Define an integer flow variable $x_{u,v}$ for each edge $(u, v)$ in the graph.
 Remember the Kirchoff conservation laws from electrical engineering.
 """)
 
+# ╔═╡ b365e173-714a-46b6-a2d0-97c98ae9337a
+md"""
+$$\begin{align*}
+\max_x \sum_{v \in N^+(s)} x_{s,v} - \sum_{v \in N^-(s)} x_{s,v} \quad \text{s.t.} \quad \begin{cases}
+x_{u,v} \in \mathbb{Z} & \forall (u,v)\\
+x_{u,v} \leq c_{u,v} & \forall (u,v) \\
+\sum_{u \in N^-(v)} x_{u,v} = \sum_{w \in N^+(v)} x_{v,w} & \forall v \neq \{s,d\}\\
+\end{cases}
+
+\end{align*}$$
+"""
+
 # ╔═╡ 5c1b588e-b185-451e-835c-e3d62262a149
 md"""
 ## Example 2: minimum coloring
@@ -147,6 +166,19 @@ hint(md"""
 Define a binary variable $x_{v,c}$ for each vertex $v$ and color $c$, as well as a binary variable $y_c$ indicating if color $c$ is used.
 You can assume no more than $C$ colors are necessary.
 """)
+
+# ╔═╡ 5e7d5719-c6ba-4b2d-8bd8-e55983c7b4ac
+md"""
+$$\begin{align*}
+\max_{x,y} \sum_{c=1}^C y_c \quad \text{s.t.} \quad \begin{cases}
+x_{v,c} \in \{0, 1\} & \forall v,c \\
+y_{c} \in \{0, 1\} & \forall c \\
+\sum_{c=1}^C x_{v,c} = 1 & \forall c \\
+x_{u,c} + x_{v,c} \leq 1 & \forall c, \{u,v\} \\
+x_{v,c} \leq y_c & \forall v,c
+\end{cases}
+\end{align*}$$
+"""
 
 # ╔═╡ a6c87b54-4f16-4f33-bda8-9a53f3bca951
 md"""
@@ -589,6 +621,7 @@ md"""
 The input graph will be a **directed** graph from Graphs.jl.
 You can use the following functions:
 - `nv(g)`, `ne(g)` (number of vertices / edges)
+- `src(e)`, `dst(e)` (source and destination of an edge)
 - `vertices(g)`, `edges(g)` (list vertices / edges)
 - `outneighbors(g, u)`, `inneighbors(g, v)`, `has_edge(g, u, v)`
 """
@@ -613,8 +646,25 @@ function maximum_flow(g::AbstractGraph, s::Integer, d::Integer, capa::AbstractMa
 	@variable(model, x[edges_as_tuples(g)] >= 0, Int)
 
 	# add objective
+	@objective(model, Max,
+		sum(x[(s, v)] for v in outneighbors(g, s)) -
+		sum(x[(v, s)] for v in inneighbors(g, s))
+	)
 
 	# add constraints
+	for v in 1:nv(g)
+		if v != s && v != d
+			@constraint(model,
+				sum(x[(v, w)] for w in outneighbors(g, v)) ==
+				sum(x[(u, v)] for u in inneighbors(g, v))
+			)
+		end
+	end
+
+	for e in edges(g)
+		u, v = src(e), dst(e)
+		@constraint(model, x[(u, v)] <= capa[u, v])
+	end
 
 	# resolution
 	set_optimizer(model, HiGHS.Optimizer)
@@ -631,18 +681,18 @@ You can test it on this graph:
 """
 
 # ╔═╡ ed2c8c95-9a55-4111-ade3-4d6048229f9f
-let
-	g1 = Graphs.grid((4, 4))
-	capa = Symmetric(sparse([
+begin
+	g1 = GridGraphs.GridGraph(ones(4, 4), directions=GridGraphs.ROOK_ACYCLIC_DIRECTIONS)
+	capa1 = Symmetric(sparse([
 		(has_edge(g1, u, v) ? rand(1:5) : 0)
 		for u in vertices(g1), v in vertices(g1)
 	]))
-	f = maximum_flow(g1, 1, nv(g1), capa)
+	f1 = maximum_flow(g1, 1, nv(g1), capa1)
 	
 	gplot(
 		g1,
 		nodelabel=vertices(g1),
-		edgelabel=["$(f[(src(e), dst(e))])/$(capa[src(e), dst(e)])" for e in edges(g1)]
+		edgelabel=["$(f1[(src(e), dst(e))])/$(capa1[src(e), dst(e)])" for e in edges(g1)]
 	)
 end
 
@@ -656,6 +706,7 @@ md"""
 The input graph will be an **undirected** graph from Graphs.jl.
 You can use the following functions:
 - `nv(g)`, `ne(g)` (number of vertices / edges)
+- `src(e)`, `dst(e)` (source and destination of an edge)
 - `vertices(g)`, `edges(g)` (list vertices / edges)
 - `outneighbors(g, u)`, `inneighbors(g, v)`, `has_edge(g, u, v)`
 """
@@ -677,8 +728,21 @@ function minimum_coloring(g::AbstractGraph, max_colors::Integer)
 	@variable(model, y[1:max_colors], Bin)
 
 	# add objective
-
+	@objective(model, Min, sum(y))
+	
 	# add constraints
+	for v in 1:nv(g)
+		@constraint(model, sum(x[v,:]) == 1)
+	end
+	for v in 1:nv(g), c in 1:max_colors
+		@constraint(model, x[v,c] <= y[c])
+	end
+	for c in 1:max_colors
+		for e in edges(g)
+			u, v = src(e), dst(e)
+			@constraint(model, x[u,c] + x[v,c] <= 1)
+		end
+	end
 
 	# resolution
 	set_optimizer(model, HiGHS.Optimizer)
@@ -696,13 +760,13 @@ You can test it on this graph:
 """
 
 # ╔═╡ d6256e03-4e6e-4156-ab56-0693ab10f210
-let
+begin
 	g2 = Graphs.barabasi_albert(20, 3)
-	c = minimum_coloring(g2, 20)
+	c2 = minimum_coloring(g2, 20)
 	gplot(
 		g2,
 		nodelabel=vertices(g2),
-		nodefillc=all_colors[c],
+		nodefillc=all_colors[c2],
 	)
 end
 
@@ -2140,14 +2204,17 @@ version = "1.4.1+0"
 # ╟─cf5e0bb0-46ab-4d62-b30a-3a1c6b110924
 # ╟─3e1520af-f119-4620-8d28-baa29cc88c6a
 # ╟─ddc30da9-2b66-4c66-b32c-f6513134199f
+# ╟─dbcf43aa-204a-40c9-b1be-7feac1d7e049
 # ╟─b1225ca4-4215-4956-a1af-55f65bffc568
 # ╟─0b2bee0a-8d1f-4a86-855d-28346b782b34
 # ╟─f894861e-5710-4531-88e0-c1f840e0471c
 # ╟─6cc5e371-4fc3-49ea-9a98-c31db67e79fc
+# ╟─b365e173-714a-46b6-a2d0-97c98ae9337a
 # ╟─5c1b588e-b185-451e-835c-e3d62262a149
 # ╟─c5cabbe9-38eb-4a5f-93c9-70e6e0931b78
 # ╟─53030d62-e802-4f5f-94c2-c26f6b1f0d96
 # ╟─fa490c2b-a867-444e-ba9e-a61cbc0e5875
+# ╟─5e7d5719-c6ba-4b2d-8bd8-e55983c7b4ac
 # ╟─a6c87b54-4f16-4f33-bda8-9a53f3bca951
 # ╟─67e65ccd-c6ed-41a1-a10a-939c8a644ee4
 # ╟─c9c066ae-f4f0-4088-857b-2b8250978db6
